@@ -1,0 +1,11 @@
+# Install into a RunPod PyTorch image. PyTorch is intentionally omitted so
+# pip does not replace the image's CUDA-compatible torch build.
+numpy==1.26.4
+scipy==1.15.3
+soundfile==0.12.1
+clearvoice==0.1.2
+faster-whisper==1.2.1
+funasr==1.4.16
+silero-vad==6.2.3
+soundcard==0.4.6
+websockets==16.1.1

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>실시간 AI 자막</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <h1>실시간 AI 자막</h1>
+      <div id="connection-status" class="status status-connecting">연결 중...</div>
+    </header>
+    <section class="subtitle-grid" aria-label="실시간 자막">
+      <article class="speaker-panel speaker-zero">
+        <div class="speaker-heading"><span class="speaker-dot"></span><h2>Speaker 1</h2></div>
+        <ol id="speaker_0" class="subtitle-list" aria-live="polite"></ol>
+      </article>
+      <article class="speaker-panel speaker-one">
+        <div class="speaker-heading"><span class="speaker-dot"></span><h2>Speaker 2</h2></div>
+        <ol id="speaker_1" class="subtitle-list" aria-live="polite"></ol>
+      </article>
+    </section>
+    <footer class="debug-row">
+      <span id="last-sequence">Last sequence: -</span>
+      <span id="last-window">Window: -</span>
+      <span id="last-latency">Browser receive: -</span>
+    </footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
