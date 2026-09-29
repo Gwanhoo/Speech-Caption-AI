@@ -30,7 +30,6 @@ from stt_context import LIVE_WHISPER_OPTIONS, transcribe_base  # noqa: E402
 from validate_end_to_end_gpu import (  # noqa: E402
     SAMPLE_RATE,
     VAD_MINIMUM_SPEECH_MS,
-    WHISPER_MODEL_DIR,
     detect_speech_activity,
     load_separator,
     query_gpu_memory,
@@ -40,6 +39,25 @@ from validate_end_to_end_gpu import (  # noqa: E402
 
 MAX_REQUEST_BYTES = 16 * 1024 * 1024
 MAX_AUDIO_SECONDS = 30.0
+FASTER_WHISPER_MODEL_NAME = "base"
+FASTER_WHISPER_CHECKPOINT_ROOT = ROOT / "checkpoints" / "faster-whisper"
+
+
+def faster_whisper_model_source() -> str:
+    """Use a valid project-local base model when present, otherwise use HF's base ID."""
+    model_cache = (
+        FASTER_WHISPER_CHECKPOINT_ROOT
+        / "models--Systran--faster-whisper-base"
+    )
+    candidates = [FASTER_WHISPER_CHECKPOINT_ROOT, model_cache]
+    snapshots = model_cache / "snapshots"
+    if snapshots.is_dir():
+        candidates.extend(path for path in snapshots.iterdir() if path.is_dir())
+
+    for candidate in candidates:
+        if (candidate / "model.bin").is_file():
+            return str(candidate)
+    return FASTER_WHISPER_MODEL_NAME
 
 
 @dataclass(frozen=True)
@@ -80,7 +98,7 @@ class PipelineService:
 
             started = time.perf_counter()
             whisper = WhisperModel(
-                str(WHISPER_MODEL_DIR), device="cuda", compute_type="float16"
+                faster_whisper_model_source(), device="cuda", compute_type="float16"
             )
             self.load_times["faster_whisper_seconds"] = time.perf_counter() - started
             self.memory["after_faster_whisper"] = self._memory_record()
