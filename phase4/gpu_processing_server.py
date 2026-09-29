@@ -136,21 +136,42 @@ class PipelineService:
             }
         return (HTTPStatus.OK if self.ready else HTTPStatus.SERVICE_UNAVAILABLE), payload
 
-    def process(self, request_id: str, audio: np.ndarray, duration: float) -> dict[str, Any]:
+    def process(
+        self,
+        request_id: str,
+        audio: np.ndarray,
+        duration: float,
+        request_diagnostics: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         if not self.ready:
             raise RuntimeError("GPU pipeline is not ready")
 
         received_at = time.time()
         wait_started = time.perf_counter()
+        if request_diagnostics is not None:
+            request_diagnostics["server_queue_entered_perf_counter"] = wait_started
         with self._stats_lock:
             self.requests_waiting += 1
         try:
             with self._inference_lock:
-                queue_wait_seconds = time.perf_counter() - wait_started
+                inference_started = time.perf_counter()
+                queue_wait_seconds = inference_started - wait_started
+                if request_diagnostics is not None:
+                    request_diagnostics.update(
+                        {
+                            "server_inference_started_perf_counter": inference_started,
+                            "server_queue_wait_seconds": queue_wait_seconds,
+                        }
+                    )
                 with self._stats_lock:
                     self.requests_waiting -= 1
                 response = self._process_serialized(
-                    request_id, audio, duration, received_at, queue_wait_seconds
+                    request_id,
+                    audio,
+                    duration,
+                    received_at,
+                    queue_wait_seconds,
+                    request_diagnostics,
                 )
         except BaseException:
             with self._stats_lock:
@@ -167,12 +188,17 @@ class PipelineService:
         duration: float,
         received_at: float,
         queue_wait_seconds: float,
+        request_diagnostics: dict[str, Any] | None,
     ) -> dict[str, Any]:
         processing_started = time.perf_counter()
+        if request_diagnostics is not None:
+            request_diagnostics["server_processing_started_perf_counter"] = processing_started
         silence = is_pre_separation_silence(finite_audio_stats(audio))
+        separation_started = time.perf_counter()
         separation = None if silence else separate_amp(
             self.models.separator, self.models.separation_device, audio
         )
+        separation_ended = time.perf_counter()
         output = silent_separation_output(len(audio)) if silence else separation.output
         separated = [
             np.ascontiguousarray(output[index, 0, :], dtype=np.float32)
@@ -180,17 +206,24 @@ class PipelineService:
         ]
 
         vad_started = time.perf_counter()
-        vad_results = [
-            detect_speech_activity(
-                self.models.vad, speaker_audio, VAD_MINIMUM_SPEECH_MS
+        vad_results = []
+        vad_stage_ranges: list[tuple[float, float]] = []
+        for speaker_audio in separated:
+            speaker_vad_started = time.perf_counter()
+            vad_results.append(
+                detect_speech_activity(
+                    self.models.vad, speaker_audio, VAD_MINIMUM_SPEECH_MS
+                )
             )
-            for speaker_audio in separated
-        ]
+            vad_stage_ranges.append((speaker_vad_started, time.perf_counter()))
         vad_seconds = time.perf_counter() - vad_started
 
         stt_total = 0.0
         speakers: list[dict[str, Any]] = []
+        stt_stage_ranges: list[tuple[float, float]] = []
+        waveform_encode_ranges: list[tuple[float, float]] = []
         for speaker, (speaker_audio, vad) in enumerate(zip(separated, vad_results)):
+            stt_started = time.perf_counter()
             if vad["speech_detected"]:
                 stt_result = transcribe_base(self.models.whisper, speaker_audio)
                 raw_text = stt_result.text
@@ -198,14 +231,22 @@ class PipelineService:
             else:
                 raw_text = ""
                 stt_seconds = 0.0
+            stt_stage_ranges.append((stt_started, time.perf_counter()))
             stt_total += stt_seconds
 
+            waveform_encode_started = time.perf_counter()
+            encoded_waveform = base64.b64encode(
+                speaker_audio.astype("<f4").tobytes()
+            ).decode("ascii")
+            waveform_encode_ranges.append(
+                (waveform_encode_started, time.perf_counter())
+            )
             speakers.append(
                 {
                     "raw_slot": speaker,
                     "waveform": {
                         "encoding": "base64-f32le",
-                        "data": base64.b64encode(speaker_audio.astype("<f4").tobytes()).decode("ascii"),
+                        "data": encoded_waveform,
                     },
                     "sample_count": len(speaker_audio),
                     "rms": float(np.sqrt(np.mean(speaker_audio * speaker_audio))),
@@ -216,8 +257,57 @@ class PipelineService:
                 }
             )
 
-        processing_seconds = time.perf_counter() - processing_started
+        processing_ended = time.perf_counter()
+        processing_seconds = processing_ended - processing_started
+        gpu_memory_query_started = time.perf_counter()
         gpu_device, gpu_process = query_gpu_memory()
+        gpu_memory_query_ended = time.perf_counter()
+        timing: dict[str, Any] = {
+            "queue_wait_seconds": queue_wait_seconds,
+            "separation_seconds": 0.0 if silence else separation.total_seconds,
+            "amp_seconds": 0.0 if silence else separation.amp_seconds,
+            "fp32_seconds": 0.0 if silence else separation.fp32_seconds,
+            "vad_seconds": vad_seconds,
+            "stt_seconds": stt_total,
+            "processing_seconds": processing_seconds,
+            "end_to_end_rtf": processing_seconds / duration,
+        }
+        if request_diagnostics is not None:
+            request_diagnostics.update(
+                {
+                    "separation_started_perf_counter": separation_started,
+                    "separation_ended_perf_counter": separation_ended,
+                    "separation_wall_seconds": separation_ended - separation_started,
+                    "vad_started_perf_counter": vad_started,
+                    "vad_ended_perf_counter": vad_started + vad_seconds,
+                    "vad_speaker_0_started_perf_counter": vad_stage_ranges[0][0],
+                    "vad_speaker_0_ended_perf_counter": vad_stage_ranges[0][1],
+                    "vad_speaker_0_wall_seconds": vad_stage_ranges[0][1]
+                    - vad_stage_ranges[0][0],
+                    "vad_speaker_1_started_perf_counter": vad_stage_ranges[1][0],
+                    "vad_speaker_1_ended_perf_counter": vad_stage_ranges[1][1],
+                    "vad_speaker_1_wall_seconds": vad_stage_ranges[1][1]
+                    - vad_stage_ranges[1][0],
+                    "stt_speaker_0_started_perf_counter": stt_stage_ranges[0][0],
+                    "stt_speaker_0_ended_perf_counter": stt_stage_ranges[0][1],
+                    "stt_speaker_0_wall_seconds": stt_stage_ranges[0][1]
+                    - stt_stage_ranges[0][0],
+                    "stt_speaker_1_started_perf_counter": stt_stage_ranges[1][0],
+                    "stt_speaker_1_ended_perf_counter": stt_stage_ranges[1][1],
+                    "stt_speaker_1_wall_seconds": stt_stage_ranges[1][1]
+                    - stt_stage_ranges[1][0],
+                    "waveform_encode_speaker_0_seconds": waveform_encode_ranges[0][1]
+                    - waveform_encode_ranges[0][0],
+                    "waveform_encode_speaker_1_seconds": waveform_encode_ranges[1][1]
+                    - waveform_encode_ranges[1][0],
+                    "server_processing_ended_perf_counter": processing_ended,
+                    "gpu_memory_query_started_perf_counter": gpu_memory_query_started,
+                    "gpu_memory_query_ended_perf_counter": gpu_memory_query_ended,
+                    "gpu_memory_query_seconds": gpu_memory_query_ended
+                    - gpu_memory_query_started,
+                }
+            )
+            timing.update(request_diagnostics)
         return {
             "type": "processing_result",
             "schema_version": 1,
@@ -239,16 +329,7 @@ class PipelineService:
                 "silero_vad": {"device": "cpu"},
                 "load_count": self.model_load_count,
             },
-            "timing": {
-                "queue_wait_seconds": queue_wait_seconds,
-                "separation_seconds": 0.0 if silence else separation.total_seconds,
-                "amp_seconds": 0.0 if silence else separation.amp_seconds,
-                "fp32_seconds": 0.0 if silence else separation.fp32_seconds,
-                "vad_seconds": vad_seconds,
-                "stt_seconds": stt_total,
-                "processing_seconds": processing_seconds,
-                "end_to_end_rtf": processing_seconds / duration,
-            },
+            "timing": timing,
             "fp32_fallback": False if silence else separation.fallback_attempted,
             "pre_separation_silence": silence,
             "gpu_memory": {
@@ -285,7 +366,9 @@ class ProcessingHandler(BaseHTTPRequestHandler):
         self._send_json(status, payload)
 
     def do_POST(self) -> None:
+        request_received = time.perf_counter()
         request_id = self.headers.get("X-Request-ID") or str(uuid.uuid4())
+        latency_diagnostics = self.headers.get("X-Latency-Diagnostics") == "1"
         if self.path != "/v1/process":
             self._send_error(
                 HTTPStatus.NOT_FOUND, "not_found", "Endpoint not found", request_id
@@ -317,8 +400,28 @@ class ProcessingHandler(BaseHTTPRequestHandler):
             stream_end = float(self.headers.get("X-Stream-End-Seconds", "0"))
             if not math.isfinite(stream_start) or not math.isfinite(stream_end) or stream_start < 0 or stream_end < stream_start:
                 raise ValueError("Invalid stream timestamps")
-            audio, duration = read_wav(self.rfile.read(content_length))
-            result = self.server.service.process(request_id, audio, duration)
+            body_read_started = time.perf_counter()
+            body = self.rfile.read(content_length)
+            body_read_ended = time.perf_counter()
+            decode_started = time.perf_counter()
+            audio, duration = read_wav(body)
+            decode_ended = time.perf_counter()
+            request_diagnostics = None
+            if latency_diagnostics:
+                request_diagnostics = {
+                    "server_request_received_perf_counter": request_received,
+                    "request_body_read_started_perf_counter": body_read_started,
+                    "request_body_read_ended_perf_counter": body_read_ended,
+                    "request_body_read_seconds": body_read_ended - body_read_started,
+                    "request_body_bytes": len(body),
+                    "request_decode_started_perf_counter": decode_started,
+                    "request_decode_ended_perf_counter": decode_ended,
+                    "request_decode_seconds": decode_ended - decode_started,
+                    "connection_client_port": self.client_address[1],
+                }
+            result = self.server.service.process(
+                request_id, audio, duration, request_diagnostics
+            )
             result["window_index"] = window_index
             result["capture_timestamp"] = self.headers.get("X-Capture-Timestamp", "")
             result["stream_start_seconds"] = stream_start
@@ -336,7 +439,17 @@ class ProcessingHandler(BaseHTTPRequestHandler):
                 request_id,
             )
             return
-        self._send_json(HTTPStatus.OK, result)
+        send_timing = self._send_json(
+            HTTPStatus.OK, result, latency_diagnostics=latency_diagnostics
+        )
+        if latency_diagnostics:
+            print(
+                f"[LATENCY SERVER] window={window_index:03d} "
+                f"response_serialize={send_timing['response_serialization_seconds']:.6f}s "
+                f"response_write={send_timing['response_body_write_seconds']:.6f}s "
+                f"response_bytes={send_timing['response_body_bytes']}",
+                flush=True,
+            )
 
     def log_message(self, format: str, *args: Any) -> None:
         print(
@@ -360,15 +473,42 @@ class ProcessingHandler(BaseHTTPRequestHandler):
             },
         )
 
-    def _send_json(self, status: HTTPStatus, payload: dict[str, Any]) -> None:
+    def _send_json(
+        self,
+        status: HTTPStatus,
+        payload: dict[str, Any],
+        latency_diagnostics: bool = False,
+    ) -> dict[str, float | int]:
+        serialization_started = time.perf_counter()
         body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode(
             "utf-8"
         )
+        serialization_ended = time.perf_counter()
+        serialization_seconds = serialization_ended - serialization_started
+        if latency_diagnostics and isinstance(payload.get("timing"), dict):
+            payload["timing"]["response_serialization_started_perf_counter"] = (
+                serialization_started
+            )
+            payload["timing"]["response_serialization_ended_perf_counter"] = (
+                serialization_ended
+            )
+            payload["timing"]["response_serialization_seconds"] = serialization_seconds
+            payload["timing"]["response_payload_bytes_before_diagnostics"] = len(body)
+            body = json.dumps(
+                payload, ensure_ascii=False, separators=(",", ":")
+            ).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
+        write_started = time.perf_counter()
         self.wfile.write(body)
+        write_ended = time.perf_counter()
+        return {
+            "response_serialization_seconds": serialization_seconds,
+            "response_body_write_seconds": write_ended - write_started,
+            "response_body_bytes": len(body),
+        }
 
 
 class ProcessingHTTPServer(ThreadingHTTPServer):

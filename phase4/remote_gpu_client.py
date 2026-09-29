@@ -50,6 +50,7 @@ class RemoteWindowResult:
     fp32_fallback: bool
     pre_separation_silence: bool
     request_seconds: float
+    client_timing: dict[str, Any]
 
     def logical_slots(self, assignment: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
         logical = [None, None]
@@ -62,8 +63,19 @@ def _number(value: Any) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) and value >= 0
 
 
+def monotonic_duration(started: float, ended: float) -> float:
+    if not _number(started) or not _number(ended) or ended < started:
+        raise ValueError("Invalid monotonic timing range")
+    return ended - started
+
+
+def queue_wait_seconds(enqueued: float, dequeued: float) -> float:
+    return monotonic_duration(enqueued, dequeued)
+
+
 def parse_result(payload: Any, request_id: str, window_index: int, samples: int,
-                 request_seconds: float) -> RemoteWindowResult:
+                 request_seconds: float, client_timing: dict[str, Any] | None = None
+                 ) -> RemoteWindowResult:
     try:
         if not isinstance(payload, dict) or payload["type"] != "processing_result" or payload["schema_version"] != 1:
             raise ValueError("unsupported response type/version")
@@ -114,7 +126,8 @@ def parse_result(payload: Any, request_id: str, window_index: int, samples: int,
                 raise ValueError("invalid GPU memory")
         return RemoteWindowResult(request_id, window_index, tuple(waveforms), tuple(ordered),
                                   timing, memory, payload["fp32_fallback"],
-                                  payload["pre_separation_silence"], request_seconds)
+                                  payload["pre_separation_silence"], request_seconds,
+                                  {} if client_timing is None else client_timing)
     except (KeyError, ValueError, TypeError, OverflowError) as exc:
         raise RemoteProtocolError(f"Malformed GPU response: {exc}") from exc
 
@@ -137,21 +150,55 @@ class RemoteGPUClient:
         self.session.close()
 
     def _request(self, method: str, path: str, **kwargs: Any) -> dict[str, Any]:
+        payload, _ = self._request_with_timing(method, path, **kwargs)
+        return payload
+
+    def _request_with_timing(
+        self, method: str, path: str, **kwargs: Any
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        request_started = time.perf_counter()
         try:
             response = self.session.request(method, self.url + path, timeout=self.timeout, **kwargs)
         except requests.Timeout as exc:
             raise RemoteTimeoutError(str(exc)) from exc
         except requests.RequestException as exc:
             raise RemoteConnectionError(str(exc)) from exc
+        response_received = time.perf_counter()
         if response.status_code != 200:
             raise RemoteHTTPError(response.status_code, response.text[:1000])
+        json_decode_started = time.perf_counter()
         try:
             payload = response.json()
         except ValueError as exc:
             raise RemoteProtocolError("Response is not JSON") from exc
+        json_decode_ended = time.perf_counter()
         if not isinstance(payload, dict) or payload.get("type") == "error":
             raise RemoteProtocolError(f"Server error/invalid object: {payload}")
-        return payload
+        try:
+            response_body_bytes = len(response.content)
+        except TypeError:
+            response_body_bytes = None
+        elapsed = getattr(response, "elapsed", None)
+        response_elapsed_seconds = (
+            elapsed.total_seconds()
+            if elapsed is not None and callable(getattr(elapsed, "total_seconds", None))
+            else None
+        )
+        raw = getattr(response, "raw", None)
+        return payload, {
+            "http_request_started_perf_counter": request_started,
+            "http_response_received_perf_counter": response_received,
+            "http_request_seconds": monotonic_duration(request_started, response_received),
+            "requests_response_elapsed_seconds": response_elapsed_seconds,
+            "response_json_decode_started_perf_counter": json_decode_started,
+            "response_json_decode_ended_perf_counter": json_decode_ended,
+            "response_json_decode_seconds": monotonic_duration(
+                json_decode_started, json_decode_ended
+            ),
+            "response_body_bytes": response_body_bytes,
+            "response_http_version": getattr(raw, "version", None),
+            "response_connection_header": response.headers.get("Connection"),
+        }
 
     def health(self) -> dict[str, Any]:
         result = self._request("GET", "/healthz")
@@ -160,7 +207,8 @@ class RemoteGPUClient:
         return result
 
     def process(self, audio: np.ndarray, window_index: int, capture_timestamp: str = "",
-                stream_start_seconds: float = 0, stream_end_seconds: float = 0) -> RemoteWindowResult:
+                stream_start_seconds: float = 0, stream_end_seconds: float = 0,
+                latency_diagnostics: bool = False) -> RemoteWindowResult:
         if type(window_index) is not int or window_index < 0:
             raise ValueError("Window index must be a non-negative integer")
         if not _number(stream_start_seconds) or not _number(stream_end_seconds) or stream_end_seconds < stream_start_seconds:
@@ -168,16 +216,55 @@ class RemoteGPUClient:
         audio = np.asarray(audio, dtype=np.float32)
         if audio.ndim != 1 or not audio.size or audio.size > 30 * 16000 or not np.isfinite(audio).all():
             raise ValueError("Expected finite mono audio, up to 30 seconds at 16 kHz")
+        process_started = time.perf_counter()
         request_id = f"window-{window_index}-{time.time_ns()}"
+        encode_started = time.perf_counter()
         buffer = io.BytesIO()
         sf.write(buffer, audio, 16000, format="WAV", subtype="FLOAT")
+        request_body = buffer.getvalue()
+        encode_ended = time.perf_counter()
         headers = {"Content-Type": "audio/wav", "X-Request-ID": request_id,
                    "X-Window-Index": str(window_index), "X-Capture-Timestamp": capture_timestamp,
                    "X-Stream-Start-Seconds": str(stream_start_seconds),
                    "X-Stream-End-Seconds": str(stream_end_seconds)}
-        started = time.perf_counter()
-        payload = self._request("POST", "/v1/process", data=buffer.getvalue(), headers=headers)
-        return parse_result(payload, request_id, window_index, len(audio), time.perf_counter() - started)
+        if latency_diagnostics:
+            headers["X-Latency-Diagnostics"] = "1"
+        request_ready = time.perf_counter()
+        payload, transport_timing = self._request_with_timing(
+            "POST", "/v1/process", data=request_body, headers=headers
+        )
+        parse_started = time.perf_counter()
+        client_timing = {
+            "process_started_perf_counter": process_started,
+            "payload_encode_started_perf_counter": encode_started,
+            "payload_encode_ended_perf_counter": encode_ended,
+            "payload_encode_seconds": monotonic_duration(encode_started, encode_ended),
+            "remote_request_ready_perf_counter": request_ready,
+            "request_body_bytes": len(request_body),
+            **transport_timing,
+            "response_parse_started_perf_counter": parse_started,
+        }
+        request_seconds = monotonic_duration(
+            transport_timing["http_request_started_perf_counter"],
+            transport_timing["response_json_decode_ended_perf_counter"],
+        )
+        result = parse_result(
+            payload,
+            request_id,
+            window_index,
+            len(audio),
+            request_seconds,
+            client_timing,
+        )
+        parse_ended = time.perf_counter()
+        client_timing["response_parse_ended_perf_counter"] = parse_ended
+        client_timing["response_parse_seconds"] = monotonic_duration(
+            parse_started, parse_ended
+        )
+        client_timing["client_total_seconds"] = monotonic_duration(
+            process_started, parse_ended
+        )
+        return result
 
 
 class RemoteGPUMonitor:

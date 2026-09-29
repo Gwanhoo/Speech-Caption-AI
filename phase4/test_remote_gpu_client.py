@@ -5,10 +5,11 @@ import io
 import json
 import sys
 import threading
+from datetime import timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest import TestCase, main
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import numpy as np
 import requests
@@ -18,7 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "phase4"))
 sys.path.insert(0, str(ROOT / "phase3"))
 from remote_gpu_client import (RemoteGPUClient, RemoteConnectionError, RemoteTimeoutError,
-                               RemoteHTTPError, RemoteProtocolError, parse_result)
+                               RemoteHTTPError, RemoteProtocolError, monotonic_duration,
+                               parse_result, queue_wait_seconds)
 from speaker_tracking import PersistentSpeakerTracker
 from subtitle_assembler import SubtitleAssembler, SpeakerSubtitleState
 
@@ -43,6 +45,62 @@ def payload(request_id="r", window=0, samples=48000):
 
 
 class ClientTests(TestCase):
+    def test_monotonic_timing_and_queue_wait_calculation(self):
+        self.assertAlmostEqual(monotonic_duration(10.25, 12.5), 2.25)
+        self.assertAlmostEqual(queue_wait_seconds(100.0, 100.125), 0.125)
+        with self.assertRaises(ValueError):
+            queue_wait_seconds(2.0, 1.0)
+
+    def test_remote_client_records_transport_timing(self):
+        response = Mock(status_code=200)
+        response.json.return_value = payload("window-0-123", samples=16000)
+        response.content = b"response-body"
+        response.headers = {"Connection": "close"}
+        response.elapsed = timedelta(seconds=0.25)
+        response.raw.version = 10
+        client = RemoteGPUClient("http://127.0.0.1:8787")
+        client.session.request = Mock(return_value=response)
+        try:
+            with patch("remote_gpu_client.time.time_ns", return_value=123):
+                result = client.process(
+                    np.zeros(16000, dtype=np.float32),
+                    0,
+                    stream_end_seconds=1,
+                    latency_diagnostics=True,
+                )
+            timing = result.client_timing
+            self.assertGreater(timing["request_body_bytes"], 16000 * 4)
+            self.assertEqual(timing["response_body_bytes"], len(response.content))
+            self.assertGreaterEqual(timing["payload_encode_seconds"], 0)
+            self.assertGreaterEqual(timing["http_request_seconds"], 0)
+            self.assertGreaterEqual(timing["response_json_decode_seconds"], 0)
+            self.assertGreaterEqual(timing["response_parse_seconds"], 0)
+            self.assertEqual(timing["requests_response_elapsed_seconds"], 0.25)
+            self.assertEqual(timing["response_http_version"], 10)
+            headers = client.session.request.call_args.kwargs["headers"]
+            self.assertEqual(headers["X-Latency-Diagnostics"], "1")
+        finally:
+            client.close()
+
+    def test_diagnostic_header_is_absent_by_default(self):
+        response = Mock(status_code=200)
+        response.json.return_value = payload("window-0-123", samples=16000)
+        response.content = b"response-body"
+        response.headers = {}
+        response.elapsed = timedelta(0)
+        response.raw.version = 10
+        client = RemoteGPUClient("http://127.0.0.1:8787")
+        client.session.request = Mock(return_value=response)
+        try:
+            with patch("remote_gpu_client.time.time_ns", return_value=123):
+                client.process(
+                    np.zeros(16000, dtype=np.float32), 0, stream_end_seconds=1
+                )
+            headers = client.session.request.call_args.kwargs["headers"]
+            self.assertNotIn("X-Latency-Diagnostics", headers)
+        finally:
+            client.close()
+
     def test_waveform_roundtrip_and_mapping(self):
         p = payload()
         p["speakers"].reverse()

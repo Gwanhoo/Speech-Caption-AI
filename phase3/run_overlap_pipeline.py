@@ -10,7 +10,7 @@ import statistics
 import sys
 import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -46,7 +46,13 @@ from secondary_leakage_diagnostics import (  # noqa: E402
     secondary_transcript_suppression_reason,
 )
 from speaker_tracking import PersistentSpeakerTracker  # noqa: E402
-from remote_gpu_client import RemoteGPUClient, RemoteGPUError, RemoteGPUMonitor, RemoteWindowResult  # noqa: E402
+from remote_gpu_client import (  # noqa: E402
+    RemoteGPUClient,
+    RemoteGPUError,
+    RemoteGPUMonitor,
+    RemoteWindowResult,
+    queue_wait_seconds,
+)
 from subtitle_assembler import (  # noqa: E402
     DEFAULT_FINALIZE_SILENCE_MS,
     FUZZY_SIMILARITY_THRESHOLD,
@@ -80,6 +86,7 @@ class AudioWindow:
     capture_ended: float
     capture_timestamp: str
     audio_queue_size: int
+    latency_timing: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -111,6 +118,73 @@ class SeparatedWindow:
     pair_correlation: float
     speaker_mapping: str
     remote_result: RemoteWindowResult | None = None
+    latency_timing: dict[str, Any] = field(default_factory=dict)
+
+
+def build_window_latency_diagnostics(
+    timeline: dict[str, Any],
+    remote_result: RemoteWindowResult | None,
+) -> dict[str, Any]:
+    client = dict(timeline)
+    client["audio_queue_wait_seconds"] = queue_wait_seconds(
+        client["audio_queue_enqueued_perf_counter"],
+        client["audio_queue_dequeued_perf_counter"],
+    )
+    client["separated_queue_wait_seconds"] = queue_wait_seconds(
+        client["separated_queue_enqueued_perf_counter"],
+        client["separated_queue_dequeued_perf_counter"],
+    )
+    client["assembler_subtitle_seconds"] = queue_wait_seconds(
+        client["assembler_subtitle_started_perf_counter"],
+        client["assembler_subtitle_ended_perf_counter"],
+    )
+    client["capture_to_result_seconds"] = queue_wait_seconds(
+        client["capture_completed_perf_counter"],
+        client["result_created_perf_counter"],
+    )
+    first_subtitle = client.get("first_subtitle_created_perf_counter")
+    client["capture_to_first_subtitle_seconds"] = (
+        queue_wait_seconds(client["capture_completed_perf_counter"], first_subtitle)
+        if first_subtitle is not None
+        else None
+    )
+    client["capture_complete_to_audio_enqueue_seconds"] = queue_wait_seconds(
+        client["capture_completed_perf_counter"],
+        client["audio_queue_enqueued_perf_counter"],
+    )
+    client["audio_dequeue_to_remote_request_seconds"] = (
+        queue_wait_seconds(
+            client["audio_queue_dequeued_perf_counter"],
+            client["remote_worker_before_request_perf_counter"],
+        )
+        if "remote_worker_before_request_perf_counter" in client
+        else None
+    )
+    client["separated_dequeue_to_assembler_seconds"] = queue_wait_seconds(
+        client["separated_queue_dequeued_perf_counter"],
+        client["assembler_subtitle_started_perf_counter"],
+    )
+    if remote_result is not None:
+        response_parsed = remote_result.client_timing.get(
+            "response_parse_ended_perf_counter"
+        )
+        client["remote_response_parse_to_separated_enqueue_seconds"] = (
+            queue_wait_seconds(
+                response_parsed, client["separated_queue_enqueued_perf_counter"]
+            )
+            if response_parsed is not None
+            else None
+        )
+    return {
+        "enabled": True,
+        "clock_domains": {
+            "client": "Windows time.perf_counter; comparable only with client fields",
+            "server": "RunPod time.perf_counter; comparable only with server fields",
+        },
+        "client_pipeline": client,
+        "remote_client": remote_result.client_timing if remote_result is not None else {},
+        "server": remote_result.timing if remote_result is not None else {},
+    }
 
 
 def detect_speech_activity(model: Any, audio: np.ndarray, minimum_speech_ms: int) -> dict[str, Any]:
@@ -268,6 +342,11 @@ def main() -> int:
     parser.add_argument("--remote-server-url", default="http://127.0.0.1:8787")
     parser.add_argument("--remote-connect-timeout", type=float, default=5)
     parser.add_argument("--remote-read-timeout", type=float, default=30)
+    parser.add_argument(
+        "--latency-diagnostics",
+        action="store_true",
+        help="Record per-window client/server monotonic timings without changing pipeline behavior",
+    )
     parser.add_argument("--vad", action="store_true", help="Run Silero VAD on each separated speaker")
     parser.add_argument("--vad-min-speech-ms", type=int, default=200)
     parser.add_argument("--json-output", type=Path, default=DEFAULT_OUTPUT)
@@ -831,6 +910,15 @@ def main() -> int:
                             capture_ended=capture_ended,
                             capture_timestamp=datetime.now().astimezone().isoformat(timespec="milliseconds"),
                             audio_queue_size=audio_queue.qsize(),
+                            latency_timing=(
+                                {
+                                    "capture_started_perf_counter": capture_started,
+                                    "capture_completed_perf_counter": capture_ended,
+                                    "capture_window_ready_perf_counter": time.perf_counter(),
+                                }
+                                if args.latency_diagnostics
+                                else {}
+                            ),
                         )
                         if args.save_wav:
                             DEBUG_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -840,10 +928,27 @@ def main() -> int:
                                 SAMPLE_RATE,
                                 subtype="PCM_16",
                             )
+                        audio_queue_enqueue_started = time.perf_counter()
                         accepted = base.enqueue_or_drop(
                             audio_queue, item, "audio_queue", index, dropped, state_lock
                         )
+                        audio_queue_enqueue_ended = time.perf_counter()
                         if accepted:
+                            if args.latency_diagnostics:
+                                item.latency_timing.update(
+                                    {
+                                        "audio_queue_enqueue_started_perf_counter": (
+                                            audio_queue_enqueue_started
+                                        ),
+                                        "audio_queue_enqueued_perf_counter": (
+                                            audio_queue_enqueue_ended
+                                        ),
+                                        "audio_queue_enqueue_seconds": (
+                                            audio_queue_enqueue_ended
+                                            - audio_queue_enqueue_started
+                                        ),
+                                    }
+                                )
                             item.audio_queue_size = audio_queue.qsize()
                             capture_state["max_queue_depth"] = max(
                                 capture_state["max_queue_depth"], audio_queue.qsize()
@@ -889,10 +994,15 @@ def main() -> int:
             try:
                 while True:
                     item = audio_queue.get()
+                    audio_queue_dequeued = time.perf_counter()
                     try:
                         if item is STOP:
                             break
                         assert isinstance(item, AudioWindow)
+                        if args.latency_diagnostics:
+                            item.latency_timing["audio_queue_dequeued_perf_counter"] = (
+                                audio_queue_dequeued
+                            )
                         backlog = base.data_backlog(audio_queue)
                         separation_state["max_audio_backlog"] = max(
                             separation_state["max_audio_backlog"], backlog
@@ -918,10 +1028,19 @@ def main() -> int:
                         remote_result = None
                         if remote:
                             try:
+                                if args.latency_diagnostics:
+                                    item.latency_timing[
+                                        "remote_worker_before_request_perf_counter"
+                                    ] = time.perf_counter()
                                 remote_result = remote_client.process(
                                     item.audio, item.index, item.capture_timestamp,
                                     item.stream_start_seconds, item.stream_end_seconds,
+                                    latency_diagnostics=args.latency_diagnostics,
                                 )
+                                if args.latency_diagnostics:
+                                    item.latency_timing[
+                                        "remote_client_returned_perf_counter"
+                                    ] = time.perf_counter()
                             except RemoteGPUError as exc:
                                 separation_state["windows_skipped_after_failure"] += 1
                                 with state_lock:
@@ -1020,6 +1139,10 @@ def main() -> int:
                                     flush=True,
                                 )
                         separation_ended = time.perf_counter()
+                        if args.latency_diagnostics:
+                            item.latency_timing[
+                                "remote_worker_postprocess_ended_perf_counter"
+                            ] = separation_ended
                         separation_ended_timestamp = datetime.now().astimezone().isoformat(timespec="milliseconds")
                         raw_speakers = tuple(
                             np.ascontiguousarray(separated[source, 0, :], dtype=np.float32)
@@ -1145,8 +1268,10 @@ def main() -> int:
                             pair_correlation=pair_correlation,
                             speaker_mapping=mapping,
                             remote_result=remote_result,
+                            latency_timing=dict(item.latency_timing),
                         )
                         separation_state["inferred"] += 1
+                        separated_queue_enqueue_started = time.perf_counter()
                         accepted = base.enqueue_or_drop(
                             separated_queue,
                             separated_item,
@@ -1155,7 +1280,23 @@ def main() -> int:
                             dropped,
                             state_lock,
                         )
+                        separated_queue_enqueue_ended = time.perf_counter()
                         if accepted:
+                            if args.latency_diagnostics:
+                                separated_item.latency_timing.update(
+                                    {
+                                        "separated_queue_enqueue_started_perf_counter": (
+                                            separated_queue_enqueue_started
+                                        ),
+                                        "separated_queue_enqueued_perf_counter": (
+                                            separated_queue_enqueue_ended
+                                        ),
+                                        "separated_queue_enqueue_seconds": (
+                                            separated_queue_enqueue_ended
+                                            - separated_queue_enqueue_started
+                                        ),
+                                    }
+                                )
                             separated_item.separated_queue_size = separated_queue.qsize()
                             separation_state["max_queue_depth"] = max(
                                 separation_state["max_queue_depth"], separated_queue.qsize()
@@ -1193,15 +1334,24 @@ def main() -> int:
             try:
                 while True:
                     item = separated_queue.get()
+                    separated_queue_dequeued = time.perf_counter()
                     try:
                         if item is STOP:
                             break
                         assert isinstance(item, SeparatedWindow)
+                        if args.latency_diagnostics:
+                            item.latency_timing[
+                                "separated_queue_dequeued_perf_counter"
+                            ] = separated_queue_dequeued
                         separated_backlog = base.data_backlog(separated_queue)
                         stt_state["max_separated_backlog"] = max(
                             stt_state["max_separated_backlog"], separated_backlog
                         )
                         stt_started = time.perf_counter()
+                        if args.latency_diagnostics:
+                            item.latency_timing[
+                                "local_result_worker_started_perf_counter"
+                            ] = stt_started
                         speaker_times: list[float] = []
                         transcripts: list[str] = []
                         vad_results: list[dict[str, Any]] = []
@@ -1325,6 +1475,8 @@ def main() -> int:
                                 f'raw="{raw_transcripts[1]}"',
                                 flush=True,
                             )
+                        assembler_subtitle_started = time.perf_counter()
+                        subtitle_created_times: list[float] = []
                         window_assembly_events: list[dict[str, Any]] = []
                         utterance_hypotheses: list[str] = []
                         window_subtitle_state_events: list[dict[str, Any]] = []
@@ -1393,6 +1545,7 @@ def main() -> int:
                                         state_event,
                                         stt_inference_ended=stt_inference_ended,
                                     )
+                                    subtitle_created_times.append(time.perf_counter())
                                     if state_event.status == "final":
                                         assemblers[speaker_index].reset_utterance()
                         else:
@@ -1403,7 +1556,29 @@ def main() -> int:
                                         f"speaker_{speaker_index}: {transcript}",
                                         flush=True,
                                     )
+                        assembler_subtitle_ended = time.perf_counter()
                         pipeline_ended = time.perf_counter()
+                        latency_diagnostic = None
+                        if args.latency_diagnostics:
+                            item.latency_timing.update(
+                                {
+                                    "assembler_subtitle_started_perf_counter": (
+                                        assembler_subtitle_started
+                                    ),
+                                    "assembler_subtitle_ended_perf_counter": (
+                                        assembler_subtitle_ended
+                                    ),
+                                    "first_subtitle_created_perf_counter": (
+                                        subtitle_created_times[0]
+                                        if subtitle_created_times
+                                        else None
+                                    ),
+                                    "result_created_perf_counter": pipeline_ended,
+                                }
+                            )
+                            latency_diagnostic = build_window_latency_diagnostics(
+                                item.latency_timing, item.remote_result
+                            )
                         assembler_total = sum(
                             event["matching_seconds"] for event in window_assembly_events
                         )
@@ -1478,6 +1653,8 @@ def main() -> int:
                             "dropped": False,
                             "error": None,
                         }
+                        if latency_diagnostic is not None:
+                            metric["latency_diagnostics"] = latency_diagnostic
                         with state_lock:
                             results.append(metric)
                         stt_state["processed"] += 1
@@ -1490,6 +1667,28 @@ def main() -> int:
                             f"VRAM={item.torch_allocated_mib:.1f}/{item.torch_reserved_mib:.1f} MiB",
                             flush=True,
                         )
+                        if latency_diagnostic is not None:
+                            client_pipeline = latency_diagnostic["client_pipeline"]
+                            remote_client_timing = latency_diagnostic["remote_client"]
+                            server_timing = latency_diagnostic["server"]
+                            print(
+                                f"[LATENCY] window={item.source.index:03d} "
+                                f"audio_queue_wait={client_pipeline['audio_queue_wait_seconds']:.6f}s "
+                                f"wav_encode={remote_client_timing.get('payload_encode_seconds', 0.0):.6f}s "
+                                f"http_round_trip={remote_client_timing.get('http_request_seconds', 0.0):.6f}s "
+                                f"server_body_read={server_timing.get('request_body_read_seconds', 0.0):.6f}s "
+                                f"server_queue_wait={server_timing.get('queue_wait_seconds', 0.0):.6f}s "
+                                f"separation={server_timing.get('separation_seconds', 0.0):.6f}s "
+                                f"vad={server_timing.get('vad_seconds', 0.0):.6f}s "
+                                f"stt={server_timing.get('stt_seconds', 0.0):.6f}s "
+                                f"response_json_decode={remote_client_timing.get('response_json_decode_seconds', 0.0):.6f}s "
+                                f"separated_queue_wait={client_pipeline['separated_queue_wait_seconds']:.6f}s "
+                                f"assembler_subtitle={client_pipeline['assembler_subtitle_seconds']:.6f}s "
+                                f"capture_to_result={client_pipeline['capture_to_result_seconds']:.6f}s "
+                                f"bytes={remote_client_timing.get('request_body_bytes')}/"
+                                f"{remote_client_timing.get('response_body_bytes')}",
+                                flush=True,
+                            )
                     finally:
                         separated_queue.task_done()
             except BaseException as exc:
@@ -2014,6 +2213,14 @@ def main() -> int:
             "window_count": expected_window_count,
             "queue_maxsize": QUEUE_MAXSIZE,
             "drop_policy": "drop newest when a bounded queue is full",
+            "latency_diagnostics": {
+                "enabled": args.latency_diagnostics,
+                "per_window_field": (
+                    "windows[].latency_diagnostics"
+                    if args.latency_diagnostics
+                    else None
+                ),
+            },
             "capture_success": capture_state["captured"],
             "separation_success": separation_state["inferred"],
             "separation_delivered": separation_state["delivered"],

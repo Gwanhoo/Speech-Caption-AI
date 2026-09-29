@@ -30,7 +30,8 @@ finally:
 
 
 class PipelineTests(TestCase):
-    def run_pipeline(self, remote, fail_first=False, failure=None, fail_all=False):
+    def run_pipeline(self, remote, fail_first=False, failure=None, fail_all=False,
+                     latency_diagnostics=False):
         capture = MagicMock()
         capture.__enter__.return_value = capture
         def record(numframes):
@@ -41,7 +42,7 @@ class PipelineTests(TestCase):
         loopback.recorder.return_value = capture
         client = Mock()
         client.health.return_value = {"gpu_memory": {"device_used_mib": 1023}}
-        def process(audio, index, *args):
+        def process(audio, index, *args, **kwargs):
             if fail_all or (fail_first and index == 0):
                 raise failure or RemoteTimeoutError("injected timeout")
             return parse_result(payload("r", index, len(audio)), "r", index, len(audio), .02)
@@ -52,9 +53,11 @@ class PipelineTests(TestCase):
             output = Path(directory) / "result.json"
             argv = ["run_overlap_pipeline", "--live", "--duration", "5", "--assemble", "--json-output", str(output)]
             if remote: argv += ["--processing-mode", "remote", "--websocket", "--ws-port", "0"]
+            if latency_diagnostics: argv += ["--latency-diagnostics"]
             stack.enter_context(patch.object(pipeline.sys, "argv", argv))
             stack.enter_context(patch.object(pipeline.sys, "platform", "win32"))
-            stdout = Mock(wraps=io.StringIO()); stdout.reconfigure = Mock()
+            stdout_buffer = io.StringIO()
+            stdout = Mock(wraps=stdout_buffer); stdout.reconfigure = Mock()
             stack.enter_context(patch.object(pipeline.sys, "stdout", stdout))
             stack.enter_context(patch.object(pipeline.sc, "default_speaker", return_value=Mock(name="speaker")))
             stack.enter_context(patch.object(pipeline.sc, "get_microphone", return_value=loopback))
@@ -69,6 +72,14 @@ class PipelineTests(TestCase):
                 cuda_calls.append(stack.enter_context(patch.object(pipeline.torch.cuda, name, return_value=True if name == "is_available" else 0)))
             code = pipeline.main()
             result = json.loads(output.read_text())
+            if latency_diagnostics:
+                self.assertTrue(result["latency_diagnostics"]["enabled"])
+                self.assertTrue(all("latency_diagnostics" in row for row in result["windows"]))
+                self.assertIn("[LATENCY]", stdout_buffer.getvalue())
+            else:
+                self.assertFalse(result["latency_diagnostics"]["enabled"])
+                self.assertTrue(all("latency_diagnostics" not in row for row in result["windows"]))
+                self.assertNotIn("[LATENCY]", stdout_buffer.getvalue())
             if remote:
                 load.assert_not_called(); stt.assert_not_called()
                 for call in cuda_calls: call.assert_not_called()
@@ -84,6 +95,17 @@ class PipelineTests(TestCase):
         self.assertEqual(result["errors"], [])
         self.assertGreater(result["websocket"]["published"], 0)
         self.assertEqual(result["websocket"]["dropped_oldest"], 0)
+
+    def test_remote_latency_diagnostics(self):
+        code, result = self.run_pipeline(True, latency_diagnostics=True)
+        self.assertEqual(code, 0)
+        timing = result["windows"][0]["latency_diagnostics"]
+        self.assertGreaterEqual(
+            timing["client_pipeline"]["audio_queue_wait_seconds"], 0
+        )
+        self.assertGreaterEqual(
+            timing["client_pipeline"]["separated_queue_wait_seconds"], 0
+        )
 
     def test_failed_remote_window_continues(self):
         code, result = self.run_pipeline(True, True)
