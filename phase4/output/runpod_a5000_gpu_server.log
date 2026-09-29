@@ -1,0 +1,16 @@
+Loading GPU pipeline models once at server startup...
+GPU processing server ready: http://127.0.0.1:8787; model_load_count=1; load_seconds={'mossformer2_seconds': 4.074517938308418, 'faster_whisper_seconds': 0.1138403145596385, 'silero_vad_seconds': 0.053965818136930466}; memory={'before_models': {'device_used_mib': 1, 'process_used_mib': None}, 'after_mossformer2': {'device_used_mib': 441, 'process_used_mib': 432}, 'after_faster_whisper': {'device_used_mib': 633, 'process_used_mib': 624}}
+http_client=127.0.0.1; "GET /healthz HTTP/1.1" 200 -
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+http_client=127.0.0.1; "GET /healthz HTTP/1.1" 200 -
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+http_client=127.0.0.1; "GET /healthz HTTP/1.1" 200 -
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+http_client=127.0.0.1; "GET /healthz HTTP/1.1" 200 -
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+http_client=127.0.0.1; "GET /healthz HTTP/1.1" 200 -
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+http_client=127.0.0.1; "GET /healthz HTTP/1.1" 200 -
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 400 -
+http_client=127.0.0.1; "POST /v1/not-found HTTP/1.1" 404 -
+http_client=127.0.0.1; "GET /healthz HTTP/1.1" 200 -

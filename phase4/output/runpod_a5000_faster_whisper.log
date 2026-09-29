@@ -1,0 +1,23 @@
+=== faster-whisper CUDA benchmark ===
+model=base; device=cuda; compute_type=float16
+options={'language': 'ko', 'beam_size': 5, 'condition_on_previous_text': False}
+model_load_seconds=0.770135
+memory_before_load: device_used=4 MiB; process_used=unavailable
+memory_after_load: device_used=405 MiB; process_used=396 MiB
+--- input 1 ---
+file=/workspace/Speech-Caption-AI/phase2/output/amp_single_speaker_0.wav
+duration_seconds=5.000000
+inference_seconds=0.428393
+rtf=0.085679
+raw_transcript='데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권력이 위한 시...'
+memory_inference_peak: device_used=423 MiB; process_used=414 MiB
+--- input 2 ---
+file=/workspace/Speech-Caption-AI/phase2/output/amp_single_speaker_1.wav
+duration_seconds=5.000000
+inference_seconds=0.151021
+rtf=0.030204
+raw_transcript='오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는'
+memory_inference_peak: device_used=487 MiB; process_used=510 MiB
+mean_inference_seconds=0.289707
+mean_rtf=0.057941
+memory_after_model_release: device_used=221 MiB; process_used=212 MiB

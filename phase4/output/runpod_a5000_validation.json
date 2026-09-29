@@ -1,0 +1,145 @@
+{
+  "validation_date_utc": "2026-09-29",
+  "git_commit": "59e594e778073c8ea783617e9dc062d2ea471819",
+  "scope": "RunPod A5000 GPU inference and local GPU HTTP server validation",
+  "environment": {
+    "gpu": "NVIDIA RTX A5000",
+    "gpu_memory_total_mib": 24564,
+    "driver_version": "580.159.04",
+    "nvidia_smi_cuda_version": "13.0",
+    "python_version": "3.12.3",
+    "pytorch_version": "2.8.0+cu128",
+    "pytorch_cuda_version": "12.8",
+    "torch_cuda_available": true,
+    "ctranslate2_version": "4.8.2",
+    "ctranslate2_cuda_device_count": 1,
+    "initial_gpu_memory_used_mib": 1
+  },
+  "models_and_inputs": {
+    "mossformer2_checkpoint_present": true,
+    "faster_whisper_base_model_present": true,
+    "benchmark_input_wavs_present": true
+  },
+  "faster_whisper_benchmark": {
+    "passed": true,
+    "device": "cuda",
+    "compute_type": "float16",
+    "model_load_seconds": 0.770135,
+    "inputs": [
+      {
+        "speaker": 0,
+        "duration_seconds": 5.0,
+        "inference_seconds": 0.428393,
+        "rtf": 0.085679,
+        "peak_device_memory_mib": 423,
+        "peak_process_memory_mib": 414
+      },
+      {
+        "speaker": 1,
+        "duration_seconds": 5.0,
+        "inference_seconds": 0.151021,
+        "rtf": 0.030204,
+        "peak_device_memory_mib": 487,
+        "peak_process_memory_mib": 510
+      }
+    ],
+    "mean_inference_seconds": 0.289707,
+    "mean_rtf": 0.057941,
+    "cuda_oom": false
+  },
+  "e2e_gpu_validation": {
+    "passed": true,
+    "path": "MossFormer2 -> Silero VAD -> faster-whisper -> subtitle assembler/state",
+    "input_duration_seconds": 5.0,
+    "mossformer2_device": "cuda:0",
+    "mossformer2_amp": "float16 autocast",
+    "faster_whisper_device": "cuda",
+    "faster_whisper_compute_type": "float16",
+    "warmup_separation_seconds": [1.473172, 0.313835],
+    "measured_runs": 3,
+    "mean_separation_seconds": 0.350400,
+    "mean_vad_seconds": 0.102696,
+    "mean_stt_seconds": 0.282187,
+    "mean_total_seconds": 0.737090,
+    "mean_rtf": 0.147418,
+    "max_total_seconds": 0.784577,
+    "max_rtf": 0.156915,
+    "fp32_fallback_count": 0,
+    "speaker_0": {
+      "rms": 0.195797,
+      "peak": 1.579516,
+      "vad_speech": true,
+      "vad_speech_ms": 4056.0
+    },
+    "speaker_1": {
+      "rms": 0.195797,
+      "peak": 1.382216,
+      "vad_speech": true,
+      "vad_speech_ms": 3768.0
+    },
+    "peak_device_memory_mib": 1087,
+    "processing_complete_device_memory_mib": 1023,
+    "after_model_release_device_memory_mib": 287,
+    "cuda_oom": false
+  },
+  "gpu_http_server": {
+    "passed": true,
+    "bind": "127.0.0.1:8787",
+    "health_http_status": 200,
+    "health_status": "ready",
+    "gpu_ready": true,
+    "models_loaded": true,
+    "model_load_count": 1,
+    "normal_request_count": 5,
+    "normal_http_statuses": [200, 200, 200, 200, 200],
+    "request_processing_seconds": [2.388904385268688, 1.6346600065007806, 1.7546115396544337, 1.7150592235848308, 1.7955501889809966],
+    "mean_processing_seconds": 1.8577570687979459,
+    "request_rtfs": [0.4777808770537376, 0.3269320013001561, 0.35092230793088675, 0.34301184471696616, 0.3591100377961993],
+    "mean_rtf": 0.37155141375958917,
+    "queue_wait_seconds": [0.0000054836273193359375, 0.000004000961780548096, 0.000003098510205745697, 0.0000036749988794326782, 0.000003252178430557251],
+    "fp32_fallback_count": 0,
+    "subtitle_events_per_request": [4, 4, 4, 4, 4],
+    "completed_requests": 5,
+    "failed_processing_requests": 0,
+    "malformed_wav": {
+      "http_status": 400,
+      "error_code": "invalid_audio"
+    },
+    "invalid_endpoint": {
+      "http_status": 404,
+      "error_code": "not_found"
+    }
+  },
+  "vram_stability": {
+    "server_after_model_load_device_mib": 633,
+    "device_memory_after_each_request_mib": [1023, 1023, 1023, 1023, 1023],
+    "process_memory_after_each_request_mib": [1014, 1014, 1014, 1014, 1014],
+    "after_server_shutdown_device_mib": 1,
+    "monotonic_growth_observed": false,
+    "obvious_memory_leak_observed": false
+  },
+  "errors_and_changes": {
+    "validation_errors": [],
+    "cuda_oom": false,
+    "source_changes": [],
+    "note": "No source code or pipeline structure was modified. Only validation artifacts were created."
+  },
+  "overall": {
+    "success_criteria_met": true,
+    "a5000_cuda_inference": "pass",
+    "mossformer2": "pass",
+    "faster_whisper": "pass",
+    "healthz": "pass",
+    "v1_process": "pass",
+    "repeated_requests": "pass",
+    "cuda_oom": "not observed",
+    "serious_vram_leak": "not observed in five-request smoke test"
+  },
+  "limitations": [
+    "The HTTP server binds only to 127.0.0.1.",
+    "The server accepts complete mono 16 kHz WAV requests rather than a streaming protocol.",
+    "Subtitle assembler/state is recreated for every HTTP request, so cross-window subtitle continuity is not preserved.",
+    "The server returns JSON processing results; it is not directly connected to the existing subtitle WebSocket broadcaster.",
+    "The five-request smoke test is not a long-duration soak test."
+  ]
+}

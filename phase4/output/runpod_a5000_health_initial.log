@@ -1,0 +1,3 @@
+{"status":"ready","gpu_ready":true,"models_loaded":true,"model_load_count":1,"model_load_seconds":{"mossformer2_seconds":4.074517938308418,"faster_whisper_seconds":0.1138403145596385,"silero_vad_seconds":0.053965818136930466},"gpu_memory":{"device_used_mib":633,"process_used_mib":624},"requests":{"completed":0,"failed":0,"waiting":0},"uptime_seconds":42.65571475028992,"load_error":null}
+HTTP_STATUS=200
+TOTAL_SECONDS=0.119172

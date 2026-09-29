@@ -1,0 +1,15 @@
+request=1 http_status=200 total_seconds=2.443348
+1023
+{"status":"ready","gpu_ready":true,"models_loaded":true,"model_load_count":1,"model_load_seconds":{"mossformer2_seconds":4.074517938308418,"faster_whisper_seconds":0.1138403145596385,"silero_vad_seconds":0.053965818136930466},"gpu_memory":{"device_used_mib":1023,"process_used_mib":1014},"requests":{"completed":1,"failed":0,"waiting":0},"uptime_seconds":45.1841995716095,"load_error":null}
+request=2 http_status=200 total_seconds=1.717908
+1023
+{"status":"ready","gpu_ready":true,"models_loaded":true,"model_load_count":1,"model_load_seconds":{"mossformer2_seconds":4.074517938308418,"faster_whisper_seconds":0.1138403145596385,"silero_vad_seconds":0.053965818136930466},"gpu_memory":{"device_used_mib":1023,"process_used_mib":1014},"requests":{"completed":2,"failed":0,"waiting":0},"uptime_seconds":46.99073815345764,"load_error":null}
+request=3 http_status=200 total_seconds=1.806417
+1023
+{"status":"ready","gpu_ready":true,"models_loaded":true,"model_load_count":1,"model_load_seconds":{"mossformer2_seconds":4.074517938308418,"faster_whisper_seconds":0.1138403145596385,"silero_vad_seconds":0.053965818136930466},"gpu_memory":{"device_used_mib":1023,"process_used_mib":1014},"requests":{"completed":3,"failed":0,"waiting":0},"uptime_seconds":48.885236501693726,"load_error":null}
+request=4 http_status=200 total_seconds=1.772686
+1023
+{"status":"ready","gpu_ready":true,"models_loaded":true,"model_load_count":1,"model_load_seconds":{"mossformer2_seconds":4.074517938308418,"faster_whisper_seconds":0.1138403145596385,"silero_vad_seconds":0.053965818136930466},"gpu_memory":{"device_used_mib":1023,"process_used_mib":1014},"requests":{"completed":4,"failed":0,"waiting":0},"uptime_seconds":50.75089240074158,"load_error":null}
+request=5 http_status=200 total_seconds=1.844204
+1023
+{"status":"ready","gpu_ready":true,"models_loaded":true,"model_load_count":1,"model_load_seconds":{"mossformer2_seconds":4.074517938308418,"faster_whisper_seconds":0.1138403145596385,"silero_vad_seconds":0.053965818136930466},"gpu_memory":{"device_used_mib":1023,"process_used_mib":1014},"requests":{"completed":5,"failed":0,"waiting":0},"uptime_seconds":52.68850564956665,"load_error":null}

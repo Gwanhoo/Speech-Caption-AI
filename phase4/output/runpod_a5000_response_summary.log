@@ -1,0 +1,230 @@
+{
+  "request_id": "runpod-a5000-1",
+  "timing": {
+    "queue_wait_seconds": 0.0000054836273193359375,
+    "separation_seconds": 1.8173351315781474,
+    "vad_seconds": 0.20897712092846632,
+    "stt_seconds": 0.35989589896053076,
+    "subtitle_assembly_seconds": 0.0002833269536495209,
+    "processing_seconds": 2.388904385268688,
+    "end_to_end_rtf": 0.4777808770537376
+  },
+  "fp32_fallback": false,
+  "gpu_memory": {
+    "device_used_mib": 1023,
+    "process_used_mib": 1014
+  },
+  "speakers": [
+    {
+      "speaker_id": 0,
+      "rms": 0.19579669833183289,
+      "peak": 1.5795164108276367,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 4056.0,
+        "speech_ratio": 0.8112,
+        "processing_seconds": 0.15720533393323421
+      },
+      "stt_seconds": 0.21406234335154295,
+      "raw_transcript": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시..."
+    },
+    {
+      "speaker_id": 1,
+      "rms": 0.19579669833183289,
+      "peak": 1.3822163343429565,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 3768.0,
+        "speech_ratio": 0.7536,
+        "processing_seconds": 0.05174730718135834
+      },
+      "stt_seconds": 0.1458335556089878,
+      "raw_transcript": "오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는"
+    }
+  ],
+  "event_count": 4
+}
+{
+  "request_id": "runpod-a5000-2",
+  "timing": {
+    "queue_wait_seconds": 0.000004000961780548096,
+    "separation_seconds": 1.2657611770555377,
+    "vad_seconds": 0.11732782982289791,
+    "stt_seconds": 0.24972119461745024,
+    "subtitle_assembly_seconds": 0.0001878775656223297,
+    "processing_seconds": 1.6346600065007806,
+    "end_to_end_rtf": 0.3269320013001561
+  },
+  "fp32_fallback": false,
+  "gpu_memory": {
+    "device_used_mib": 1023,
+    "process_used_mib": 1014
+  },
+  "speakers": [
+    {
+      "speaker_id": 0,
+      "rms": 0.19579669833183289,
+      "peak": 1.5795164108276367,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 4056.0,
+        "speech_ratio": 0.8112,
+        "processing_seconds": 0.05902903247624636
+      },
+      "stt_seconds": 0.10620377026498318,
+      "raw_transcript": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시..."
+    },
+    {
+      "speaker_id": 1,
+      "rms": 0.19579669833183289,
+      "peak": 1.3822163343429565,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 3768.0,
+        "speech_ratio": 0.7536,
+        "processing_seconds": 0.05827776715159416
+      },
+      "stt_seconds": 0.14351742435246706,
+      "raw_transcript": "오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는"
+    }
+  ],
+  "event_count": 4
+}
+{
+  "request_id": "runpod-a5000-3",
+  "timing": {
+    "queue_wait_seconds": 0.000003098510205745697,
+    "separation_seconds": 1.3071209071204066,
+    "vad_seconds": 0.1375671699643135,
+    "stt_seconds": 0.30801994167268276,
+    "subtitle_assembly_seconds": 0.000148136168718338,
+    "processing_seconds": 1.7546115396544337,
+    "end_to_end_rtf": 0.35092230793088675
+  },
+  "fp32_fallback": false,
+  "gpu_memory": {
+    "device_used_mib": 1023,
+    "process_used_mib": 1014
+  },
+  "speakers": [
+    {
+      "speaker_id": 0,
+      "rms": 0.19579669833183289,
+      "peak": 1.5795164108276367,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 4056.0,
+        "speech_ratio": 0.8112,
+        "processing_seconds": 0.07265814300626516
+      },
+      "stt_seconds": 0.1454567238688469,
+      "raw_transcript": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시..."
+    },
+    {
+      "speaker_id": 1,
+      "rms": 0.19579669833183289,
+      "peak": 1.3822163343429565,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 3768.0,
+        "speech_ratio": 0.7536,
+        "processing_seconds": 0.0648662094026804
+      },
+      "stt_seconds": 0.16256321780383587,
+      "raw_transcript": "오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는"
+    }
+  ],
+  "event_count": 4
+}
+{
+  "request_id": "runpod-a5000-4",
+  "timing": {
+    "queue_wait_seconds": 0.0000036749988794326782,
+    "separation_seconds": 1.3351676417514682,
+    "vad_seconds": 0.12503548804670572,
+    "stt_seconds": 0.2528276229277253,
+    "subtitle_assembly_seconds": 0.00025354791432619095,
+    "processing_seconds": 1.7150592235848308,
+    "end_to_end_rtf": 0.34301184471696616
+  },
+  "fp32_fallback": false,
+  "gpu_memory": {
+    "device_used_mib": 1023,
+    "process_used_mib": 1014
+  },
+  "speakers": [
+    {
+      "speaker_id": 0,
+      "rms": 0.19579669833183289,
+      "peak": 1.5795164108276367,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 4056.0,
+        "speech_ratio": 0.8112,
+        "processing_seconds": 0.06333466432988644
+      },
+      "stt_seconds": 0.12979254499077797,
+      "raw_transcript": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시..."
+    },
+    {
+      "speaker_id": 1,
+      "rms": 0.19579669833183289,
+      "peak": 1.3822163343429565,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 3768.0,
+        "speech_ratio": 0.7536,
+        "processing_seconds": 0.061681224033236504
+      },
+      "stt_seconds": 0.12303507793694735,
+      "raw_transcript": "오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는"
+    }
+  ],
+  "event_count": 4
+}
+{
+  "request_id": "runpod-a5000-5",
+  "timing": {
+    "queue_wait_seconds": 0.000003252178430557251,
+    "separation_seconds": 1.3232172494754195,
+    "vad_seconds": 0.15277656447142363,
+    "stt_seconds": 0.31720864307135344,
+    "subtitle_assembly_seconds": 0.0003474568948149681,
+    "processing_seconds": 1.7955501889809966,
+    "end_to_end_rtf": 0.3591100377961993
+  },
+  "fp32_fallback": false,
+  "gpu_memory": {
+    "device_used_mib": 1023,
+    "process_used_mib": 1014
+  },
+  "speakers": [
+    {
+      "speaker_id": 0,
+      "rms": 0.19579669833183289,
+      "peak": 1.5795164108276367,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 4056.0,
+        "speech_ratio": 0.8112,
+        "processing_seconds": 0.07725817151367664
+      },
+      "stt_seconds": 0.15728257596492767,
+      "raw_transcript": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시..."
+    },
+    {
+      "speaker_id": 1,
+      "rms": 0.19579669833183289,
+      "peak": 1.3822163343429565,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 3768.0,
+        "speech_ratio": 0.7536,
+        "processing_seconds": 0.07548827398568392
+      },
+      "stt_seconds": 0.15992606710642576,
+      "raw_transcript": "오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는"
+    }
+  ],
+  "event_count": 4
+}

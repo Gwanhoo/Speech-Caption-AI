@@ -1,0 +1,35 @@
+=== End-to-end GPU pipeline validation ===
+input=/workspace/Speech-Caption-AI/phase2/input/chunk_000_mixed_16k.wav; duration=5.000000; sample_rate=16000; channels=1
+separator=MossFormer2_SS_16K; device=cuda:0; AMP=float16 autocast; load_seconds=3.814050
+stt=base; device=cuda; compute_type=float16; options={'language': 'ko', 'beam_size': 5, 'condition_on_previous_text': False}; load_seconds=0.123530
+vad=Silero CPU; load_seconds=0.062667
+memory_before_models: device_used=4 MiB; process_used=unavailable
+memory_after_separator: device_used=441 MiB; process_used=432 MiB
+memory_after_whisper: device_used=633 MiB; process_used=624 MiB
+warmup_stt_seconds=0.206379; warmup_vad_seconds=0.132118
+warmup_separation_1_seconds=1.473172
+warmup_separation_2_seconds=0.313835
+memory_after_warmup: device_used=1023 MiB; process_used=1014 MiB
+--- measured run 1 ---
+separation=0.316705; vad=0.103732; stt=0.298727; assembly=0.000131; total=0.720718; rtf=0.144144; fp32_fallback=False
+inference_peak: device_used=1055 MiB; process_used=1046 MiB
+speaker_0: samples=80000; rms=0.195797; peak=1.579516; vad_speech=True; vad_speech_ms=4056.0; vad_ratio=0.811200; vad_seconds=0.053318; stt_seconds=0.194798; raw_stt='데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시...'; assembled='데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시...'; final='데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시...'; statuses=['partial', 'final']
+speaker_1: samples=80000; rms=0.195797; peak=1.382216; vad_speech=True; vad_speech_ms=3768.0; vad_ratio=0.753600; vad_seconds=0.050395; stt_seconds=0.103929; raw_stt='오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는'; assembled='오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는'; final='오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는'; statuses=['partial', 'final']
+--- measured run 2 ---
+separation=0.357774; vad=0.099963; stt=0.246789; assembly=0.000111; total=0.705975; rtf=0.141195; fp32_fallback=False
+inference_peak: device_used=1055 MiB; process_used=1046 MiB
+speaker_0: samples=80000; rms=0.195797; peak=1.579516; vad_speech=True; vad_speech_ms=4056.0; vad_ratio=0.811200; vad_seconds=0.050433; stt_seconds=0.139918; raw_stt='데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시...'; assembled='데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시...'; final='데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시...'; statuses=['partial', 'final']
+speaker_1: samples=80000; rms=0.195797; peak=1.382216; vad_speech=True; vad_speech_ms=3768.0; vad_ratio=0.753600; vad_seconds=0.049511; stt_seconds=0.106871; raw_stt='오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는'; assembled='오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는'; final='오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는'; statuses=['partial', 'final']
+--- measured run 3 ---
+separation=0.376721; vad=0.104394; stt=0.301044; assembly=0.000293; total=0.784577; rtf=0.156915; fp32_fallback=False
+inference_peak: device_used=1087 MiB; process_used=1046 MiB
+speaker_0: samples=80000; rms=0.195797; peak=1.579516; vad_speech=True; vad_speech_ms=4056.0; vad_ratio=0.811200; vad_seconds=0.052979; stt_seconds=0.126778; raw_stt='데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시...'; assembled='데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시...'; final='데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기위한 시...'; statuses=['partial', 'final']
+speaker_1: samples=80000; rms=0.195797; peak=1.382216; vad_speech=True; vad_speech_ms=3768.0; vad_ratio=0.753600; vad_seconds=0.051398; stt_seconds=0.174266; raw_stt='오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는'; assembled='오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는'; final='오늘은 장국적으로 맑은 날씨가 이어지겠습니다. 오후에는'; statuses=['partial', 'final']
+summary_separation_seconds: mean=0.350400; median=0.357774; min=0.316705; max=0.376721
+summary_vad_seconds: mean=0.102696; median=0.103732; min=0.099963; max=0.104394
+summary_stt_seconds: mean=0.282187; median=0.298727; min=0.246789; max=0.301044
+summary_assembly_seconds: mean=0.000178; median=0.000131; min=0.000111; max=0.000293
+summary_total_seconds: mean=0.737090; median=0.720718; min=0.705975; max=0.784577
+summary_rtf: mean=0.147418; median=0.144144; min=0.141195; max=0.156915
+memory_processing_complete: device_used=1023 MiB; process_used=1014 MiB
+memory_after_model_release: device_used=287 MiB; process_used=278 MiB

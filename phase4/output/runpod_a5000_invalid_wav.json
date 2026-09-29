@@ -1,0 +1,1 @@
+{"type":"error","request_id":"6a0fa183-ce1e-4b97-b542-74f098f45219","error":{"code":"invalid_audio","message":"Invalid WAV payload: Error opening <_io.BytesIO object at 0x734aa015cef0>: Format not recognised.","retryable":false}}
