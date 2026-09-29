@@ -1,20 +1,27 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import dataclass
 from typing import Any
 
-from PySide6.QtCore import Qt, Slot
+# See live_caption_controller.py: this import must precede PySide6 on Python 3.10.
+from typing_extensions import Self as _TypingExtensionsSelf  # noqa: F401
+
+from PySide6.QtCore import QAbstractListModel, QModelIndex, QSize, Qt, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QFont
 from PySide6.QtWidgets import (
     QApplication,
+    QAbstractItemView,
     QFrame,
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QListView,
     QMainWindow,
     QPushButton,
     QSizePolicy,
-    QTextEdit,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
     QVBoxLayout,
     QWidget,
 )
@@ -37,21 +44,19 @@ APP_STYLE = """
 QMainWindow, QWidget#centralWidget { background: #f4f7fb; color: #172033; }
 QLabel#title { color: #111827; font-size: 30px; font-weight: 700; }
 QLabel#hint { color: #64748b; font-size: 12px; }
-QFrame#infoCard, QFrame#speakerCard, QFrame#statusCard {
+QFrame#infoCard, QFrame#subtitleCard, QFrame#statusCard {
     background: white;
     border: 1px solid #dbe3ef;
     border-radius: 12px;
 }
 QLabel#fieldTitle { color: #526078; font-weight: 600; }
-QLabel#speakerTitle { font-size: 20px; font-weight: 700; color: #1d4ed8; }
-QLabel#speakerStatus { color: #64748b; font-size: 12px; }
 QLineEdit {
     background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 7px;
     padding: 8px 10px; color: #1e293b;
 }
-QTextEdit {
-    background: #fbfdff; border: 0; border-top: 1px solid #e2e8f0;
-    padding: 12px; color: #0f172a;
+QListView#subtitleFeed {
+    background: #fbfdff; border: 0; padding: 20px 28px; color: #0f172a;
+    outline: 0;
 }
 QPushButton { border-radius: 8px; padding: 11px 22px; font-size: 15px; font-weight: 700; }
 QPushButton#startButton { background: #2563eb; color: white; border: 1px solid #1d4ed8; }
@@ -64,45 +69,184 @@ QLabel#latencyText { color: #475569; font-size: 13px; }
 """
 
 
-class SpeakerPanel(QFrame):
-    def __init__(self, title: str, parent: QWidget | None = None) -> None:
+@dataclass
+class SubtitleFeedEntry:
+    speaker_id: str
+    utterance_id: int
+    sequence: int
+    status: str
+    text: str
+    timestamp: int | float | None = None
+
+
+class SubtitleFeedModel(QAbstractListModel):
+    """Bounded chronological utterance model; speaker identity stays internal."""
+
+    entry_upserted = Signal(int, bool)
+    MAX_ENTRIES = 80
+    SpeakerRole = Qt.ItemDataRole.UserRole + 1
+    UtteranceRole = Qt.ItemDataRole.UserRole + 2
+    SequenceRole = Qt.ItemDataRole.UserRole + 3
+    StatusRole = Qt.ItemDataRole.UserRole + 4
+
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setObjectName("speakerCard")
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 16, 20, 18)
-        layout.setSpacing(9)
+        self._entries: list[SubtitleFeedEntry] = []
+        self._rows_by_utterance: dict[tuple[str, int], int] = {}
 
-        heading = QHBoxLayout()
-        title_label = QLabel(title)
-        title_label.setObjectName("speakerTitle")
-        self.event_status = QLabel("대기 중")
-        self.event_status.setObjectName("speakerStatus")
-        heading.addWidget(title_label)
-        heading.addStretch(1)
-        heading.addWidget(self.event_status)
-        layout.addLayout(heading)
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:  # noqa: N802
+        return 0 if parent.isValid() else len(self._entries)
 
-        self.text = QTextEdit()
-        self.text.setReadOnly(True)
-        self.text.setPlaceholderText("자막을 기다리는 중입니다.")
-        self.text.setMinimumHeight(170)
-        self.text.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
+        if not index.isValid() or not 0 <= index.row() < len(self._entries):
+            return None
+        entry = self._entries[index.row()]
+        if role == Qt.ItemDataRole.DisplayRole:
+            return entry.text
+        if role == Qt.ItemDataRole.TextAlignmentRole:
+            return Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
+        if role == self.SpeakerRole:
+            return entry.speaker_id
+        if role == self.UtteranceRole:
+            return entry.utterance_id
+        if role == self.SequenceRole:
+            return entry.sequence
+        if role == self.StatusRole:
+            return entry.status
+        return None
+
+    def clear(self) -> None:
+        self.beginResetModel()
+        self._entries.clear()
+        self._rows_by_utterance.clear()
+        self.endResetModel()
+
+    def upsert_event(self, event: dict[str, Any]) -> bool:
+        speaker_id = self._speaker_id(event.get("speaker"))
+        utterance_id = event.get("utterance_id")
+        sequence = event.get("sequence")
+        status = event.get("status")
+        text = event.get("text")
+        if (
+            speaker_id is None
+            or not isinstance(utterance_id, int)
+            or not isinstance(sequence, int)
+            or status not in {"partial", "final"}
+            or not isinstance(text, str)
+            or not text.strip()
+        ):
+            return False
+
+        key = (speaker_id, utterance_id)
+        existing_row = self._rows_by_utterance.get(key)
+        if existing_row is not None:
+            existing = self._entries[existing_row]
+            if sequence < existing.sequence or existing.status == "final":
+                return False
+            self._entries[existing_row] = SubtitleFeedEntry(
+                speaker_id=speaker_id,
+                utterance_id=utterance_id,
+                sequence=sequence,
+                status=status,
+                text=text.strip(),
+                timestamp=event.get("timestamp"),
+            )
+            model_index = self.index(existing_row)
+            self.dataChanged.emit(
+                model_index,
+                model_index,
+                [Qt.ItemDataRole.DisplayRole, self.SequenceRole, self.StatusRole],
+            )
+            self.entry_upserted.emit(existing_row, False)
+            return True
+
+        row = len(self._entries)
+        self.beginInsertRows(QModelIndex(), row, row)
+        self._entries.append(
+            SubtitleFeedEntry(
+                speaker_id=speaker_id,
+                utterance_id=utterance_id,
+                sequence=sequence,
+                status=status,
+                text=text.strip(),
+                timestamp=event.get("timestamp"),
+            )
+        )
+        self._rows_by_utterance[key] = row
+        self.endInsertRows()
+        self._trim_old_entries()
+        inserted_row = self._rows_by_utterance[key]
+        self.entry_upserted.emit(inserted_row, True)
+        return True
+
+    def entry_at(self, row: int) -> SubtitleFeedEntry:
+        return self._entries[row]
+
+    @staticmethod
+    def _speaker_id(value: Any) -> str | None:
+        if value in (0, "speaker_0"):
+            return "speaker_0"
+        if value in (1, "speaker_1"):
+            return "speaker_1"
+        return None
+
+    def _trim_old_entries(self) -> None:
+        overflow = len(self._entries) - self.MAX_ENTRIES
+        if overflow <= 0:
+            return
+        self.beginRemoveRows(QModelIndex(), 0, overflow - 1)
+        del self._entries[:overflow]
+        self.endRemoveRows()
+        self._rows_by_utterance = {
+            (entry.speaker_id, entry.utterance_id): row
+            for row, entry in enumerate(self._entries)
+        }
+
+
+class SubtitleFeedDelegate(QStyledItemDelegate):
+    """Large, centered, wrapped text rendering kept separate for future overlay use."""
+
+    def sizeHint(self, option: QStyleOptionViewItem, index: QModelIndex) -> QSize:  # noqa: N802
+        text = str(index.data(Qt.ItemDataRole.DisplayRole) or "")
+        view = self.parent()
+        viewport_width = (
+            view.viewport().width() if isinstance(view, QListView) else option.rect.width()
+        )
+        width = max(320, viewport_width - 56)
+        bounds = option.fontMetrics.boundingRect(
+            0,
+            0,
+            width,
+            1000,
+            int(Qt.TextFlag.TextWordWrap | Qt.AlignmentFlag.AlignHCenter),
+            text,
+        )
+        return QSize(width, max(72, bounds.height() + 34))
+
+
+class SubtitleFeedView(QListView):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setObjectName("subtitleFeed")
+        self.setAccessibleName("실시간 자막")
+        self.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setResizeMode(QListView.ResizeMode.Adjust)
+        self.setWordWrap(True)
+        self.setSpacing(14)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         font = QFont()
-        font.setPointSize(22)
+        font.setPointSize(24)
         font.setWeight(QFont.Weight.DemiBold)
-        self.text.setFont(font)
-        layout.addWidget(self.text, 1)
+        self.setFont(font)
+        self.setItemDelegate(SubtitleFeedDelegate(self))
 
-    def update_event(self, text: str, status: str) -> None:
-        self.text.setPlainText(text)
-        cursor = self.text.textCursor()
-        cursor.movePosition(cursor.MoveOperation.End)
-        self.text.setTextCursor(cursor)
-        self.event_status.setText("확정" if status == "final" else "인식 중")
-
-    def reset(self) -> None:
-        self.text.clear()
-        self.event_status.setText("대기 중")
+    @Slot(int, bool)
+    def keep_latest_visible(self, _row: int, _inserted: bool) -> None:
+        self.scrollToBottom()
 
 
 class MainWindow(QMainWindow):
@@ -113,7 +257,6 @@ class MainWindow(QMainWindow):
     ) -> None:
         super().__init__(parent)
         self.controller = controller or LiveCaptionController()
-        self._last_sequence = {0: 0, 1: 0}
         self._close_when_finished = False
         self.setWindowTitle("AI 실시간 자막")
         self.resize(1080, 820)
@@ -185,12 +328,18 @@ class MainWindow(QMainWindow):
         controls.addWidget(self.stop_button)
         root.addLayout(controls)
 
-        self.speaker_a = SpeakerPanel("Speaker A")
-        self.speaker_a.text.setObjectName("speakerAText")
-        self.speaker_b = SpeakerPanel("Speaker B")
-        self.speaker_b.text.setObjectName("speakerBText")
-        root.addWidget(self.speaker_a, 1)
-        root.addWidget(self.speaker_b, 1)
+        subtitle_card = QFrame()
+        subtitle_card.setObjectName("subtitleCard")
+        subtitle_layout = QVBoxLayout(subtitle_card)
+        subtitle_layout.setContentsMargins(1, 1, 1, 1)
+        self.subtitle_model = SubtitleFeedModel(self)
+        self.subtitle_feed = SubtitleFeedView()
+        self.subtitle_feed.setModel(self.subtitle_model)
+        self.subtitle_model.entry_upserted.connect(
+            self.subtitle_feed.keep_latest_visible
+        )
+        subtitle_layout.addWidget(self.subtitle_feed)
+        root.addWidget(subtitle_card, 1)
 
         status_card = QFrame()
         status_card.setObjectName("statusCard")
@@ -223,9 +372,7 @@ class MainWindow(QMainWindow):
         if not server_url:
             self.show_error("RunPod 서버 URL을 입력해주세요.")
             return
-        self.speaker_a.reset()
-        self.speaker_b.reset()
-        self._last_sequence = {0: 0, 1: 0}
+        self.subtitle_model.clear()
         self.latency_label.setText("최근 latency: —")
         self.controller.start(LiveCaptionConfig(server_url=server_url))
 
@@ -241,23 +388,7 @@ class MainWindow(QMainWindow):
 
     @Slot(dict)
     def apply_subtitle_event(self, event: dict[str, Any]) -> None:
-        raw_speaker = event.get("speaker")
-        if raw_speaker in (0, "speaker_0"):
-            speaker = 0
-            panel = self.speaker_a
-        elif raw_speaker in (1, "speaker_1"):
-            speaker = 1
-            panel = self.speaker_b
-        else:
-            return
-
-        sequence = event.get("sequence", 0)
-        if isinstance(sequence, int) and sequence < self._last_sequence[speaker]:
-            return
-        if isinstance(sequence, int):
-            self._last_sequence[speaker] = sequence
-        display_text = event.get("assembled_text") or event.get("text") or ""
-        panel.update_event(str(display_text), str(event.get("status", "partial")))
+        self.subtitle_model.upsert_event(event)
 
     @Slot(float)
     def set_latency(self, milliseconds: float) -> None:

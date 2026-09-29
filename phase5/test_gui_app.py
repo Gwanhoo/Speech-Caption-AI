@@ -5,11 +5,10 @@ import os
 import threading
 import time
 import unittest
+from typing import Union
 from unittest.mock import Mock, patch
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-
-from PySide6.QtWidgets import QApplication
 
 from phase5.gui_app import MainWindow
 from phase5.live_caption_controller import (
@@ -19,6 +18,8 @@ from phase5.live_caption_controller import (
     LiveCaptionWorker,
     Phase4PipelineBackend,
 )
+from PySide6.QtWidgets import QApplication, QLabel
+from typing_extensions import Self as TypingExtensionsSelf
 
 
 class BlockingBackend:
@@ -33,8 +34,8 @@ class BlockingBackend:
         hooks.on_subtitle(
             {
                 "speaker": "speaker_0",
+                "utterance_id": 1,
                 "text": "테스트 자막",
-                "assembled_text": "테스트 자막",
                 "status": "partial",
                 "sequence": 1,
                 "timestamp": 1,
@@ -57,6 +58,7 @@ class GuiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.app = QApplication.instance() or QApplication([])
+        cls.app.setQuitOnLastWindowClosed(False)
 
     def pump_until(self, condition, timeout: float = 3.0) -> None:
         deadline = time.monotonic() + timeout
@@ -66,38 +68,165 @@ class GuiTests(unittest.TestCase):
         self.app.processEvents()
         self.assertTrue(condition(), "condition did not become true before timeout")
 
+    @staticmethod
+    def event(
+        speaker: str,
+        utterance_id: int,
+        sequence: int,
+        text: str,
+        status: str = "partial",
+    ) -> dict:
+        return {
+            "speaker": speaker,
+            "utterance_id": utterance_id,
+            "sequence": sequence,
+            "status": status,
+            "text": text,
+            "timestamp": sequence * 1000,
+        }
+
+    @staticmethod
+    def feed_texts(window: MainWindow) -> list[str]:
+        return [
+            window.subtitle_model.entry_at(row).text
+            for row in range(window.subtitle_model.rowCount())
+        ]
+
     def test_gui_import_and_main_window_creation(self) -> None:
         window = MainWindow()
         try:
             self.assertEqual(window.windowTitle(), "AI 실시간 자막")
             self.assertTrue(window.start_button.isEnabled())
             self.assertFalse(window.stop_button.isEnabled())
+            visible_labels = [label.text() for label in window.findChildren(QLabel)]
+            self.assertFalse(any("Speaker" in text for text in visible_labels))
         finally:
             window.close()
 
-    def test_subtitle_event_updates_speaker_a_and_b(self) -> None:
+    def test_pyside_python310_self_compatibility_is_primed(self) -> None:
+        self.assertEqual(str(Union[int, TypingExtensionsSelf]).split("[")[0], "typing.Union")
+
+    def test_speaker_zero_and_one_events_share_single_feed(self) -> None:
         window = MainWindow()
         try:
             window.apply_subtitle_event(
-                {
-                    "speaker": "speaker_0",
-                    "assembled_text": "발표를 시작합니다.",
-                    "status": "partial",
-                    "sequence": 10,
-                }
+                self.event("speaker_0", 1, 10, "발표를 시작합니다.")
             )
             window.apply_subtitle_event(
-                {
-                    "speaker": "speaker_1",
-                    "assembled_text": "네, 잘 들립니다.",
-                    "status": "final",
-                    "sequence": 11,
-                }
+                self.event("speaker_1", 1, 11, "네, 잘 들립니다.", "final")
             )
-            self.assertEqual(window.speaker_a.text.toPlainText(), "발표를 시작합니다.")
-            self.assertEqual(window.speaker_b.text.toPlainText(), "네, 잘 들립니다.")
-            self.assertEqual(window.speaker_a.event_status.text(), "인식 중")
-            self.assertEqual(window.speaker_b.event_status.text(), "확정")
+            self.assertEqual(
+                self.feed_texts(window),
+                ["발표를 시작합니다.", "네, 잘 들립니다."],
+            )
+            self.assertEqual(
+                window.subtitle_model.entry_at(0).speaker_id, "speaker_0"
+            )
+            self.assertEqual(
+                window.subtitle_model.entry_at(1).speaker_id, "speaker_1"
+            )
+        finally:
+            window.close()
+
+    def test_simultaneous_speakers_are_both_preserved_in_sequence_order(self) -> None:
+        window = MainWindow()
+        try:
+            window.apply_subtitle_event(
+                self.event("speaker_0", 4, 100, "나는 아직 저녁 안 먹었어")
+            )
+            window.apply_subtitle_event(
+                self.event("speaker_1", 7, 101, "오늘 하루 어땠어?")
+            )
+            self.assertEqual(
+                self.feed_texts(window),
+                ["나는 아직 저녁 안 먹었어", "오늘 하루 어땠어?"],
+            )
+        finally:
+            window.close()
+
+    def test_partial_updates_existing_entry_and_final_confirms_it(self) -> None:
+        window = MainWindow()
+        try:
+            window.apply_subtitle_event(
+                self.event("speaker_0", 2, 20, "오늘 저녁")
+            )
+            window.apply_subtitle_event(
+                self.event("speaker_0", 2, 21, "오늘 저녁 아직 안 먹었어")
+            )
+            self.assertEqual(window.subtitle_model.rowCount(), 1)
+            self.assertEqual(self.feed_texts(window), ["오늘 저녁 아직 안 먹었어"])
+            self.assertEqual(window.subtitle_model.entry_at(0).status, "partial")
+
+            window.apply_subtitle_event(
+                self.event(
+                    "speaker_0", 2, 22, "오늘 저녁 아직 안 먹었어", "final"
+                )
+            )
+            self.assertEqual(window.subtitle_model.rowCount(), 1)
+            self.assertEqual(window.subtitle_model.entry_at(0).status, "final")
+
+            # A stale partial cannot reopen or duplicate a finalized utterance.
+            window.apply_subtitle_event(
+                self.event("speaker_0", 2, 23, "잘못된 후속 partial")
+            )
+            self.assertEqual(self.feed_texts(window), ["오늘 저녁 아직 안 먹었어"])
+        finally:
+            window.close()
+
+    def test_new_utterance_appends_new_entry(self) -> None:
+        window = MainWindow()
+        try:
+            window.apply_subtitle_event(
+                self.event("speaker_1", 3, 30, "첫 번째 문장", "final")
+            )
+            window.apply_subtitle_event(
+                self.event("speaker_1", 4, 31, "두 번째 문장")
+            )
+            self.assertEqual(self.feed_texts(window), ["첫 번째 문장", "두 번째 문장"])
+        finally:
+            window.close()
+
+    def test_new_entries_auto_scroll_to_latest(self) -> None:
+        window = MainWindow()
+        try:
+            window.resize(720, 480)
+            window.show()
+            self.app.processEvents()
+            for sequence in range(1, 25):
+                speaker = f"speaker_{sequence % 2}"
+                window.apply_subtitle_event(
+                    self.event(
+                        speaker,
+                        sequence,
+                        sequence,
+                        f"자동 스크롤 확인 문장 {sequence}",
+                        "final",
+                    )
+                )
+            scroll_bar = window.subtitle_feed.verticalScrollBar()
+            self.pump_until(
+                lambda: scroll_bar.maximum() > 0
+                and scroll_bar.value() == scroll_bar.maximum()
+            )
+        finally:
+            window.close()
+
+    def test_feed_retains_only_recent_entries(self) -> None:
+        window = MainWindow()
+        try:
+            for sequence in range(1, 91):
+                window.apply_subtitle_event(
+                    self.event(
+                        f"speaker_{sequence % 2}",
+                        sequence,
+                        sequence,
+                        f"문장 {sequence}",
+                        "final",
+                    )
+                )
+            self.assertEqual(window.subtitle_model.rowCount(), 80)
+            self.assertEqual(window.subtitle_model.entry_at(0).text, "문장 11")
+            self.assertEqual(window.subtitle_model.entry_at(79).text, "문장 90")
         finally:
             window.close()
 
@@ -125,12 +254,15 @@ class GuiTests(unittest.TestCase):
         try:
             self.assertTrue(controller.start(LiveCaptionConfig(websocket_enabled=False)))
             self.pump_until(
-                lambda: window.speaker_a.text.toPlainText() == "테스트 자막"
+                lambda: self.feed_texts(window) == ["테스트 자막"]
             )
             self.assertEqual(window.latency_label.text(), "최근 latency: 125 ms")
             controller.stop()
             self.pump_until(lambda: controller.state == "idle")
         finally:
+            if controller.state != "idle":
+                controller.stop()
+                self.pump_until(lambda: controller.state == "idle")
             window.close()
 
     def test_worker_exception_becomes_gui_error_state(self) -> None:

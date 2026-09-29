@@ -13,7 +13,8 @@ Phase 5 GUI는 기존 Phase 4-I remote live pipeline을 그대로 호출하는 P
 frontend입니다. Windows GUI thread와 분리된 worker에서 RunPod health 확인, WASAPI
 loopback 장치 확인, capture 및 pipeline 실행을 수행합니다. 자막은 console 문자열을
 파싱하지 않고 `SubtitleStateEvent`에서 만들어진 structured event를 Qt signal로
-Speaker A/B 화면에 전달합니다.
+전달합니다. 내부 speaker별 상태는 유지하면서 화면에는 화자 라벨 없이 하나의
+chronological subtitle feed로 표시합니다.
 
 Windows PowerShell에서 의존성을 설치하고 실행합니다.
 

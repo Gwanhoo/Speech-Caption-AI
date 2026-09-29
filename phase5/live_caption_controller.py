@@ -7,6 +7,10 @@ from importlib import import_module
 from pathlib import Path
 from typing import Any, Callable, Protocol
 
+# PySide6 6.8.x adds an incompatible ``typing.Self`` on Python 3.10.
+# Resolve the backport first so later PyTorch imports keep the valid object.
+from typing_extensions import Self as _TypingExtensionsSelf  # noqa: F401
+
 from PySide6.QtCore import QObject, QThread, Signal, Slot
 
 
