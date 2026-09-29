@@ -9,6 +9,7 @@ import sys
 import threading
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -81,10 +82,16 @@ class PipelineService:
         self.requests_waiting = 0
         self._stats_lock = threading.Lock()
         self._inference_lock = threading.Lock()
+        self._inference_executor = ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix="gpu-inference"
+        )
         self.load_times: dict[str, float] = {}
         self.memory: dict[str, dict[str, int | None]] = {}
         self._cached_memory = {"device_used_mib": None, "process_used_mib": None}
         self.models = self._load_models()
+
+    def close(self) -> None:
+        self._inference_executor.shutdown(wait=True, cancel_futures=False)
 
     @staticmethod
     def _memory_record() -> dict[str, int | None]:
@@ -161,26 +168,15 @@ class PipelineService:
         with self._stats_lock:
             self.requests_waiting += 1
         try:
-            with self._inference_lock:
-                inference_started = time.perf_counter()
-                queue_wait_seconds = inference_started - wait_started
-                if request_diagnostics is not None:
-                    request_diagnostics.update(
-                        {
-                            "server_inference_started_perf_counter": inference_started,
-                            "server_queue_wait_seconds": queue_wait_seconds,
-                        }
-                    )
-                with self._stats_lock:
-                    self.requests_waiting -= 1
-                response = self._process_serialized(
-                    request_id,
-                    audio,
-                    duration,
-                    received_at,
-                    queue_wait_seconds,
-                    request_diagnostics,
-                )
+            response = self._inference_executor.submit(
+                self._run_inference_request,
+                request_id,
+                audio,
+                duration,
+                received_at,
+                wait_started,
+                request_diagnostics,
+            ).result()
         except BaseException:
             with self._stats_lock:
                 self.requests_failed += 1
@@ -188,6 +184,38 @@ class PipelineService:
         with self._stats_lock:
             self.requests_completed += 1
         return response
+
+    def _run_inference_request(
+        self,
+        request_id: str,
+        audio: np.ndarray,
+        duration: float,
+        received_at: float,
+        wait_started: float,
+        request_diagnostics: dict[str, Any] | None,
+    ) -> dict[str, Any]:
+        with self._inference_lock:
+            inference_started = time.perf_counter()
+            queue_wait_seconds = inference_started - wait_started
+            if request_diagnostics is not None:
+                request_diagnostics.update(
+                    {
+                        "server_inference_started_perf_counter": inference_started,
+                        "server_queue_wait_seconds": queue_wait_seconds,
+                        "server_inference_thread_id": threading.get_ident(),
+                        "server_inference_thread_name": threading.current_thread().name,
+                    }
+                )
+            with self._stats_lock:
+                self.requests_waiting -= 1
+            return self._process_serialized(
+                request_id,
+                audio,
+                duration,
+                received_at,
+                queue_wait_seconds,
+                request_diagnostics,
+            )
 
     def _process_serialized(
         self,
@@ -389,7 +417,13 @@ class ProcessingHandler(BaseHTTPRequestHandler):
     server: "ProcessingHTTPServer"
     protocol_version = "HTTP/1.1"
 
+    def _begin_request(self) -> None:
+        self._connection_request_count = (
+            getattr(self, "_connection_request_count", 0) + 1
+        )
+
     def do_GET(self) -> None:
+        self._begin_request()
         if self.path != "/healthz":
             self._send_error(HTTPStatus.NOT_FOUND, "not_found", "Endpoint not found")
             return
@@ -397,6 +431,7 @@ class ProcessingHandler(BaseHTTPRequestHandler):
         self._send_json(status, payload)
 
     def do_POST(self) -> None:
+        self._begin_request()
         request_received = time.perf_counter()
         request_id = self.headers.get("X-Request-ID") or str(uuid.uuid4())
         latency_diagnostics = self.headers.get("X-Latency-Diagnostics") == "1"
@@ -442,6 +477,8 @@ class ProcessingHandler(BaseHTTPRequestHandler):
             if latency_diagnostics:
                 request_diagnostics = {
                     "server_request_received_perf_counter": request_received,
+                    "server_request_thread_id": threading.get_ident(),
+                    "server_request_thread_name": threading.current_thread().name,
                     "request_body_read_started_perf_counter": body_read_started,
                     "request_body_read_ended_perf_counter": body_read_ended,
                     "request_body_read_seconds": body_read_ended - body_read_started,
@@ -589,12 +626,23 @@ class ProcessingHandler(BaseHTTPRequestHandler):
             "X-Server-Connection-ID",
             f"{self.client_address[0]}:{self.client_address[1]}",
         )
+        self.send_header(
+            "X-Server-Connection-Request-Count",
+            str(getattr(self, "_connection_request_count", 0)),
+        )
         self.send_header("X-Server-Protocol", self.protocol_version)
+        self.send_header(
+            "X-Server-Close-Connection", "true" if self.close_connection else "false"
+        )
         if self.close_connection:
             self.send_header("Connection", "close")
+        else:
+            self.send_header("Connection", "keep-alive")
+            self.send_header("Keep-Alive", "timeout=60")
         self.end_headers()
         write_started = time.perf_counter()
         self.wfile.write(body)
+        self.wfile.flush()
         write_ended = time.perf_counter()
         return write_ended - write_started
 
@@ -628,6 +676,7 @@ def main() -> int:
         pass
     finally:
         server.server_close()
+        service.close()
     return 0
 
 

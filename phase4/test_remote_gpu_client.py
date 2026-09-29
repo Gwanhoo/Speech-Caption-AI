@@ -176,6 +176,69 @@ class ClientTests(TestCase):
         finally:
             client.close()
 
+    def test_client_recovers_after_server_closes_a_successful_response(self):
+        class Handler(BaseHTTPRequestHandler):
+            protocol_version = "HTTP/1.1"
+            request_count = 0
+
+            def log_message(self, *args):
+                pass
+
+            def do_POST(self):
+                self.rfile.read(int(self.headers["Content-Length"]))
+                type(self).request_count += 1
+                response = payload(
+                    self.headers["X-Request-ID"],
+                    int(self.headers["X-Window-Index"]),
+                    16000,
+                )
+                body = json.dumps(response).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header(
+                    "X-Server-Connection-ID",
+                    f"{self.client_address[0]}:{self.client_address[1]}",
+                )
+                close = type(self).request_count == 1
+                self.send_header("X-Server-Close-Connection", str(close).lower())
+                self.send_header("Connection", "close" if close else "keep-alive")
+                self.end_headers()
+                self.wfile.write(body)
+                self.wfile.flush()
+                if close:
+                    self.close_connection = True
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        client = RemoteGPUClient(f"http://127.0.0.1:{server.server_port}")
+        try:
+            first = client.process(
+                np.zeros(16000, dtype=np.float32), 0, stream_end_seconds=1
+            )
+            second = client.process(
+                np.zeros(16000, dtype=np.float32),
+                1,
+                stream_start_seconds=1,
+                stream_end_seconds=2,
+            )
+            self.assertEqual(
+                first.client_timing["connection_change_reason"],
+                "server_or_proxy_requested_close",
+            )
+            self.assertFalse(second.client_timing["client_connection_reused"])
+            self.assertEqual(
+                second.client_timing["connection_change_reason"],
+                "client_transport_connection_replaced",
+            )
+            self.assertEqual(Handler.request_count, 2)
+        finally:
+            client.close()
+            server.shutdown()
+            server.server_close()
+            thread.join()
+
     def test_fixed_wav_http_and_subtitle_continuity(self):
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *args): pass

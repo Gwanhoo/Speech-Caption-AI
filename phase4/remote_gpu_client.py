@@ -15,6 +15,7 @@ from urllib.parse import urlsplit
 import numpy as np
 import requests
 import soundfile as sf
+from requests.adapters import HTTPAdapter
 
 from remote_gpu_protocol import BINARY_RESPONSE_MEDIA_TYPE, decode_binary_result
 
@@ -73,6 +74,46 @@ def monotonic_duration(started: float, ended: float) -> float:
 
 def queue_wait_seconds(enqueued: float, dequeued: float) -> float:
     return monotonic_duration(enqueued, dequeued)
+
+
+def _socket_endpoint(sock: Any, method: str) -> str | None:
+    try:
+        endpoint = getattr(sock, method)()
+    except (AttributeError, OSError):
+        return None
+    return repr(endpoint)
+
+
+def _response_socket(raw: Any) -> Any:
+    connection = getattr(raw, "_connection", None)
+    sock = getattr(connection, "sock", None)
+    if sock is not None:
+        return sock
+    # urllib3 may detach the socket from the connection object before the
+    # requests response hook runs. At that point http.client still owns it.
+    fp = getattr(raw, "_fp", None)
+    buffered = getattr(fp, "fp", None)
+    socket_io = getattr(buffered, "raw", None)
+    return getattr(socket_io, "_sock", None)
+
+
+def _connection_change_reason(
+    client_reused: bool | None,
+    server_reused: bool | None,
+    response_connection: str | None,
+    server_close_connection: str | None,
+) -> str:
+    if (response_connection or "").lower() == "close" or (
+        server_close_connection or ""
+    ).lower() == "true":
+        return "server_or_proxy_requested_close"
+    if client_reused is True and server_reused is False:
+        return "proxy_backend_connection_replaced"
+    if client_reused is False:
+        return "client_transport_connection_replaced"
+    if client_reused is True and server_reused is True:
+        return "connection_reused_end_to_end"
+    return "insufficient_connection_history"
 
 
 def parse_result(payload: Any, request_id: str, window_index: int, samples: int,
@@ -154,6 +195,22 @@ class RemoteGPUClient:
         self.timeout = (connect_timeout, read_timeout)
         self.session = requests.Session()
         self.session.trust_env = False  # direct server access; no implicit proxy
+        # The live pipeline has one synchronous remote worker. A single-entry pool
+        # makes that ownership explicit and prevents accidental parallel callers
+        # from creating extra sockets. POST retries remain disabled because the
+        # server may already have processed a request when a connection fails.
+        adapter = HTTPAdapter(
+            pool_connections=1,
+            pool_maxsize=1,
+            pool_block=True,
+            max_retries=0,
+        )
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
+        self.session.headers.update(
+            {"Connection": "keep-alive", "Keep-Alive": "timeout=60"}
+        )
+        self._last_client_connection_id: str | None = None
         self._last_server_connection_id: str | None = None
 
     def close(self) -> None:
@@ -167,6 +224,26 @@ class RemoteGPUClient:
         self, method: str, path: str, **kwargs: Any
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         request_started = time.perf_counter()
+        transport: dict[str, Any] = {}
+
+        def capture_response_transport(response: requests.Response, *args: Any, **hook_kwargs: Any) -> None:
+            transport["response_headers_received_perf_counter"] = time.perf_counter()
+            raw = getattr(response, "raw", None)
+            connection = getattr(raw, "_connection", None)
+            sock = _response_socket(raw)
+            local = _socket_endpoint(sock, "getsockname")
+            peer = _socket_endpoint(sock, "getpeername")
+            if local is not None and peer is not None:
+                transport["client_connection_id"] = f"{local}->{peer}"
+            transport["client_socket_local"] = local
+            transport["client_socket_peer"] = peer
+            transport["urllib3_connection_object_id"] = (
+                id(connection) if connection is not None else None
+            )
+
+        if "hooks" in kwargs:
+            raise TypeError("Internal request hooks are reserved for transport timing")
+        kwargs["hooks"] = {"response": capture_response_transport}
         try:
             response = self.session.request(method, self.url + path, timeout=self.timeout, **kwargs)
         except requests.Timeout as exc:
@@ -205,8 +282,17 @@ class RemoteGPUClient:
             else None
         )
         raw = getattr(response, "raw", None)
+        client_connection_id = transport.get("client_connection_id")
+        client_connection_reused = (
+            client_connection_id == self._last_client_connection_id
+            if client_connection_id is not None
+            and self._last_client_connection_id is not None
+            else None
+        )
+        if client_connection_id is not None:
+            self._last_client_connection_id = client_connection_id
         server_connection_id = response_header("X-Server-Connection-ID")
-        connection_reused = (
+        server_connection_reused = (
             server_connection_id == self._last_server_connection_id
             if server_connection_id is not None
             and self._last_server_connection_id is not None
@@ -215,8 +301,19 @@ class RemoteGPUClient:
         if server_connection_id is not None:
             self._last_server_connection_id = server_connection_id
         http_request_seconds = monotonic_duration(request_started, response_received)
+        response_headers_received = transport.get(
+            "response_headers_received_perf_counter"
+        )
+        response_headers_seconds = (
+            monotonic_duration(request_started, response_headers_received)
+            if _number(response_headers_received)
+            else response_elapsed_seconds
+        )
         response_body_download_seconds = (
-            max(0.0, http_request_seconds - response_elapsed_seconds)
+            monotonic_duration(response_headers_received, response_received)
+            if _number(response_headers_received)
+            and response_received >= response_headers_received
+            else max(0.0, http_request_seconds - response_elapsed_seconds)
             if response_elapsed_seconds is not None
             else None
         )
@@ -224,11 +321,21 @@ class RemoteGPUClient:
             response_wire_bytes = int(response_header("Content-Length") or "")
         except ValueError:
             response_wire_bytes = None
+        response_connection_header = response_header("Connection")
+        server_close_connection = response_header("X-Server-Close-Connection")
+        content_consumed = getattr(response, "_content_consumed", None)
+        if type(content_consumed) is not bool:
+            content_consumed = None
+        raw_closed = getattr(raw, "closed", None)
+        if type(raw_closed) is not bool:
+            raw_closed = None
         return payload, {
             "http_request_started_perf_counter": request_started,
             "http_response_received_perf_counter": response_received,
             "http_request_seconds": http_request_seconds,
             "requests_response_elapsed_seconds": response_elapsed_seconds,
+            "response_headers_received_perf_counter": response_headers_received,
+            "time_to_response_headers_seconds": response_headers_seconds,
             "response_body_download_seconds": response_body_download_seconds,
             "response_payload_decode_started_perf_counter": payload_decode_started,
             "response_payload_decode_ended_perf_counter": payload_decode_ended,
@@ -250,10 +357,29 @@ class RemoteGPUClient:
             "response_format": response_format,
             "response_body_bytes": response_body_bytes,
             "response_wire_bytes": response_wire_bytes,
+            "response_body_consumed": content_consumed,
+            "response_raw_closed": raw_closed,
             "response_http_version": getattr(raw, "version", None),
-            "response_connection_header": response_header("Connection"),
+            "response_connection_header": response_connection_header,
+            "server_close_connection_header": server_close_connection,
+            "client_connection_id": client_connection_id,
+            "client_socket_local": transport.get("client_socket_local"),
+            "client_socket_peer": transport.get("client_socket_peer"),
+            "urllib3_connection_object_id": transport.get(
+                "urllib3_connection_object_id"
+            ),
+            "client_connection_reused": client_connection_reused,
             "server_connection_id": server_connection_id,
-            "server_connection_reused": connection_reused,
+            "server_connection_request_count": response_header(
+                "X-Server-Connection-Request-Count"
+            ),
+            "server_connection_reused": server_connection_reused,
+            "connection_change_reason": _connection_change_reason(
+                client_connection_reused,
+                server_connection_reused,
+                response_connection_header,
+                server_close_connection,
+            ),
         }
 
     def health(self) -> dict[str, Any]:

@@ -1691,7 +1691,12 @@ def main() -> int:
                                 f"bytes={remote_client_timing.get('request_body_bytes')}/"
                                 f"{remote_client_timing.get('response_wire_bytes')} "
                                 f"format={remote_client_timing.get('response_format')} "
-                                f"connection_reused={remote_client_timing.get('server_connection_reused')}",
+                                f"client_connection_reused={remote_client_timing.get('client_connection_reused')} "
+                                f"server_connection_reused={remote_client_timing.get('server_connection_reused')} "
+                                f"connection_change={remote_client_timing.get('connection_change_reason')} "
+                                f"server_connection_requests={remote_client_timing.get('server_connection_request_count')} "
+                                f"request_thread={server_timing.get('server_request_thread_id')} "
+                                f"inference_thread={server_timing.get('server_inference_thread_id')}",
                                 flush=True,
                             )
                     finally:

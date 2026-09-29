@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "phase4"))
 
 import gpu_processing_server as server
 from remote_gpu_client import RemoteGPUClient
+from remote_gpu_protocol import BINARY_RESPONSE_MEDIA_TYPE, decode_binary_result
 
 
 class FasterWhisperModelSourceTests(TestCase):
@@ -53,6 +54,9 @@ class ServerLatencyDiagnosticsTests(TestCase):
         service.requests_waiting = 0
         service._stats_lock = threading.Lock()
         service._inference_lock = threading.Lock()
+        service._inference_executor = server.ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix="test-gpu-inference"
+        )
         service.load_times = {}
         service.memory = {}
         service._cached_memory = {
@@ -73,19 +77,33 @@ class ServerLatencyDiagnosticsTests(TestCase):
             "timestamps": [],
             "audio_duration_ms": 100.0,
         }
-        with patch.object(server, "detect_speech_activity", return_value=vad), patch.object(
-            server, "query_gpu_memory"
-        ) as query:
-            result = service.process(
-                "request-off", np.zeros(1600, dtype=np.float32), 0.1
-            )
-            diagnostic_result = service.process(
-                "request", np.zeros(1600, dtype=np.float32), 0.1, {}
-            )
+        try:
+            with patch.object(server, "detect_speech_activity", return_value=vad), patch.object(
+                server, "query_gpu_memory"
+            ) as query:
+                result = service.process(
+                    "request-off", np.zeros(1600, dtype=np.float32), 0.1
+                )
+                diagnostic_result = service.process(
+                    "request", np.zeros(1600, dtype=np.float32), 0.1, {}
+                )
+                second_diagnostic_result = service.process(
+                    "request-2", np.zeros(1600, dtype=np.float32), 0.1, {}
+                )
+        finally:
+            service.close()
         query.assert_not_called()
         self.assertEqual(result["gpu_memory"]["device_used_mib"], 700)
         self.assertFalse(
             diagnostic_result["timing"]["gpu_memory_query_performed"]
+        )
+        self.assertEqual(
+            diagnostic_result["timing"]["server_inference_thread_id"],
+            second_diagnostic_result["timing"]["server_inference_thread_id"],
+        )
+        self.assertNotEqual(
+            diagnostic_result["timing"]["server_inference_thread_id"],
+            threading.get_ident(),
         )
 
     def test_http_handler_returns_server_diagnostics_without_loading_models(self):
@@ -158,6 +176,13 @@ class ServerLatencyDiagnosticsTests(TestCase):
             self.assertEqual(result.client_timing["response_http_version"], 11)
             self.assertEqual(result.client_timing["response_format"], "binary-f32le")
             self.assertLess(result.client_timing["response_wire_bytes"], 18000)
+            self.assertTrue(result.client_timing["response_body_consumed"])
+            self.assertEqual(
+                result.client_timing["response_connection_header"], "keep-alive"
+            )
+            self.assertEqual(
+                result.client_timing["server_close_connection_header"], "false"
+            )
             self.assertIn(
                 "estimated_connect_tls_proxy_seconds", result.client_timing
             )
@@ -168,7 +193,15 @@ class ServerLatencyDiagnosticsTests(TestCase):
                 stream_end_seconds=0.2,
                 latency_diagnostics=True,
             )
+            self.assertTrue(second.client_timing["client_connection_reused"])
             self.assertTrue(second.client_timing["server_connection_reused"])
+            self.assertEqual(
+                second.client_timing["connection_change_reason"],
+                "connection_reused_end_to_end",
+            )
+            self.assertEqual(
+                second.client_timing["server_connection_request_count"], "2"
+            )
             wav = io.BytesIO()
             sf.write(
                 wav,
@@ -177,23 +210,47 @@ class ServerLatencyDiagnosticsTests(TestCase):
                 format="WAV",
                 subtype="FLOAT",
             )
-            fallback = requests.post(
-                f"http://127.0.0.1:{http_server.server_port}/v1/process",
-                data=wav.getvalue(),
-                headers={
+            with requests.Session() as fallback_session:
+                common_headers = {
                     "Content-Type": "audio/wav",
-                    "X-Request-ID": "json-fallback",
                     "X-Window-Index": "2",
                     "X-Stream-Start-Seconds": "0.2",
                     "X-Stream-End-Seconds": "0.3",
-                },
-                timeout=2,
-            )
-            fallback.raise_for_status()
-            self.assertEqual(
-                fallback.json()["speakers"][0]["waveform"]["encoding"],
-                "base64-f32le",
-            )
+                }
+                binary = fallback_session.post(
+                    f"http://127.0.0.1:{http_server.server_port}/v1/process",
+                    data=wav.getvalue(),
+                    headers={
+                        **common_headers,
+                        "X-Request-ID": "binary-before-fallback",
+                        "Accept": BINARY_RESPONSE_MEDIA_TYPE,
+                    },
+                    timeout=2,
+                )
+                binary.raise_for_status()
+                decoded = decode_binary_result(binary.content)
+                self.assertEqual(decoded["request_id"], "binary-before-fallback")
+                fallback = fallback_session.post(
+                    f"http://127.0.0.1:{http_server.server_port}/v1/process",
+                    data=wav.getvalue(),
+                    headers={
+                        **common_headers,
+                        "X-Request-ID": "json-fallback",
+                    },
+                    timeout=2,
+                )
+                fallback.raise_for_status()
+                self.assertEqual(
+                    fallback.json()["speakers"][0]["waveform"]["encoding"],
+                    "base64-f32le",
+                )
+                self.assertEqual(
+                    binary.headers["X-Server-Connection-ID"],
+                    fallback.headers["X-Server-Connection-ID"],
+                )
+                self.assertEqual(
+                    fallback.headers["X-Server-Connection-Request-Count"], "2"
+                )
         finally:
             client.close()
             http_server.shutdown()
