@@ -1,5 +1,8 @@
 # Speech Caption AI
 
+Windows capture와 RunPod GPU inference를 분리한 remote mode 실행 방법 및 HTTP 계약은
+[phase4/REMOTE_GPU.md](phase4/REMOTE_GPU.md)에 정리되어 있습니다. 기본 실행 모드는 기존 local GPU입니다.
+
 Phase 0-A는 두 개의 한국어 WAV 파일을 같은 시작 시점부터 겹쳐 `mixed.wav`를 만들고, ClearVoice의 `MossFormer2_SS_16K` 모델로 2개 음성 파일을 분리하는 최소 검증 단계입니다. Phase 0-B는 분리된 WAV 파일을 로컬 Whisper 모델로 한국어 텍스트로 변환합니다. Phase 0-C는 두 단계를 한 명령으로 실행합니다.
 
 Phase 4-A에는 Python WebSocket broadcaster와 로컬 브라우저 자막 UI MVP가 추가되어 있습니다. FastAPI, Next.js, VAD, Speaker Tracking은 아직 구현하지 않습니다.

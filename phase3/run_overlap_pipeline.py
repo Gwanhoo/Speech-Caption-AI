@@ -46,6 +46,7 @@ from secondary_leakage_diagnostics import (  # noqa: E402
     secondary_transcript_suppression_reason,
 )
 from speaker_tracking import PersistentSpeakerTracker  # noqa: E402
+from remote_gpu_client import RemoteGPUClient, RemoteGPUError, RemoteGPUMonitor, RemoteWindowResult  # noqa: E402
 from subtitle_assembler import (  # noqa: E402
     DEFAULT_FINALIZE_SILENCE_MS,
     FUZZY_SIMILARITY_THRESHOLD,
@@ -109,6 +110,7 @@ class SeparatedWindow:
     reference_scores: list[list[float]]
     pair_correlation: float
     speaker_mapping: str
+    remote_result: RemoteWindowResult | None = None
 
 
 def detect_speech_activity(model: Any, audio: np.ndarray, minimum_speech_ms: int) -> dict[str, Any]:
@@ -262,6 +264,10 @@ def main() -> int:
     parser.add_argument("--window-seconds", type=int, default=WINDOW_SECONDS)
     parser.add_argument("--stride-seconds", type=int, default=STRIDE_SECONDS)
     parser.add_argument("--stt-backend", choices=("whisper", "sensevoice"), default="whisper")
+    parser.add_argument("--processing-mode", choices=("local", "remote"), default="local")
+    parser.add_argument("--remote-server-url", default="http://127.0.0.1:8787")
+    parser.add_argument("--remote-connect-timeout", type=float, default=5)
+    parser.add_argument("--remote-read-timeout", type=float, default=30)
     parser.add_argument("--vad", action="store_true", help="Run Silero VAD on each separated speaker")
     parser.add_argument("--vad-min-speech-ms", type=int, default=200)
     parser.add_argument("--json-output", type=Path, default=DEFAULT_OUTPUT)
@@ -285,6 +291,17 @@ def main() -> int:
     parser.add_argument("--ws-port", type=int, default=8765)
     parser.add_argument("--subtitle-event-queue-size", type=int, default=32)
     args = parser.parse_args()
+    remote = args.processing_mode == "remote"
+    if remote:
+        if args.stt_backend != "whisper":
+            parser.error("remote mode currently supports faster-whisper only")
+        if args.diagnostic_audio:
+            parser.error("--diagnostic-audio requires local mode (post-run whole-stream STT)")
+        if args.vad_min_speech_ms != 200:
+            parser.error("remote server uses --vad-min-speech-ms 200")
+        args.vad = True
+    if args.remote_connect_timeout <= 0 or args.remote_read_timeout <= 0:
+        parser.error("remote timeouts must be positive")
     if args.duration is not None and args.duration <= 0:
         parser.error("--duration must be positive")
     if args.window_seconds <= 0 or args.stride_seconds <= 0:
@@ -312,11 +329,12 @@ def main() -> int:
     )
     if window_count == 0:
         parser.error("--duration must contain at least one complete window")
-    if sys.platform != "win32" or not torch.cuda.is_available():
-        raise RuntimeError("Phase 3-D requires Windows WASAPI and CUDA")
+    if sys.platform != "win32" or (not remote and not torch.cuda.is_available()):
+        raise RuntimeError("Capture requires Windows WASAPI; local mode additionally requires CUDA")
     sys.stdout.reconfigure(encoding="utf-8")
 
-    monitor = base.GpuMonitor()
+    monitor = RemoteGPUMonitor() if remote else base.GpuMonitor()
+    remote_client = RemoteGPUClient(args.remote_server_url, args.remote_connect_timeout, args.remote_read_timeout) if remote else None
     monitor.start()
     errors: list[tuple[str, BaseException]] = []
     dropped: list[tuple[str, int]] = []
@@ -437,13 +455,19 @@ def main() -> int:
         return subtitle_event
 
     try:
-        separator, device, stt_model, baseline_vram, separator_vram, models_vram = base.load_models(
-            monitor, stt_backend=args.stt_backend
-        )
-        base.warm_up(separator, device, stt_model, monitor, stt_backend=args.stt_backend)
+        if remote:
+            health = remote_client.health()
+            monitor.observe(health["gpu_memory"])
+            baseline_vram = separator_vram = models_vram = monitor.used_mib()
+            print(f"Remote GPU ready: {args.remote_server_url}", flush=True)
+        else:
+            separator, device, stt_model, baseline_vram, separator_vram, models_vram = base.load_models(
+                monitor, stt_backend=args.stt_backend
+            )
+            base.warm_up(separator, device, stt_model, monitor, stt_backend=args.stt_backend)
         after_warmup_vram = monitor.used_mib()
         print(f"GPU VRAM after warm-up: {after_warmup_vram} MiB", flush=True)
-        if args.vad or args.diagnostic_audio:
+        if not remote and (args.vad or args.diagnostic_audio):
             from silero_vad import load_silero_vad
 
             vad_model = load_silero_vad()
@@ -891,7 +915,36 @@ def main() -> int:
 
                         separation_state["pre_separation_silence_checked"] += 1
                         pre_separation_silence = is_pre_separation_silence(input_stats)
-                        if pre_separation_silence:
+                        remote_result = None
+                        if remote:
+                            try:
+                                remote_result = remote_client.process(
+                                    item.audio, item.index, item.capture_timestamp,
+                                    item.stream_start_seconds, item.stream_end_seconds,
+                                )
+                            except RemoteGPUError as exc:
+                                separation_state["windows_skipped_after_failure"] += 1
+                                with state_lock:
+                                    errors.append((f"remote-window-{item.index:03d}", exc))
+                                print(f"[REMOTE SKIP] window={item.index:03d} {type(exc).__name__}: {exc}", flush=True)
+                                continue
+                            monitor.observe(remote_result.gpu_memory)
+                            separated = np.stack(remote_result.raw_speakers)[:, None, :]
+                            pre_separation_silence = remote_result.pre_separation_silence
+                            elapsed = remote_result.timing["separation_seconds"]
+                            amp_seconds = remote_result.timing["amp_seconds"]
+                            fp32_seconds = remote_result.timing["fp32_seconds"]
+                            used_fp32_fallback = remote_result.fp32_fallback
+                            separation_state["pre_separation_silence_skipped" if pre_separation_silence else "pre_separation_non_silence"] += 1
+                            if not pre_separation_silence:
+                                separation_state["amp_attempts"] += 1
+                            separation_state["amp_inference_seconds"].append(amp_seconds)
+                            if used_fp32_fallback:
+                                separation_state["amp_non_finite_outputs"] += 1
+                                separation_state["fp32_fallback_attempts"] += 1
+                                separation_state["fp32_fallback_successes"] += 1
+                                separation_state["fp32_retry_seconds"].append(fp32_seconds)
+                        elif pre_separation_silence:
                             separation_state["pre_separation_silence_skipped"] += 1
                             separated = silent_separation_output(len(item.audio))
                             elapsed = 0.0
@@ -985,6 +1038,7 @@ def main() -> int:
                                 or (
                                     raw_speaker_rms[source] <= 1e-5
                                     and not pre_separation_silence
+                                    and not remote
                                 )
                             ):
                                 raise ValueError(
@@ -1034,7 +1088,7 @@ def main() -> int:
                                 ] = audio.copy()
                         pair_correlation = (
                             0.0
-                            if pre_separation_silence
+                            if pre_separation_silence or (remote and min(raw_speaker_rms) == 0)
                             else float(np.corrcoef(raw_speakers)[0, 1])
                         )
                         if pre_separation_silence:
@@ -1080,9 +1134,9 @@ def main() -> int:
                             separation_input_stats=input_stats.to_dict(),
                             audio_queue_backlog=backlog,
                             separated_queue_size=separated_queue.qsize(),
-                            torch_allocated_mib=torch.cuda.memory_allocated(device) / MIB,
-                            torch_reserved_mib=torch.cuda.memory_reserved(device) / MIB,
-                            torch_peak_allocated_mib=torch.cuda.max_memory_allocated(device) / MIB,
+                            torch_allocated_mib=0.0 if remote else torch.cuda.memory_allocated(device) / MIB,
+                            torch_reserved_mib=0.0 if remote else torch.cuda.memory_reserved(device) / MIB,
+                            torch_peak_allocated_mib=0.0 if remote else torch.cuda.max_memory_allocated(device) / MIB,
                             speaker_rms=(speaker_rms[0], speaker_rms[1]),
                             speaker_peak=(speaker_peak[0], speaker_peak[1]),
                             raw_speaker_rms=(raw_speaker_rms[0], raw_speaker_rms[1]),
@@ -1090,6 +1144,7 @@ def main() -> int:
                             reference_scores=scores.tolist(),
                             pair_correlation=pair_correlation,
                             speaker_mapping=mapping,
+                            remote_result=remote_result,
                         )
                         separation_state["inferred"] += 1
                         accepted = base.enqueue_or_drop(
@@ -1150,13 +1205,17 @@ def main() -> int:
                         speaker_times: list[float] = []
                         transcripts: list[str] = []
                         vad_results: list[dict[str, Any]] = []
+                        logical_remote_slots = item.remote_result.logical_slots(item.speaker_assignment) if item.remote_result is not None else None
                         for speaker_index, audio in enumerate(item.speakers):
                             active = True
                             if args.vad:
-                                assert vad_model is not None
-                                vad_result = detect_speech_activity(
-                                    vad_model, audio, args.vad_min_speech_ms
-                                )
+                                if logical_remote_slots is not None:
+                                    vad_result = logical_remote_slots[speaker_index]["vad"]
+                                else:
+                                    assert vad_model is not None
+                                    vad_result = detect_speech_activity(
+                                        vad_model, audio, args.vad_min_speech_ms
+                                    )
                                 vad_results.append(vad_result)
                                 vad_state["checked_speakers"] += 1
                                 vad_state["processing_seconds"].append(vad_result["processing_seconds"])
@@ -1169,7 +1228,11 @@ def main() -> int:
                                     f"peak={vad_result['peak']:.6f} vad={vad_result['processing_seconds'] * 1000:.1f}ms",
                                     flush=True,
                                 )
-                            if active:
+                            if logical_remote_slots is not None:
+                                slot = logical_remote_slots[speaker_index]
+                                transcript, elapsed = slot["raw_transcript"], slot["stt_seconds"]
+                                stt_state["calls_executed" if active else "calls_skipped_by_vad"] += 1
+                            elif active:
                                 monitor.enter("stt")
                                 try:
                                     transcript, elapsed = base.transcribe_audio(
@@ -1347,6 +1410,10 @@ def main() -> int:
                         post_capture = pipeline_ended - item.source.capture_ended
                         metric = {
                             "window": item.source.index,
+                            "processing_mode": args.processing_mode,
+                            "remote_request_seconds": item.remote_result.request_seconds if item.remote_result else None,
+                            "remote_timing": item.remote_result.timing if item.remote_result else None,
+                            "remote_gpu_memory": item.remote_result.gpu_memory if item.remote_result else None,
                             "window_seconds": args.window_seconds,
                             "stride_seconds": args.stride_seconds,
                             "stream_start_seconds": item.source.stream_start_seconds,
@@ -1370,7 +1437,7 @@ def main() -> int:
                             "separation_input_stats": item.separation_input_stats,
                             "speaker_0_stt_seconds": speaker_times[0],
                             "speaker_1_stt_seconds": speaker_times[1],
-                            "stt_total_seconds": stt_inference_ended - stt_started,
+                            "stt_total_seconds": item.remote_result.timing["stt_seconds"] if item.remote_result else stt_inference_ended - stt_started,
                             "vad": vad_results,
                             "assembler_total_seconds": assembler_total,
                             "post_capture_latency_seconds": post_capture,
@@ -1915,8 +1982,13 @@ def main() -> int:
         )
         summary = {
             "phase": phase_label,
+            "processing_mode": args.processing_mode,
+            "remote_server_url": args.remote_server_url if remote else None,
             "stt_backend": args.stt_backend,
             "architecture": (
+                "Windows capture -> audio queue -> HTTP GPU separation/VAD/STT -> raw slots -> "
+                "logical speaker tracker -> separated queue -> assembler/state -> WebSocket/UI"
+                if remote else
                 "continuous capture -> sliding buffer -> audio queue -> separation -> separated "
                 "queue -> STT -> assembler -> subtitle event queue -> WebSocket -> browser"
                 if args.websocket
@@ -2056,9 +2128,9 @@ def main() -> int:
             print(f"Initial subtitle: {latency['initial_subtitle_seconds']:.3f}s")
             print(
                 f"Steady result interval mean/p95/max: "
-                f"{latency['steady_state_result_interval']['mean']:.3f}/"
-                f"{latency['steady_state_result_interval']['p95']:.3f}/"
-                f"{latency['steady_state_result_interval']['max']:.3f}s"
+                f"{latency['steady_state_result_interval'].get('mean', 0.0):.3f}/"
+                f"{latency['steady_state_result_interval'].get('p95', 0.0):.3f}/"
+                f"{latency['steady_state_result_interval'].get('max', 0.0):.3f}s"
             )
             print(
                 f"Duplicate adjacent pairs: {duplicates['duplicate_pair_count']}/"
@@ -2118,6 +2190,8 @@ def main() -> int:
         print(f"Phase {phase_label}: {'PASS' if success else 'FAIL'}", flush=True)
         return 0 if success else 1
     finally:
+        if remote_client is not None:
+            remote_client.close()
         if websocket_server is not None:
             websocket_server.stop()
         monitor.stop()

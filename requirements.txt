@@ -9,3 +9,4 @@ funasr==1.4.16
 silero-vad==6.2.3
 soundcard==0.4.6
 websockets==16.1.1
+requests==2.32.5

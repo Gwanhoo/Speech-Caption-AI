@@ -1,0 +1,687 @@
+{
+  "server_url": "http://127.0.0.1:8787",
+  "windows": [
+    {
+      "window": 0,
+      "request_seconds": 2.446486532688141,
+      "timing": {
+        "queue_wait_seconds": 3.8817524909973145e-06,
+        "separation_seconds": 1.834936372935772,
+        "amp_seconds": 1.834936372935772,
+        "fp32_seconds": 0.0,
+        "vad_seconds": 0.1754079246893525,
+        "stt_seconds": 0.32229162845760584,
+        "processing_seconds": 2.3362783091142774,
+        "end_to_end_rtf": 0.7787594363714258
+      },
+      "gpu_memory": {
+        "device_used_mib": 1023,
+        "process_used_mib": 1014
+      },
+      "fp32_fallback": false,
+      "silence_gate": false,
+      "assignment": {
+        "raw_to_logical_mapping": {
+          "0": 0,
+          "1": 1
+        },
+        "assignment_method": "bootstrap",
+        "identity_score": null,
+        "swap_score": null,
+        "confidence": 0.0,
+        "mapping_changed": false,
+        "overlap_similarity_matrix": {
+          "logical_0": {
+            "raw_0": null,
+            "raw_1": null
+          },
+          "logical_1": {
+            "raw_0": null,
+            "raw_1": null
+          }
+        },
+        "raw_input_similarity": {
+          "0": 0.6970328644401987,
+          "1": 0.7122818568259593
+        },
+        "active_raw_slots": [
+          0,
+          1
+        ],
+        "confirmed_logical_speakers": [
+          0,
+          1
+        ],
+        "input_rms": 0.19701326114728676,
+        "input_rms_ratio_to_previous": null,
+        "input_silence": false,
+        "low_energy_tail": false,
+        "low_energy_tail_ratio_threshold": 0.25,
+        "window_consecutive": false,
+        "overlap_samples": 16000,
+        "polarity_invariant_correlation": true,
+        "limitations": "Adjacent-window permutation alignment only; long-gap speaker re-identification requires speaker embeddings."
+      },
+      "speakers": [
+        {
+          "raw_slot": 0,
+          "vad": {
+            "speech_detected": true,
+            "speech_duration_ms": 2390.0,
+            "speech_ratio": 0.7966666666666666,
+            "rms": 0.197013258934021,
+            "peak": 1.540238380432129,
+            "processing_seconds": 0.13752309046685696,
+            "timestamps": [
+              {
+                "start": 9760,
+                "end": 48000
+              }
+            ],
+            "audio_duration_ms": 3000.0
+          },
+          "transcript": "데이터베이스는 여러 사용자가 필요한 정보를",
+          "rms": 0.197013258934021,
+          "peak": 1.540238380432129
+        },
+        {
+          "raw_slot": 1,
+          "vad": {
+            "speech_detected": true,
+            "speech_duration_ms": 2390.0,
+            "speech_ratio": 0.7966666666666666,
+            "rms": 0.197013258934021,
+            "peak": 1.3514001369476318,
+            "processing_seconds": 0.037851449102163315,
+            "timestamps": [
+              {
+                "start": 9760,
+                "end": 48000
+              }
+            ],
+            "audio_duration_ms": 3000.0
+          },
+          "transcript": "오늘은 장국적으로 맑은 날씨가 이어지기",
+          "rms": 0.197013258934021,
+          "peak": 1.3514001369476318
+        }
+      ],
+      "subtitle_events": [
+        {
+          "window": 0,
+          "speaker": 0,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "start",
+          "raw_text": "데이터베이스는 여러 사용자가 필요한 정보를",
+          "before": "",
+          "text": "데이터베이스는 여러 사용자가 필요한 정보를",
+          "previous_raw": "",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 3,
+          "utterance_start_seconds": 3,
+          "finalize_reason": null,
+          "matching_seconds": 1.050066202878952e-05,
+          "stable_text": "",
+          "tentative_text": "데이터베이스는 여러 사용자가 필요한 정보를",
+          "history_size": 1,
+          "stability_action": "first_observation"
+        },
+        {
+          "window": 0,
+          "speaker": 1,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "start",
+          "raw_text": "오늘은 장국적으로 맑은 날씨가 이어지기",
+          "before": "",
+          "text": "오늘은 장국적으로 맑은 날씨가 이어지기",
+          "previous_raw": "",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 3,
+          "utterance_start_seconds": 3,
+          "finalize_reason": null,
+          "matching_seconds": 6.01448118686676e-06,
+          "stable_text": "",
+          "tentative_text": "오늘은 장국적으로 맑은 날씨가 이어지기",
+          "history_size": 1,
+          "stability_action": "first_observation"
+        }
+      ]
+    },
+    {
+      "window": 1,
+      "request_seconds": 1.769554522819817,
+      "timing": {
+        "queue_wait_seconds": 5.080364644527435e-06,
+        "separation_seconds": 1.2491340562701225,
+        "amp_seconds": 1.2491340562701225,
+        "fp32_seconds": 0.0,
+        "vad_seconds": 0.06988583784550428,
+        "stt_seconds": 0.302410495467484,
+        "processing_seconds": 1.6235891347751021,
+        "end_to_end_rtf": 0.5411963782583674
+      },
+      "gpu_memory": {
+        "device_used_mib": 1023,
+        "process_used_mib": 1014
+      },
+      "fp32_fallback": false,
+      "silence_gate": false,
+      "assignment": {
+        "raw_to_logical_mapping": {
+          "0": 0,
+          "1": 1
+        },
+        "assignment_method": "overlap_continuity",
+        "identity_score": 0.9996015716903178,
+        "swap_score": 0.009666110804263061,
+        "confidence": 0.9899354608860548,
+        "mapping_changed": false,
+        "overlap_similarity_matrix": {
+          "logical_0": {
+            "raw_0": 0.999570553041264,
+            "raw_1": 0.011206255730568696
+          },
+          "logical_1": {
+            "raw_0": 0.008084044001325702,
+            "raw_1": 0.9996311219311013
+          }
+        },
+        "raw_input_similarity": {
+          "0": 0.679484282580959,
+          "1": 0.732663402905233
+        },
+        "active_raw_slots": [
+          0,
+          1
+        ],
+        "confirmed_logical_speakers": [
+          0,
+          1
+        ],
+        "input_rms": 0.19683821923375122,
+        "input_rms_ratio_to_previous": 0.9991115221761409,
+        "input_silence": false,
+        "low_energy_tail": false,
+        "low_energy_tail_ratio_threshold": 0.25,
+        "window_consecutive": true,
+        "overlap_samples": 16000,
+        "polarity_invariant_correlation": true,
+        "limitations": "Adjacent-window permutation alignment only; long-gap speaker re-identification requires speaker embeddings."
+      },
+      "speakers": [
+        {
+          "raw_slot": 0,
+          "vad": {
+            "speech_detected": true,
+            "speech_duration_ms": 2866.0,
+            "speech_ratio": 0.9553333333333334,
+            "rms": 0.19683821499347687,
+            "peak": 1.5726680755615234,
+            "processing_seconds": 0.0351033229380846,
+            "timestamps": [
+              {
+                "start": 32,
+                "end": 26592
+              },
+              {
+                "start": 28704,
+                "end": 48000
+              }
+            ],
+            "audio_duration_ms": 3000.0
+          },
+          "transcript": "제가 필요한 정보를 저장하고 권리하기 위한 시스템",
+          "rms": 0.19683821499347687,
+          "peak": 1.5726680755615234
+        },
+        {
+          "raw_slot": 1,
+          "vad": {
+            "speech_detected": true,
+            "speech_duration_ms": 2548.0,
+            "speech_ratio": 0.8493333333333334,
+            "rms": 0.19683821499347687,
+            "peak": 1.0689399242401123,
+            "processing_seconds": 0.034761346876621246,
+            "timestamps": [
+              {
+                "start": 0,
+                "end": 26080
+              },
+              {
+                "start": 33312,
+                "end": 48000
+              }
+            ],
+            "audio_duration_ms": 3000.0
+          },
+          "transcript": "맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+          "rms": 0.19683821499347687,
+          "peak": 1.0689399242401123
+        }
+      ],
+      "subtitle_events": [
+        {
+          "window": 1,
+          "speaker": 0,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "extend",
+          "raw_text": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기 위한 시스템",
+          "before": "데이터베이스는 여러 사용자가 필요한 정보를",
+          "text": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기 위한 시스템",
+          "previous_raw": "데이터베이스는 여러 사용자가 필요한 정보를",
+          "match_type": "hypothesis_extension",
+          "overlap_text": "",
+          "similarity": 1.0,
+          "stream_time_seconds": 5,
+          "utterance_start_seconds": 3,
+          "finalize_reason": null,
+          "matching_seconds": 6.063934415578842e-05,
+          "stable_text": "데이터베이스는 여러 사용자가 필요한 정보를",
+          "tentative_text": "저장하고 권리하기 위한 시스템",
+          "history_size": 2,
+          "stability_action": "promote_stable"
+        },
+        {
+          "window": 1,
+          "speaker": 1,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "extend",
+          "raw_text": "오늘은 장국적으로 맑은 날씨가 이어지기 맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+          "before": "오늘은 장국적으로 맑은 날씨가 이어지기",
+          "text": "오늘은 장국적으로 맑은 날씨가 이어지기 맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+          "previous_raw": "오늘은 장국적으로 맑은 날씨가 이어지기",
+          "match_type": "hypothesis_extension",
+          "overlap_text": "",
+          "similarity": 1.0,
+          "stream_time_seconds": 5,
+          "utterance_start_seconds": 3,
+          "finalize_reason": null,
+          "matching_seconds": 6.843172013759613e-05,
+          "stable_text": "오늘은 장국적으로 맑은 날씨가 이어지기",
+          "tentative_text": "맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+          "history_size": 2,
+          "stability_action": "promote_stable"
+        }
+      ]
+    },
+    {
+      "window": 2,
+      "request_seconds": 0.2811575308442116,
+      "timing": {
+        "queue_wait_seconds": 3.086403012275696e-06,
+        "separation_seconds": 0.0,
+        "amp_seconds": 0.0,
+        "fp32_seconds": 0.0,
+        "vad_seconds": 0.22232601325958967,
+        "stt_seconds": 0.0,
+        "processing_seconds": 0.22337105590850115,
+        "end_to_end_rtf": 0.07445701863616705
+      },
+      "gpu_memory": {
+        "device_used_mib": 1023,
+        "process_used_mib": 1014
+      },
+      "fp32_fallback": false,
+      "silence_gate": true,
+      "assignment": {
+        "raw_to_logical_mapping": {
+          "0": 0,
+          "1": 1
+        },
+        "assignment_method": "silence_hold",
+        "identity_score": null,
+        "swap_score": null,
+        "confidence": 0.0,
+        "mapping_changed": false,
+        "overlap_similarity_matrix": {
+          "logical_0": {
+            "raw_0": null,
+            "raw_1": null
+          },
+          "logical_1": {
+            "raw_0": null,
+            "raw_1": null
+          }
+        },
+        "raw_input_similarity": {
+          "0": 0.0,
+          "1": 0.0
+        },
+        "active_raw_slots": [],
+        "confirmed_logical_speakers": [
+          0,
+          1
+        ],
+        "input_rms": 0.0,
+        "input_rms_ratio_to_previous": 0.0,
+        "input_silence": true,
+        "low_energy_tail": false,
+        "low_energy_tail_ratio_threshold": 0.25,
+        "window_consecutive": true,
+        "overlap_samples": 16000,
+        "polarity_invariant_correlation": true,
+        "limitations": "Adjacent-window permutation alignment only; long-gap speaker re-identification requires speaker embeddings."
+      },
+      "speakers": [
+        {
+          "raw_slot": 0,
+          "vad": {
+            "speech_detected": false,
+            "speech_duration_ms": 0.0,
+            "speech_ratio": 0.0,
+            "rms": 0.0,
+            "peak": 0.0,
+            "processing_seconds": 0.18702711164951324,
+            "timestamps": [],
+            "audio_duration_ms": 3000.0
+          },
+          "transcript": "",
+          "rms": 0.0,
+          "peak": 0.0
+        },
+        {
+          "raw_slot": 1,
+          "vad": {
+            "speech_detected": false,
+            "speech_duration_ms": 0.0,
+            "speech_ratio": 0.0,
+            "rms": 0.0,
+            "peak": 0.0,
+            "processing_seconds": 0.0352804996073246,
+            "timestamps": [],
+            "audio_duration_ms": 3000.0
+          },
+          "transcript": "",
+          "rms": 0.0,
+          "peak": 0.0
+        }
+      ],
+      "subtitle_events": [
+        {
+          "window": 2,
+          "speaker": 0,
+          "utterance_id": 1,
+          "status": "final",
+          "action": "finalize",
+          "raw_text": "",
+          "before": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기 위한 시스템",
+          "text": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기 위한 시스템",
+          "previous_raw": "",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 7,
+          "utterance_start_seconds": 3,
+          "finalize_reason": "vad_silence",
+          "matching_seconds": 0.0,
+          "stable_text": "데이터베이스는 여러 사용자가 필요한 정보를",
+          "tentative_text": "저장하고 권리하기 위한 시스템",
+          "history_size": 2,
+          "stability_action": "tentative_retained_at_final"
+        },
+        {
+          "window": 2,
+          "speaker": 1,
+          "utterance_id": 1,
+          "status": "final",
+          "action": "finalize",
+          "raw_text": "",
+          "before": "오늘은 장국적으로 맑은 날씨가 이어지기 맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+          "text": "오늘은 장국적으로 맑은 날씨가 이어지기 맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+          "previous_raw": "",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 7,
+          "utterance_start_seconds": 3,
+          "finalize_reason": "vad_silence",
+          "matching_seconds": 0.0,
+          "stable_text": "오늘은 장국적으로 맑은 날씨가 이어지기",
+          "tentative_text": "맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+          "history_size": 2,
+          "stability_action": "tentative_retained_at_final"
+        }
+      ]
+    }
+  ],
+  "received_events": [
+    {
+      "window": 0,
+      "speaker": "speaker_0",
+      "utterance_id": 1,
+      "status": "partial",
+      "action": "start",
+      "raw_text": "데이터베이스는 여러 사용자가 필요한 정보를",
+      "before": "",
+      "text": "데이터베이스는 여러 사용자가 필요한 정보를",
+      "previous_raw": "",
+      "match_type": "none",
+      "overlap_text": "",
+      "similarity": null,
+      "stream_time_seconds": 3,
+      "utterance_start_seconds": 3,
+      "finalize_reason": null,
+      "matching_seconds": 1.050066202878952e-05,
+      "stable_text": "",
+      "tentative_text": "데이터베이스는 여러 사용자가 필요한 정보를",
+      "history_size": 1,
+      "stability_action": "first_observation",
+      "type": "subtitle",
+      "window_index": 0,
+      "sequence": 1,
+      "enqueued_at_ms": 1790644509278,
+      "sent_at_ms": 1790644509279
+    },
+    {
+      "window": 0,
+      "speaker": "speaker_1",
+      "utterance_id": 1,
+      "status": "partial",
+      "action": "start",
+      "raw_text": "오늘은 장국적으로 맑은 날씨가 이어지기",
+      "before": "",
+      "text": "오늘은 장국적으로 맑은 날씨가 이어지기",
+      "previous_raw": "",
+      "match_type": "none",
+      "overlap_text": "",
+      "similarity": null,
+      "stream_time_seconds": 3,
+      "utterance_start_seconds": 3,
+      "finalize_reason": null,
+      "matching_seconds": 6.01448118686676e-06,
+      "stable_text": "",
+      "tentative_text": "오늘은 장국적으로 맑은 날씨가 이어지기",
+      "history_size": 1,
+      "stability_action": "first_observation",
+      "type": "subtitle",
+      "window_index": 0,
+      "sequence": 2,
+      "enqueued_at_ms": 1790644509279,
+      "sent_at_ms": 1790644509280
+    },
+    {
+      "window": 1,
+      "speaker": "speaker_0",
+      "utterance_id": 1,
+      "status": "partial",
+      "action": "extend",
+      "raw_text": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기 위한 시스템",
+      "before": "데이터베이스는 여러 사용자가 필요한 정보를",
+      "text": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기 위한 시스템",
+      "previous_raw": "데이터베이스는 여러 사용자가 필요한 정보를",
+      "match_type": "hypothesis_extension",
+      "overlap_text": "",
+      "similarity": 1.0,
+      "stream_time_seconds": 5,
+      "utterance_start_seconds": 3,
+      "finalize_reason": null,
+      "matching_seconds": 6.063934415578842e-05,
+      "stable_text": "데이터베이스는 여러 사용자가 필요한 정보를",
+      "tentative_text": "저장하고 권리하기 위한 시스템",
+      "history_size": 2,
+      "stability_action": "promote_stable",
+      "type": "subtitle",
+      "window_index": 1,
+      "sequence": 3,
+      "enqueued_at_ms": 1790644511059,
+      "sent_at_ms": 1790644511059
+    },
+    {
+      "window": 1,
+      "speaker": "speaker_1",
+      "utterance_id": 1,
+      "status": "partial",
+      "action": "extend",
+      "raw_text": "오늘은 장국적으로 맑은 날씨가 이어지기 맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+      "before": "오늘은 장국적으로 맑은 날씨가 이어지기",
+      "text": "오늘은 장국적으로 맑은 날씨가 이어지기 맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+      "previous_raw": "오늘은 장국적으로 맑은 날씨가 이어지기",
+      "match_type": "hypothesis_extension",
+      "overlap_text": "",
+      "similarity": 1.0,
+      "stream_time_seconds": 5,
+      "utterance_start_seconds": 3,
+      "finalize_reason": null,
+      "matching_seconds": 6.843172013759613e-05,
+      "stable_text": "오늘은 장국적으로 맑은 날씨가 이어지기",
+      "tentative_text": "맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+      "history_size": 2,
+      "stability_action": "promote_stable",
+      "type": "subtitle",
+      "window_index": 1,
+      "sequence": 4,
+      "enqueued_at_ms": 1790644511060,
+      "sent_at_ms": 1790644511060
+    },
+    {
+      "window": 2,
+      "speaker": "speaker_0",
+      "utterance_id": 1,
+      "status": "final",
+      "action": "finalize",
+      "raw_text": "",
+      "before": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기 위한 시스템",
+      "text": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고 권리하기 위한 시스템",
+      "previous_raw": "",
+      "match_type": "none",
+      "overlap_text": "",
+      "similarity": null,
+      "stream_time_seconds": 7,
+      "utterance_start_seconds": 3,
+      "finalize_reason": "vad_silence",
+      "matching_seconds": 0.0,
+      "stable_text": "데이터베이스는 여러 사용자가 필요한 정보를",
+      "tentative_text": "저장하고 권리하기 위한 시스템",
+      "history_size": 2,
+      "stability_action": "tentative_retained_at_final",
+      "type": "subtitle",
+      "window_index": 2,
+      "sequence": 5,
+      "enqueued_at_ms": 1790644511351,
+      "sent_at_ms": 1790644511351
+    },
+    {
+      "window": 2,
+      "speaker": "speaker_1",
+      "utterance_id": 1,
+      "status": "final",
+      "action": "finalize",
+      "raw_text": "",
+      "before": "오늘은 장국적으로 맑은 날씨가 이어지기 맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+      "text": "오늘은 장국적으로 맑은 날씨가 이어지기 맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+      "previous_raw": "",
+      "match_type": "none",
+      "overlap_text": "",
+      "similarity": null,
+      "stream_time_seconds": 7,
+      "utterance_start_seconds": 3,
+      "finalize_reason": "vad_silence",
+      "matching_seconds": 0.0,
+      "stable_text": "오늘은 장국적으로 맑은 날씨가 이어지기",
+      "tentative_text": "맥은 날씨가 이어지겠습니다. 오후에는 기옷",
+      "history_size": 2,
+      "stability_action": "tentative_retained_at_final",
+      "type": "subtitle",
+      "window_index": 2,
+      "sequence": 6,
+      "enqueued_at_ms": 1790644511352,
+      "sent_at_ms": 1790644511352
+    }
+  ],
+  "health": {
+    "status": "ready",
+    "gpu_ready": true,
+    "models_loaded": true,
+    "model_load_count": 1,
+    "model_load_seconds": {
+      "mossformer2_seconds": 4.057429112493992,
+      "faster_whisper_seconds": 0.14132468774914742,
+      "silero_vad_seconds": 0.07374058477580547
+    },
+    "gpu_memory": {
+      "device_used_mib": 633,
+      "process_used_mib": 624
+    },
+    "requests": {
+      "completed": 0,
+      "failed": 0,
+      "waiting": 0
+    },
+    "uptime_seconds": 29.6288001537323,
+    "load_error": null
+  },
+  "health_after": {
+    "status": "ready",
+    "gpu_ready": true,
+    "models_loaded": true,
+    "model_load_count": 1,
+    "model_load_seconds": {
+      "mossformer2_seconds": 4.057429112493992,
+      "faster_whisper_seconds": 0.14132468774914742,
+      "silero_vad_seconds": 0.07374058477580547
+    },
+    "gpu_memory": {
+      "device_used_mib": 1023,
+      "process_used_mib": 1014
+    },
+    "requests": {
+      "completed": 3,
+      "failed": 0,
+      "waiting": 0
+    },
+    "uptime_seconds": 34.279054403305054,
+    "load_error": null
+  },
+  "websocket": {
+    "published": 6,
+    "dropped_oldest": 0,
+    "broadcast": 6,
+    "send_failures": 0,
+    "client_connects": 1,
+    "client_disconnects": 1,
+    "max_queue_depth": 1,
+    "enqueue_to_send_ms": {
+      "count": 6,
+      "mean": 0.3333333333333333,
+      "p95": 1,
+      "max": 1
+    },
+    "browser_receive_ms": {
+      "count": 0
+    },
+    "last_sequence": 6,
+    "queue_depth": 0,
+    "queue_maxsize": 32,
+    "connected_clients": 0
+  },
+  "success": true
+}

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import io
 import json
+import math
 import sys
 import threading
 import time
@@ -23,7 +25,7 @@ from silero_vad import load_silero_vad
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "phase3"))
 
-from subtitle_assembler import SpeakerSubtitleState, SubtitleAssembler  # noqa: E402
+from separation_recovery import finite_audio_stats, is_pre_separation_silence, silent_separation_output  # noqa: E402
 from stt_context import LIVE_WHISPER_OPTIONS, transcribe_base  # noqa: E402
 from validate_end_to_end_gpu import (  # noqa: E402
     SAMPLE_RATE,
@@ -149,11 +151,13 @@ class PipelineService:
         queue_wait_seconds: float,
     ) -> dict[str, Any]:
         processing_started = time.perf_counter()
-        separation = separate_amp(
+        silence = is_pre_separation_silence(finite_audio_stats(audio))
+        separation = None if silence else separate_amp(
             self.models.separator, self.models.separation_device, audio
         )
+        output = silent_separation_output(len(audio)) if silence else separation.output
         separated = [
-            np.ascontiguousarray(separation.output[index, 0, :], dtype=np.float32)
+            np.ascontiguousarray(output[index, 0, :], dtype=np.float32)
             for index in (0, 1)
         ]
 
@@ -166,11 +170,8 @@ class PipelineService:
         ]
         vad_seconds = time.perf_counter() - vad_started
 
-        sequence = 0
         stt_total = 0.0
-        assembly_total = 0.0
         speakers: list[dict[str, Any]] = []
-        subtitle_events: list[dict[str, Any]] = []
         for speaker, (speaker_audio, vad) in enumerate(zip(separated, vad_results)):
             if vad["speech_detected"]:
                 stt_result = transcribe_base(self.models.whisper, speaker_audio)
@@ -181,60 +182,19 @@ class PipelineService:
                 stt_seconds = 0.0
             stt_total += stt_seconds
 
-            assembler = SubtitleAssembler(speaker=speaker)
-            state = SpeakerSubtitleState(speaker=speaker)
-            assembly_started = time.perf_counter()
-            assembly = assembler.process(0, raw_text)
-            partials = state.process(
-                0,
-                assembly.utterance_hypothesis,
-                bool(vad["speech_detected"]),
-                duration,
-            )
-            final = state.flush(0, duration)
-            assembly_seconds = time.perf_counter() - assembly_started
-            assembly_total += assembly_seconds
-
-            events = [*partials, *([final] if final is not None else [])]
-            speaker_event_ids: list[int] = []
-            for event in events:
-                sequence += 1
-                speaker_event_ids.append(sequence)
-                subtitle_events.append(
-                    {
-                        "type": "subtitle",
-                        "request_id": request_id,
-                        "sequence": sequence,
-                        "window_index": event.window,
-                        "speaker": f"speaker_{speaker}",
-                        "speaker_id": speaker,
-                        "utterance_id": event.utterance_id,
-                        "status": event.status,
-                        "action": event.action,
-                        "text": event.text,
-                        "assembled_text": assembly.utterance_hypothesis,
-                        "raw_text": raw_text,
-                        "start_ms": round(event.utterance_start_seconds * 1000),
-                        "end_ms": round(event.stream_time_seconds * 1000),
-                        "finalize_reason": event.finalize_reason,
-                    }
-                )
             speakers.append(
                 {
-                    "speaker_id": speaker,
+                    "raw_slot": speaker,
+                    "waveform": {
+                        "encoding": "base64-f32le",
+                        "data": base64.b64encode(speaker_audio.astype("<f4").tobytes()).decode("ascii"),
+                    },
                     "sample_count": len(speaker_audio),
                     "rms": float(np.sqrt(np.mean(speaker_audio * speaker_audio))),
                     "peak": float(np.max(np.abs(speaker_audio))),
-                    "vad": {
-                        "speech_detected": vad["speech_detected"],
-                        "speech_duration_ms": vad["speech_duration_ms"],
-                        "speech_ratio": vad["speech_ratio"],
-                        "processing_seconds": vad["processing_seconds"],
-                    },
+                    "vad": vad,
                     "stt_seconds": stt_seconds,
                     "raw_transcript": raw_text,
-                    "assembled_subtitle": assembly.utterance_hypothesis,
-                    "event_sequences": speaker_event_ids,
                 }
             )
 
@@ -242,6 +202,7 @@ class PipelineService:
         gpu_device, gpu_process = query_gpu_memory()
         return {
             "type": "processing_result",
+            "schema_version": 1,
             "request_id": request_id,
             "received_at_ms": round(received_at * 1000),
             "audio": {
@@ -262,20 +223,21 @@ class PipelineService:
             },
             "timing": {
                 "queue_wait_seconds": queue_wait_seconds,
-                "separation_seconds": separation.total_seconds,
+                "separation_seconds": 0.0 if silence else separation.total_seconds,
+                "amp_seconds": 0.0 if silence else separation.amp_seconds,
+                "fp32_seconds": 0.0 if silence else separation.fp32_seconds,
                 "vad_seconds": vad_seconds,
                 "stt_seconds": stt_total,
-                "subtitle_assembly_seconds": assembly_total,
                 "processing_seconds": processing_seconds,
                 "end_to_end_rtf": processing_seconds / duration,
             },
-            "fp32_fallback": separation.fallback_attempted,
+            "fp32_fallback": False if silence else separation.fallback_attempted,
+            "pre_separation_silence": silence,
             "gpu_memory": {
                 "device_used_mib": gpu_device,
                 "process_used_mib": gpu_process,
             },
             "speakers": speakers,
-            "events": subtitle_events,
         }
 
 
@@ -330,8 +292,19 @@ class ProcessingHandler(BaseHTTPRequestHandler):
             )
             return
         try:
+            window_index = int(self.headers.get("X-Window-Index", "0"))
+            if window_index < 0:
+                raise ValueError("Window index must be non-negative")
+            stream_start = float(self.headers.get("X-Stream-Start-Seconds", "0"))
+            stream_end = float(self.headers.get("X-Stream-End-Seconds", "0"))
+            if not math.isfinite(stream_start) or not math.isfinite(stream_end) or stream_start < 0 or stream_end < stream_start:
+                raise ValueError("Invalid stream timestamps")
             audio, duration = read_wav(self.rfile.read(content_length))
             result = self.server.service.process(request_id, audio, duration)
+            result["window_index"] = window_index
+            result["capture_timestamp"] = self.headers.get("X-Capture-Timestamp", "")
+            result["stream_start_seconds"] = stream_start
+            result["stream_end_seconds"] = stream_end
         except ValueError as exc:
             self._send_error(
                 HTTPStatus.BAD_REQUEST, "invalid_audio", str(exc), request_id
@@ -393,8 +366,6 @@ def main() -> int:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8787)
     args = parser.parse_args()
-    if args.host != "127.0.0.1":
-        parser.error("D-0 prototype only binds to 127.0.0.1")
 
     print("Loading GPU pipeline models once at server startup...", flush=True)
     service = PipelineService()
