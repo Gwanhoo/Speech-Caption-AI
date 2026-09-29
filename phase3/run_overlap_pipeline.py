@@ -67,6 +67,11 @@ WINDOW_SECONDS = 3
 STRIDE_SECONDS = 2
 TEST_SECONDS = 30
 QUEUE_MAXSIZE = base.QUEUE_MAXSIZE
+# A remote request can transiently include proxy/TLS startup work before its
+# steady-state cadence reaches the 2-second stride. Retain one additional
+# complete window only for that bounded startup burst; local backpressure stays
+# at the original base capacity.
+REMOTE_AUDIO_QUEUE_MAXSIZE = QUEUE_MAXSIZE + 1
 SAMPLE_RATE = base.SAMPLE_RATE
 MIB = base.MIB
 STOP = base.STOP
@@ -119,6 +124,14 @@ class SeparatedWindow:
     speaker_mapping: str
     remote_result: RemoteWindowResult | None = None
     latency_timing: dict[str, Any] = field(default_factory=dict)
+
+
+def audio_queue_maxsize(processing_mode: str) -> int:
+    if processing_mode == "local":
+        return QUEUE_MAXSIZE
+    if processing_mode == "remote":
+        return REMOTE_AUDIO_QUEUE_MAXSIZE
+    raise ValueError(f"Unsupported processing mode: {processing_mode}")
 
 
 def build_window_latency_diagnostics(
@@ -371,6 +384,8 @@ def main() -> int:
     parser.add_argument("--subtitle-event-queue-size", type=int, default=32)
     args = parser.parse_args()
     remote = args.processing_mode == "remote"
+    audio_queue_maxsize_for_run = audio_queue_maxsize(args.processing_mode)
+    separated_queue_maxsize = QUEUE_MAXSIZE
     if remote:
         if args.stt_backend != "whisper":
             parser.error("remote mode currently supports faster-whisper only")
@@ -425,8 +440,12 @@ def main() -> int:
     websocket_stats: dict[str, Any] = {"enabled": False}
     event_sequence = itertools.count(1)
     state_lock = threading.Lock()
-    audio_queue: queue.Queue[AudioWindow | object] = queue.Queue(maxsize=QUEUE_MAXSIZE)
-    separated_queue: queue.Queue[SeparatedWindow | object] = queue.Queue(maxsize=QUEUE_MAXSIZE)
+    audio_queue: queue.Queue[AudioWindow | object] = queue.Queue(
+        maxsize=audio_queue_maxsize_for_run
+    )
+    separated_queue: queue.Queue[SeparatedWindow | object] = queue.Queue(
+        maxsize=separated_queue_maxsize
+    )
     diagnostic_original_parts: list[np.ndarray] = []
     diagnostic_raw_slot_windows: list[dict[int, np.ndarray]] = [{}, {}]
     diagnostic_logical_speaker_windows: list[dict[int, np.ndarray]] = [{}, {}]
@@ -539,6 +558,11 @@ def main() -> int:
             monitor.observe(health["gpu_memory"])
             baseline_vram = separator_vram = models_vram = monitor.used_mib()
             print(f"Remote GPU ready: {args.remote_server_url}", flush=True)
+            print(
+                f"Remote audio queue capacity: {audio_queue_maxsize_for_run} "
+                f"(bounded startup burst; local={QUEUE_MAXSIZE})",
+                flush=True,
+            )
         else:
             separator, device, stt_model, baseline_vram, separator_vram, models_vram = base.load_models(
                 monitor, stt_backend=args.stt_backend
@@ -957,7 +981,7 @@ def main() -> int:
                         print(
                             f"Capture window {index:03d} [{stream_start:.1f}, {item.stream_end_seconds:.1f}]s: "
                             f"new_audio={new_seconds}s, wall={capture_ended - capture_started:.3f}s, "
-                            f"audio_queue={audio_queue.qsize()}/{QUEUE_MAXSIZE}",
+                            f"audio_queue={audio_queue.qsize()}/{audio_queue_maxsize_for_run}",
                             flush=True,
                         )
                         index += 1
@@ -1032,6 +1056,12 @@ def main() -> int:
                                     item.latency_timing[
                                         "remote_worker_before_request_perf_counter"
                                     ] = time.perf_counter()
+                                    print(
+                                        f"[REMOTE REQUEST] window={item.index:03d} "
+                                        f"status=start audio_duration={len(item.audio) / SAMPLE_RATE:.3f}s "
+                                        f"samples={len(item.audio)}",
+                                        flush=True,
+                                    )
                                 remote_result = remote_client.process(
                                     item.audio, item.index, item.capture_timestamp,
                                     item.stream_start_seconds, item.stream_end_seconds,
@@ -1041,6 +1071,16 @@ def main() -> int:
                                     item.latency_timing[
                                         "remote_client_returned_perf_counter"
                                     ] = time.perf_counter()
+                                    print(
+                                        f"[REMOTE REQUEST] window={item.index:03d} "
+                                        f"status=complete round_trip={remote_result.request_seconds:.6f}s "
+                                        f"server_processing={remote_result.timing['processing_seconds']:.6f}s "
+                                        f"separation={remote_result.timing['separation_seconds']:.6f}s "
+                                        f"vad={remote_result.timing['vad_seconds']:.6f}s "
+                                        f"stt={remote_result.timing['stt_seconds']:.6f}s "
+                                        f"silence_gate={remote_result.pre_separation_silence}",
+                                        flush=True,
+                                    )
                             except RemoteGPUError as exc:
                                 separation_state["windows_skipped_after_failure"] += 1
                                 with state_lock:
@@ -1305,7 +1345,7 @@ def main() -> int:
                         print(
                             f"Separation {item.index:03d}: {elapsed:.3f}s, "
                             f"RTF={elapsed / args.window_seconds:.3f}, audio_backlog={backlog}, "
-                            f"separated_queue={separated_queue.qsize()}/{QUEUE_MAXSIZE}, "
+                            f"separated_queue={separated_queue.qsize()}/{separated_queue_maxsize}, "
                             f"pair_corr={pair_correlation:.3f}, mapping={mapping}, "
                             f"tracking={assignment.diagnostic['assignment_method']} "
                             f"raw_to_logical={assignment.diagnostic['raw_to_logical_mapping']}",
@@ -1716,7 +1756,7 @@ def main() -> int:
             f"Starting Phase {phase_label}: device={speaker.name}, stt_backend={args.stt_backend}, "
             f"duration={duration_label}, "
             f"window={args.window_seconds}s, stride={args.stride_seconds}s, "
-            f"windows={window_label}, queues={QUEUE_MAXSIZE}/{QUEUE_MAXSIZE}",
+            f"windows={window_label}, queues={audio_queue_maxsize_for_run}/{separated_queue_maxsize}",
             flush=True,
         )
         separation_thread = threading.Thread(target=separation_worker, name="separation_worker")
@@ -2221,7 +2261,9 @@ def main() -> int:
             "stride_seconds": args.stride_seconds,
             "overlap_seconds": args.window_seconds - args.stride_seconds,
             "window_count": expected_window_count,
-            "queue_maxsize": QUEUE_MAXSIZE,
+            "queue_maxsize": audio_queue_maxsize_for_run,
+            "audio_queue_maxsize": audio_queue_maxsize_for_run,
+            "separated_queue_maxsize": separated_queue_maxsize,
             "drop_policy": "drop newest when a bounded queue is full",
             "latency_diagnostics": {
                 "enabled": args.latency_diagnostics,

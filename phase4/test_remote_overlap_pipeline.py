@@ -1,8 +1,10 @@
 """Real pipeline workers, synthetic capture only. Never opens WASAPI on Linux."""
 import io
 import json
+import queue
 import sys
 import tempfile
+import threading
 import time
 from contextlib import ExitStack
 from pathlib import Path
@@ -76,15 +78,22 @@ class PipelineTests(TestCase):
                 self.assertTrue(result["latency_diagnostics"]["enabled"])
                 self.assertTrue(all("latency_diagnostics" in row for row in result["windows"]))
                 self.assertIn("[LATENCY]", stdout_buffer.getvalue())
+                self.assertIn("[REMOTE REQUEST] window=000 status=start", stdout_buffer.getvalue())
+                self.assertIn("[REMOTE REQUEST] window=000 status=complete", stdout_buffer.getvalue())
             else:
                 self.assertFalse(result["latency_diagnostics"]["enabled"])
                 self.assertTrue(all("latency_diagnostics" not in row for row in result["windows"]))
                 self.assertNotIn("[LATENCY]", stdout_buffer.getvalue())
+                self.assertNotIn("[REMOTE REQUEST]", stdout_buffer.getvalue())
             if remote:
                 load.assert_not_called(); stt.assert_not_called()
                 for call in cuda_calls: call.assert_not_called()
+                self.assertEqual(result["audio_queue_maxsize"], 3)
+                self.assertEqual(result["separated_queue_maxsize"], 2)
             else:
                 load.assert_called_once(); self.assertEqual(stt.call_count, 4)
+                self.assertEqual(result["audio_queue_maxsize"], 2)
+                self.assertEqual(result["separated_queue_maxsize"], 2)
         return code, result
 
     def test_remote_workers(self):
@@ -95,6 +104,31 @@ class PipelineTests(TestCase):
         self.assertEqual(result["errors"], [])
         self.assertGreater(result["websocket"]["published"], 0)
         self.assertEqual(result["websocket"]["dropped_oldest"], 0)
+
+    def test_remote_audio_queue_absorbs_one_bounded_startup_burst(self):
+        self.assertEqual(pipeline.audio_queue_maxsize("local"), 2)
+        self.assertEqual(pipeline.audio_queue_maxsize("remote"), 3)
+
+        admitted = queue.Queue(maxsize=pipeline.audio_queue_maxsize("remote"))
+        dropped = []
+        lock = threading.Lock()
+        for index in range(3):
+            self.assertTrue(
+                pipeline.base.enqueue_or_drop(
+                    admitted, index, "audio_queue", index, dropped, lock
+                )
+            )
+        self.assertEqual(admitted.maxsize, 3)
+        self.assertEqual(dropped, [])
+
+        # A sustained overload remains bounded and preserves the original
+        # newest-window drop policy after the one-window burst allowance.
+        self.assertFalse(
+            pipeline.base.enqueue_or_drop(
+                admitted, 3, "audio_queue", 3, dropped, lock
+            )
+        )
+        self.assertEqual(dropped, [("audio_queue", 3)])
 
     def test_remote_latency_diagnostics(self):
         code, result = self.run_pipeline(True, latency_diagnostics=True)
