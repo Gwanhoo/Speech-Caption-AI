@@ -51,6 +51,7 @@ phase1/diagnostic/*.wav
 phase2/input/
 phase2/output/
 phase3/output/
+phase5/output/
 
 # Keep the small, reproducible audio fixtures under phase0/input,
 # phase1/reference, and phase3/test_audio in Git.

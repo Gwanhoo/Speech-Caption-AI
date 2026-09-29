@@ -33,7 +33,7 @@ finally:
 
 class PipelineTests(TestCase):
     def run_pipeline(self, remote, fail_first=False, failure=None, fail_all=False,
-                     latency_diagnostics=False):
+                     latency_diagnostics=False, runtime_hooks=None):
         capture = MagicMock()
         capture.__enter__.return_value = capture
         def record(numframes):
@@ -72,7 +72,7 @@ class PipelineTests(TestCase):
             cuda_calls = []
             for name in ("is_available", "reset_peak_memory_stats", "memory_allocated", "memory_reserved", "max_memory_allocated"):
                 cuda_calls.append(stack.enter_context(patch.object(pipeline.torch.cuda, name, return_value=True if name == "is_available" else 0)))
-            code = pipeline.main()
+            code = pipeline.main(runtime_hooks=runtime_hooks)
             result = json.loads(output.read_text())
             if latency_diagnostics:
                 self.assertTrue(result["latency_diagnostics"]["enabled"])
@@ -104,6 +104,22 @@ class PipelineTests(TestCase):
         self.assertEqual(result["errors"], [])
         self.assertGreater(result["websocket"]["published"], 0)
         self.assertEqual(result["websocket"]["dropped_oldest"], 0)
+
+    def test_structured_runtime_hooks_receive_subtitles_and_metrics(self):
+        subtitle_events = []
+        metrics = []
+        hooks = pipeline.LivePipelineHooks(
+            on_subtitle=subtitle_events.append,
+            on_metric=metrics.append,
+        )
+        code, result = self.run_pipeline(True, runtime_hooks=hooks)
+        self.assertEqual(code, 0)
+        self.assertEqual(subtitle_events, result["subtitle_events"])
+        self.assertEqual(len(metrics), result["stt_window_success"])
+        self.assertEqual({event["speaker"] for event in subtitle_events}, {"speaker_0", "speaker_1"})
+        self.assertTrue(all(event["status"] in {"partial", "final"} for event in subtitle_events))
+        self.assertTrue(all("sequence" in event and "timestamp" in event for event in subtitle_events))
+        self.assertTrue(all("post_capture_latency_seconds" in metric for metric in metrics))
 
     def test_remote_audio_queue_absorbs_one_bounded_startup_burst(self):
         self.assertEqual(pipeline.audio_queue_maxsize("local"), 2)

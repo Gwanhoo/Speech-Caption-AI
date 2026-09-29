@@ -7,6 +7,33 @@ Phase 0-A는 두 개의 한국어 WAV 파일을 같은 시작 시점부터 겹�
 
 Phase 4-A에는 Python WebSocket broadcaster와 로컬 브라우저 자막 UI MVP가 추가되어 있습니다. FastAPI, Next.js, VAD, Speaker Tracking은 아직 구현하지 않습니다.
 
+## Phase 5: Windows 데스크톱 GUI
+
+Phase 5 GUI는 기존 Phase 4-I remote live pipeline을 그대로 호출하는 PySide6
+frontend입니다. Windows GUI thread와 분리된 worker에서 RunPod health 확인, WASAPI
+loopback 장치 확인, capture 및 pipeline 실행을 수행합니다. 자막은 console 문자열을
+파싱하지 않고 `SubtitleStateEvent`에서 만들어진 structured event를 Qt signal로
+Speaker A/B 화면에 전달합니다.
+
+Windows PowerShell에서 의존성을 설치하고 실행합니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m phase5.gui_app
+```
+
+기본 RunPod URL은 GUI의 서버 URL 입력란에서 실행 전에 변경할 수 있습니다. `중지`는
+강제 thread 종료를 사용하지 않고 capture stop event를 설정한 뒤 기존 queue와 worker가
+drain/join되기를 기다립니다. GUI 실행 중에도 기존 WebSocket endpoint
+`ws://127.0.0.1:8765`가 함께 제공됩니다.
+
+오디오/네트워크를 사용하지 않는 headless GUI 테스트:
+
+```powershell
+$env:QT_QPA_PLATFORM = "offscreen"
+.\.venv\Scripts\python.exe -m unittest -v phase5.test_gui_app
+```
+
 ## Phase 4-A: WebSocket Subtitle UI
 
 Phase 3-E overlap pipeline을 WebSocket UI와 함께 실행합니다.
@@ -136,6 +163,7 @@ phase1/                 Windows 오디오 캡처와 분리/STT 연결
 phase2/                 CUDA 및 연속/청크 처리 벤치마크
 phase3/                 실시간 분리/STT, 화자 추적, 자막 조립
 phase4/                 WebSocket broadcaster와 브라우저 자막 UI
+phase5/                 PySide6 Windows 데스크톱 GUI와 pipeline controller
 checkpoints/             실행 시 다운로드되는 모델(버전 관리 제외)
 PROJECT_STATUS.md        단계별 실험 및 구현 기록
 requirements.txt         애플리케이션 의존성(torch 제외)

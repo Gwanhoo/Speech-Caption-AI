@@ -13,7 +13,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Sequence
 
 import numpy as np
 import soundcard as sc
@@ -79,6 +79,34 @@ DEFAULT_OUTPUT = ROOT / "phase3" / "output" / "overlap_3s_2s.json"
 DEBUG_OUTPUT_DIR = ROOT / "phase3" / "output" / "overlap_debug"
 DIAGNOSTIC_OUTPUT_DIR = ROOT / "phase3" / "output" / "diagnostic"
 DIAGNOSTIC_WINDOW_OUTPUT_DIR = ROOT / "phase3" / "output" / "diagnostic_windows"
+
+
+@dataclass
+class LivePipelineHooks:
+    """Optional observers and stop control for non-CLI frontends.
+
+    The hooks only observe the already-produced Phase 4-I data.  Leaving them
+    unset preserves the command-line pipeline's original behavior.
+    """
+
+    stop_event: threading.Event = field(default_factory=threading.Event)
+    on_subtitle: Callable[[dict[str, Any]], None] | None = None
+    on_metric: Callable[[dict[str, Any]], None] | None = None
+
+
+def _notify_runtime_hook(
+    callback: Callable[[dict[str, Any]], None] | None,
+    payload: dict[str, Any],
+    name: str,
+) -> None:
+    if callback is None:
+        return
+    try:
+        callback(dict(payload))
+    except Exception as exc:
+        # A presentation-layer callback must never interrupt the validated AI
+        # pipeline.  This is intentionally diagnostic-only.
+        print(f"[RUNTIME HOOK] {name} callback failed: {exc}", flush=True)
 
 
 @dataclass
@@ -328,7 +356,10 @@ def build_diagnostic_audio_window_record(item: dict[str, Any]) -> dict[str, Any]
     }
 
 
-def main() -> int:
+def main(
+    argv: Sequence[str] | None = None,
+    runtime_hooks: LivePipelineHooks | None = None,
+) -> int:
     parser = argparse.ArgumentParser(
         description="Phase 4-I overlap pipeline with partial/final subtitle consensus"
     )
@@ -382,7 +413,7 @@ def main() -> int:
     parser.add_argument("--ws-host", default="127.0.0.1")
     parser.add_argument("--ws-port", type=int, default=8765)
     parser.add_argument("--subtitle-event-queue-size", type=int, default=32)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     remote = args.processing_mode == "remote"
     audio_queue_maxsize_for_run = audio_queue_maxsize(args.processing_mode)
     separated_queue_maxsize = QUEUE_MAXSIZE
@@ -550,6 +581,11 @@ def main() -> int:
                 flush=True,
             )
         subtitle_events.append(subtitle_event)
+        _notify_runtime_hook(
+            runtime_hooks.on_subtitle if runtime_hooks is not None else None,
+            subtitle_event,
+            "subtitle",
+        )
         return subtitle_event
 
     try:
@@ -694,7 +730,11 @@ def main() -> int:
                 for name in references
             ]
         )
-        stop_capture = threading.Event()
+        stop_capture = (
+            runtime_hooks.stop_event
+            if runtime_hooks is not None
+            else threading.Event()
+        )
 
         def stitch_diagnostic_channels(
             channel_windows: list[dict[int, np.ndarray]],
@@ -1697,6 +1737,13 @@ def main() -> int:
                             metric["latency_diagnostics"] = latency_diagnostic
                         with state_lock:
                             results.append(metric)
+                        _notify_runtime_hook(
+                            runtime_hooks.on_metric
+                            if runtime_hooks is not None
+                            else None,
+                            metric,
+                            "metric",
+                        )
                         stt_state["processed"] += 1
                         print(
                             f"Window {item.source.index:03d} metrics: separation={item.separation_seconds:.3f}s, "
