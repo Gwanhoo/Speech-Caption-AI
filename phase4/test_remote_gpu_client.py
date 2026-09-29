@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT / "phase3"))
 from remote_gpu_client import (RemoteGPUClient, RemoteConnectionError, RemoteTimeoutError,
                                RemoteHTTPError, RemoteProtocolError, monotonic_duration,
                                parse_result, queue_wait_seconds)
+from remote_gpu_protocol import encode_binary_result, decode_binary_result
 from speaker_tracking import PersistentSpeakerTracker
 from subtitle_assembler import SubtitleAssembler, SpeakerSubtitleState
 
@@ -45,6 +46,22 @@ def payload(request_id="r", window=0, samples=48000):
 
 
 class ClientTests(TestCase):
+    def test_binary_response_roundtrip_preserves_float32_waveforms(self):
+        p = payload(samples=16000)
+        for slot in p["speakers"]:
+            slot["waveform"] = {
+                "encoding": "binary-f32le",
+                "data": base64.b64decode(slot["waveform"]["data"]),
+            }
+        body = encode_binary_result(p)
+        decoded = decode_binary_result(body)
+        result = parse_result(decoded, "r", 0, 16000, 0.1)
+        expected = np.frombuffer(
+            p["speakers"][0]["waveform"]["data"], dtype="<f4"
+        )
+        np.testing.assert_array_equal(result.raw_speakers[0], expected)
+        self.assertLess(len(body), 16000 * 4 * 2 * 4 // 3)
+
     def test_monotonic_timing_and_queue_wait_calculation(self):
         self.assertAlmostEqual(monotonic_duration(10.25, 12.5), 2.25)
         self.assertAlmostEqual(queue_wait_seconds(100.0, 100.125), 0.125)
@@ -79,6 +96,7 @@ class ClientTests(TestCase):
             self.assertEqual(timing["response_http_version"], 10)
             headers = client.session.request.call_args.kwargs["headers"]
             self.assertEqual(headers["X-Latency-Diagnostics"], "1")
+            self.assertIn("processing-result", headers["Accept"])
         finally:
             client.close()
 

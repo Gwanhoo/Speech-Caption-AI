@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-import base64
+import io
 import sys
 import tempfile
 import threading
 from pathlib import Path
 from unittest import TestCase, main
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import numpy as np
+import requests
+import soundfile as sf
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,10 +42,56 @@ class FasterWhisperModelSourceTests(TestCase):
 
 
 class ServerLatencyDiagnosticsTests(TestCase):
+    def test_process_uses_cached_gpu_memory_without_nvidia_smi(self):
+        service = object.__new__(server.PipelineService)
+        service.started_at = 0.0
+        service.ready = True
+        service.load_error = None
+        service.model_load_count = 1
+        service.requests_completed = 0
+        service.requests_failed = 0
+        service.requests_waiting = 0
+        service._stats_lock = threading.Lock()
+        service._inference_lock = threading.Lock()
+        service.load_times = {}
+        service.memory = {}
+        service._cached_memory = {
+            "device_used_mib": 700,
+            "process_used_mib": 650,
+        }
+        whisper = Mock()
+        whisper.model.device = "cuda"
+        whisper.model.compute_type = "float16"
+        service.models = server.LoadedModels(Mock(), Mock(), whisper, Mock())
+        vad = {
+            "speech_detected": False,
+            "speech_duration_ms": 0.0,
+            "speech_ratio": 0.0,
+            "rms": 0.0,
+            "peak": 0.0,
+            "processing_seconds": 0.0,
+            "timestamps": [],
+            "audio_duration_ms": 100.0,
+        }
+        with patch.object(server, "detect_speech_activity", return_value=vad), patch.object(
+            server, "query_gpu_memory"
+        ) as query:
+            result = service.process(
+                "request-off", np.zeros(1600, dtype=np.float32), 0.1
+            )
+            diagnostic_result = service.process(
+                "request", np.zeros(1600, dtype=np.float32), 0.1, {}
+            )
+        query.assert_not_called()
+        self.assertEqual(result["gpu_memory"]["device_used_mib"], 700)
+        self.assertFalse(
+            diagnostic_result["timing"]["gpu_memory_query_performed"]
+        )
+
     def test_http_handler_returns_server_diagnostics_without_loading_models(self):
         class FakeService:
             def process(self, request_id, audio, duration, request_diagnostics=None):
-                encoded = base64.b64encode(audio.astype("<f4").tobytes()).decode()
+                encoded = audio.astype("<f4").tobytes()
                 timing = {
                     "queue_wait_seconds": 0.0,
                     "separation_seconds": 0.0,
@@ -71,7 +119,7 @@ class ServerLatencyDiagnosticsTests(TestCase):
                             "raw_slot": slot,
                             "sample_count": len(audio),
                             "waveform": {
-                                "encoding": "base64-f32le",
+                                "encoding": "binary-f32le",
                                 "data": encoded,
                             },
                             "raw_transcript": "",
@@ -107,7 +155,45 @@ class ServerLatencyDiagnosticsTests(TestCase):
             self.assertIn("request_decode_seconds", result.timing)
             self.assertIn("response_serialization_seconds", result.timing)
             self.assertGreater(result.client_timing["response_body_bytes"], 0)
-            self.assertEqual(result.client_timing["response_http_version"], 10)
+            self.assertEqual(result.client_timing["response_http_version"], 11)
+            self.assertEqual(result.client_timing["response_format"], "binary-f32le")
+            self.assertLess(result.client_timing["response_wire_bytes"], 18000)
+            self.assertIn(
+                "estimated_connect_tls_proxy_seconds", result.client_timing
+            )
+            second = client.process(
+                np.zeros(1600, dtype=np.float32),
+                1,
+                stream_start_seconds=0.1,
+                stream_end_seconds=0.2,
+                latency_diagnostics=True,
+            )
+            self.assertTrue(second.client_timing["server_connection_reused"])
+            wav = io.BytesIO()
+            sf.write(
+                wav,
+                np.zeros(1600, dtype=np.float32),
+                16000,
+                format="WAV",
+                subtype="FLOAT",
+            )
+            fallback = requests.post(
+                f"http://127.0.0.1:{http_server.server_port}/v1/process",
+                data=wav.getvalue(),
+                headers={
+                    "Content-Type": "audio/wav",
+                    "X-Request-ID": "json-fallback",
+                    "X-Window-Index": "2",
+                    "X-Stream-Start-Seconds": "0.2",
+                    "X-Stream-End-Seconds": "0.3",
+                },
+                timeout=2,
+            )
+            fallback.raise_for_status()
+            self.assertEqual(
+                fallback.json()["speakers"][0]["waveform"]["encoding"],
+                "base64-f32le",
+            )
         finally:
             client.close()
             http_server.shutdown()

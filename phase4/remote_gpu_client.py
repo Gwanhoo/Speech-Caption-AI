@@ -16,6 +16,8 @@ import numpy as np
 import requests
 import soundfile as sf
 
+from remote_gpu_protocol import BINARY_RESPONSE_MEDIA_TYPE, decode_binary_result
+
 
 class RemoteGPUError(RuntimeError):
     """A failed window may be logged and skipped without stopping capture."""
@@ -95,11 +97,18 @@ def parse_result(payload: Any, request_id: str, window_index: int, samples: int,
             if type(slot["raw_slot"]) is not int or slot["raw_slot"] != raw or slot["sample_count"] != samples:
                 raise ValueError("invalid raw slot/sample count")
             encoded = slot["waveform"]
-            if encoded["encoding"] != "base64-f32le" or not isinstance(encoded["data"], str):
+            if encoded["encoding"] == "base64-f32le" and isinstance(
+                encoded["data"], str
+            ):
+                if len(encoded["data"]) > ((samples * 4 + 2) // 3) * 4:
+                    raise ValueError("oversized waveform")
+                binary = base64.b64decode(encoded["data"], validate=True)
+            elif encoded["encoding"] == "binary-f32le" and isinstance(
+                encoded["data"], bytes
+            ):
+                binary = encoded["data"]
+            else:
                 raise ValueError("unsupported waveform encoding")
-            if len(encoded["data"]) > ((samples * 4 + 2) // 3) * 4:
-                raise ValueError("oversized waveform")
-            binary = base64.b64decode(encoded["data"], validate=True)
             if len(binary) != samples * 4:
                 raise ValueError("waveform length mismatch")
             audio = np.frombuffer(binary, dtype="<f4").astype(np.float32, copy=True)
@@ -145,6 +154,7 @@ class RemoteGPUClient:
         self.timeout = (connect_timeout, read_timeout)
         self.session = requests.Session()
         self.session.trust_env = False  # direct server access; no implicit proxy
+        self._last_server_connection_id: str | None = None
 
     def close(self) -> None:
         self.session.close()
@@ -166,12 +176,22 @@ class RemoteGPUClient:
         response_received = time.perf_counter()
         if response.status_code != 200:
             raise RemoteHTTPError(response.status_code, response.text[:1000])
-        json_decode_started = time.perf_counter()
+        def response_header(name: str, default: str | None = None) -> str | None:
+            value = response.headers.get(name, default)
+            return value if isinstance(value, str) else default
+
+        payload_decode_started = time.perf_counter()
+        content_type = (response_header("Content-Type", "") or "").split(";", 1)[0]
         try:
-            payload = response.json()
-        except ValueError as exc:
-            raise RemoteProtocolError("Response is not JSON") from exc
-        json_decode_ended = time.perf_counter()
+            if content_type == BINARY_RESPONSE_MEDIA_TYPE:
+                payload = decode_binary_result(response.content)
+                response_format = "binary-f32le"
+            else:
+                payload = response.json()
+                response_format = "base64-json"
+        except (KeyError, TypeError, UnicodeError, ValueError) as exc:
+            raise RemoteProtocolError("Response payload could not be decoded") from exc
+        payload_decode_ended = time.perf_counter()
         if not isinstance(payload, dict) or payload.get("type") == "error":
             raise RemoteProtocolError(f"Server error/invalid object: {payload}")
         try:
@@ -185,19 +205,55 @@ class RemoteGPUClient:
             else None
         )
         raw = getattr(response, "raw", None)
+        server_connection_id = response_header("X-Server-Connection-ID")
+        connection_reused = (
+            server_connection_id == self._last_server_connection_id
+            if server_connection_id is not None
+            and self._last_server_connection_id is not None
+            else None
+        )
+        if server_connection_id is not None:
+            self._last_server_connection_id = server_connection_id
+        http_request_seconds = monotonic_duration(request_started, response_received)
+        response_body_download_seconds = (
+            max(0.0, http_request_seconds - response_elapsed_seconds)
+            if response_elapsed_seconds is not None
+            else None
+        )
+        try:
+            response_wire_bytes = int(response_header("Content-Length") or "")
+        except ValueError:
+            response_wire_bytes = None
         return payload, {
             "http_request_started_perf_counter": request_started,
             "http_response_received_perf_counter": response_received,
-            "http_request_seconds": monotonic_duration(request_started, response_received),
+            "http_request_seconds": http_request_seconds,
             "requests_response_elapsed_seconds": response_elapsed_seconds,
-            "response_json_decode_started_perf_counter": json_decode_started,
-            "response_json_decode_ended_perf_counter": json_decode_ended,
-            "response_json_decode_seconds": monotonic_duration(
-                json_decode_started, json_decode_ended
+            "response_body_download_seconds": response_body_download_seconds,
+            "response_payload_decode_started_perf_counter": payload_decode_started,
+            "response_payload_decode_ended_perf_counter": payload_decode_ended,
+            "response_payload_decode_seconds": monotonic_duration(
+                payload_decode_started, payload_decode_ended
             ),
+            "response_json_decode_started_perf_counter": payload_decode_started,
+            "response_json_decode_ended_perf_counter": payload_decode_ended,
+            "response_json_decode_seconds": (
+                monotonic_duration(payload_decode_started, payload_decode_ended)
+                if response_format == "base64-json"
+                else 0.0
+            ),
+            "response_binary_decode_seconds": (
+                monotonic_duration(payload_decode_started, payload_decode_ended)
+                if response_format == "binary-f32le"
+                else 0.0
+            ),
+            "response_format": response_format,
             "response_body_bytes": response_body_bytes,
+            "response_wire_bytes": response_wire_bytes,
             "response_http_version": getattr(raw, "version", None),
-            "response_connection_header": response.headers.get("Connection"),
+            "response_connection_header": response_header("Connection"),
+            "server_connection_id": server_connection_id,
+            "server_connection_reused": connection_reused,
         }
 
     def health(self) -> dict[str, Any]:
@@ -224,6 +280,7 @@ class RemoteGPUClient:
         request_body = buffer.getvalue()
         encode_ended = time.perf_counter()
         headers = {"Content-Type": "audio/wav", "X-Request-ID": request_id,
+                   "Accept": BINARY_RESPONSE_MEDIA_TYPE,
                    "X-Window-Index": str(window_index), "X-Capture-Timestamp": capture_timestamp,
                    "X-Stream-Start-Seconds": str(stream_start_seconds),
                    "X-Stream-End-Seconds": str(stream_end_seconds)}
@@ -256,6 +313,26 @@ class RemoteGPUClient:
             request_seconds,
             client_timing,
         )
+        server_received = result.timing.get("server_request_received_perf_counter")
+        server_response_ready = result.timing.get(
+            "response_serialization_ended_perf_counter"
+        )
+        response_elapsed = client_timing.get("requests_response_elapsed_seconds")
+        if (
+            _number(server_received)
+            and _number(server_response_ready)
+            and server_response_ready >= server_received
+            and _number(response_elapsed)
+        ):
+            server_request_to_response_ready = monotonic_duration(
+                server_received, server_response_ready
+            )
+            client_timing["server_request_to_response_ready_seconds"] = (
+                server_request_to_response_ready
+            )
+            client_timing["estimated_connect_tls_proxy_seconds"] = max(
+                0.0, response_elapsed - server_request_to_response_ready
+            )
         parse_ended = time.perf_counter()
         client_timing["response_parse_ended_perf_counter"] = parse_ended
         client_timing["response_parse_seconds"] = monotonic_duration(

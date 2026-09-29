@@ -21,6 +21,8 @@ import torch
 from faster_whisper import WhisperModel
 from silero_vad import load_silero_vad
 
+from remote_gpu_protocol import BINARY_RESPONSE_MEDIA_TYPE, encode_binary_result
+
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "phase3"))
@@ -81,6 +83,7 @@ class PipelineService:
         self._inference_lock = threading.Lock()
         self.load_times: dict[str, float] = {}
         self.memory: dict[str, dict[str, int | None]] = {}
+        self._cached_memory = {"device_used_mib": None, "process_used_mib": None}
         self.models = self._load_models()
 
     @staticmethod
@@ -102,6 +105,7 @@ class PipelineService:
             )
             self.load_times["faster_whisper_seconds"] = time.perf_counter() - started
             self.memory["after_faster_whisper"] = self._memory_record()
+            self._cached_memory = dict(self.memory["after_faster_whisper"])
 
             started = time.perf_counter()
             vad = load_silero_vad()
@@ -116,6 +120,10 @@ class PipelineService:
     def health(self) -> tuple[HTTPStatus, dict[str, Any]]:
         gpu_device, gpu_process = query_gpu_memory()
         with self._stats_lock:
+            self._cached_memory = {
+                "device_used_mib": gpu_device,
+                "process_used_mib": gpu_process,
+            }
             payload = {
                 "status": "ready" if self.ready else "not_ready",
                 "gpu_ready": self.ready and torch.cuda.is_available(),
@@ -235,9 +243,7 @@ class PipelineService:
             stt_total += stt_seconds
 
             waveform_encode_started = time.perf_counter()
-            encoded_waveform = base64.b64encode(
-                speaker_audio.astype("<f4").tobytes()
-            ).decode("ascii")
+            encoded_waveform = speaker_audio.astype("<f4").tobytes()
             waveform_encode_ranges.append(
                 (waveform_encode_started, time.perf_counter())
             )
@@ -245,7 +251,7 @@ class PipelineService:
                 {
                     "raw_slot": speaker,
                     "waveform": {
-                        "encoding": "base64-f32le",
+                        "encoding": "binary-f32le",
                         "data": encoded_waveform,
                     },
                     "sample_count": len(speaker_audio),
@@ -260,7 +266,9 @@ class PipelineService:
         processing_ended = time.perf_counter()
         processing_seconds = processing_ended - processing_started
         gpu_memory_query_started = time.perf_counter()
-        gpu_device, gpu_process = query_gpu_memory()
+        with self._stats_lock:
+            gpu_device = self._cached_memory["device_used_mib"]
+            gpu_process = self._cached_memory["process_used_mib"]
         gpu_memory_query_ended = time.perf_counter()
         timing: dict[str, Any] = {
             "queue_wait_seconds": queue_wait_seconds,
@@ -296,15 +304,17 @@ class PipelineService:
                     "stt_speaker_1_ended_perf_counter": stt_stage_ranges[1][1],
                     "stt_speaker_1_wall_seconds": stt_stage_ranges[1][1]
                     - stt_stage_ranges[1][0],
-                    "waveform_encode_speaker_0_seconds": waveform_encode_ranges[0][1]
+                    "waveform_pack_speaker_0_seconds": waveform_encode_ranges[0][1]
                     - waveform_encode_ranges[0][0],
-                    "waveform_encode_speaker_1_seconds": waveform_encode_ranges[1][1]
+                    "waveform_pack_speaker_1_seconds": waveform_encode_ranges[1][1]
                     - waveform_encode_ranges[1][0],
                     "server_processing_ended_perf_counter": processing_ended,
                     "gpu_memory_query_started_perf_counter": gpu_memory_query_started,
                     "gpu_memory_query_ended_perf_counter": gpu_memory_query_ended,
                     "gpu_memory_query_seconds": gpu_memory_query_ended
                     - gpu_memory_query_started,
+                    "gpu_memory_query_performed": False,
+                    "gpu_memory_source": "cached_from_health_or_model_load",
                 }
             )
             timing.update(request_diagnostics)
@@ -355,8 +365,29 @@ def read_wav(payload: bytes) -> tuple[np.ndarray, float]:
     return np.ascontiguousarray(audio), duration
 
 
+def json_compatible_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    if payload.get("type") != "processing_result":
+        return payload
+    converted = dict(payload)
+    converted_speakers = []
+    for slot in payload["speakers"]:
+        converted_slot = dict(slot)
+        waveform = slot["waveform"]
+        data = waveform["data"]
+        if waveform["encoding"] != "binary-f32le" or not isinstance(data, bytes):
+            raise ValueError("Expected binary f32le waveform")
+        converted_slot["waveform"] = {
+            "encoding": "base64-f32le",
+            "data": base64.b64encode(data).decode("ascii"),
+        }
+        converted_speakers.append(converted_slot)
+    converted["speakers"] = converted_speakers
+    return converted
+
+
 class ProcessingHandler(BaseHTTPRequestHandler):
     server: "ProcessingHTTPServer"
+    protocol_version = "HTTP/1.1"
 
     def do_GET(self) -> None:
         if self.path != "/healthz":
@@ -369,6 +400,7 @@ class ProcessingHandler(BaseHTTPRequestHandler):
         request_received = time.perf_counter()
         request_id = self.headers.get("X-Request-ID") or str(uuid.uuid4())
         latency_diagnostics = self.headers.get("X-Latency-Diagnostics") == "1"
+        binary_response = BINARY_RESPONSE_MEDIA_TYPE in self.headers.get("Accept", "")
         if self.path != "/v1/process":
             self._send_error(
                 HTTPStatus.NOT_FOUND, "not_found", "Endpoint not found", request_id
@@ -439,15 +471,19 @@ class ProcessingHandler(BaseHTTPRequestHandler):
                 request_id,
             )
             return
-        send_timing = self._send_json(
-            HTTPStatus.OK, result, latency_diagnostics=latency_diagnostics
+        send_timing = self._send_processing_result(
+            HTTPStatus.OK,
+            result,
+            binary_response=binary_response,
+            latency_diagnostics=latency_diagnostics,
         )
         if latency_diagnostics:
             print(
                 f"[LATENCY SERVER] window={window_index:03d} "
                 f"response_serialize={send_timing['response_serialization_seconds']:.6f}s "
                 f"response_write={send_timing['response_body_write_seconds']:.6f}s "
-                f"response_bytes={send_timing['response_body_bytes']}",
+                f"response_bytes={send_timing['response_body_bytes']} "
+                f"format={send_timing['response_format']}",
                 flush=True,
             )
 
@@ -464,6 +500,7 @@ class ProcessingHandler(BaseHTTPRequestHandler):
         message: str,
         request_id: str | None = None,
     ) -> None:
+        self.close_connection = True
         self._send_json(
             status,
             {
@@ -478,11 +515,13 @@ class ProcessingHandler(BaseHTTPRequestHandler):
         status: HTTPStatus,
         payload: dict[str, Any],
         latency_diagnostics: bool = False,
-    ) -> dict[str, float | int]:
+    ) -> dict[str, float | int | str]:
         serialization_started = time.perf_counter()
-        body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode(
-            "utf-8"
-        )
+        body = json.dumps(
+            json_compatible_payload(payload),
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
         serialization_ended = time.perf_counter()
         serialization_seconds = serialization_ended - serialization_started
         if latency_diagnostics and isinstance(payload.get("timing"), dict):
@@ -495,20 +534,69 @@ class ProcessingHandler(BaseHTTPRequestHandler):
             payload["timing"]["response_serialization_seconds"] = serialization_seconds
             payload["timing"]["response_payload_bytes_before_diagnostics"] = len(body)
             body = json.dumps(
-                payload, ensure_ascii=False, separators=(",", ":")
+                json_compatible_payload(payload),
+                ensure_ascii=False,
+                separators=(",", ":"),
             ).encode("utf-8")
+        write_seconds = self._send_body(
+            status, body, "application/json; charset=utf-8"
+        )
+        return {
+            "response_serialization_seconds": serialization_seconds,
+            "response_body_write_seconds": write_seconds,
+            "response_body_bytes": len(body),
+            "response_format": "base64-json",
+        }
+
+    def _send_processing_result(
+        self,
+        status: HTTPStatus,
+        payload: dict[str, Any],
+        binary_response: bool,
+        latency_diagnostics: bool,
+    ) -> dict[str, float | int | str]:
+        if not binary_response:
+            return self._send_json(status, payload, latency_diagnostics)
+        serialization_started = time.perf_counter()
+        body = encode_binary_result(payload)
+        serialization_ended = time.perf_counter()
+        serialization_seconds = serialization_ended - serialization_started
+        if latency_diagnostics and isinstance(payload.get("timing"), dict):
+            payload["timing"]["response_serialization_started_perf_counter"] = (
+                serialization_started
+            )
+            payload["timing"]["response_serialization_ended_perf_counter"] = (
+                serialization_ended
+            )
+            payload["timing"]["response_serialization_seconds"] = serialization_seconds
+            payload["timing"]["response_payload_bytes_before_diagnostics"] = len(body)
+            body = encode_binary_result(payload)
+        write_seconds = self._send_body(status, body, BINARY_RESPONSE_MEDIA_TYPE)
+        return {
+            "response_serialization_seconds": serialization_seconds,
+            "response_body_write_seconds": write_seconds,
+            "response_body_bytes": len(body),
+            "response_format": "binary-f32le",
+        }
+
+    def _send_body(
+        self, status: HTTPStatus, body: bytes, content_type: str
+    ) -> float:
         self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
+        self.send_header(
+            "X-Server-Connection-ID",
+            f"{self.client_address[0]}:{self.client_address[1]}",
+        )
+        self.send_header("X-Server-Protocol", self.protocol_version)
+        if self.close_connection:
+            self.send_header("Connection", "close")
         self.end_headers()
         write_started = time.perf_counter()
         self.wfile.write(body)
         write_ended = time.perf_counter()
-        return {
-            "response_serialization_seconds": serialization_seconds,
-            "response_body_write_seconds": write_ended - write_started,
-            "response_body_bytes": len(body),
-        }
+        return write_ended - write_started
 
 
 class ProcessingHTTPServer(ThreadingHTTPServer):

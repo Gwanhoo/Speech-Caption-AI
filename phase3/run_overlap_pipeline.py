@@ -1676,17 +1676,22 @@ def main() -> int:
                                 f"audio_queue_wait={client_pipeline['audio_queue_wait_seconds']:.6f}s "
                                 f"wav_encode={remote_client_timing.get('payload_encode_seconds', 0.0):.6f}s "
                                 f"http_round_trip={remote_client_timing.get('http_request_seconds', 0.0):.6f}s "
+                                f"connect_tls_proxy={remote_client_timing.get('estimated_connect_tls_proxy_seconds', 0.0):.6f}s "
+                                f"response_download={remote_client_timing.get('response_body_download_seconds', 0.0):.6f}s "
                                 f"server_body_read={server_timing.get('request_body_read_seconds', 0.0):.6f}s "
                                 f"server_queue_wait={server_timing.get('queue_wait_seconds', 0.0):.6f}s "
                                 f"separation={server_timing.get('separation_seconds', 0.0):.6f}s "
                                 f"vad={server_timing.get('vad_seconds', 0.0):.6f}s "
                                 f"stt={server_timing.get('stt_seconds', 0.0):.6f}s "
-                                f"response_json_decode={remote_client_timing.get('response_json_decode_seconds', 0.0):.6f}s "
+                                f"gpu_monitor={server_timing.get('gpu_memory_query_seconds', 0.0):.6f}s "
+                                f"response_decode={remote_client_timing.get('response_payload_decode_seconds', 0.0):.6f}s "
                                 f"separated_queue_wait={client_pipeline['separated_queue_wait_seconds']:.6f}s "
                                 f"assembler_subtitle={client_pipeline['assembler_subtitle_seconds']:.6f}s "
                                 f"capture_to_result={client_pipeline['capture_to_result_seconds']:.6f}s "
                                 f"bytes={remote_client_timing.get('request_body_bytes')}/"
-                                f"{remote_client_timing.get('response_body_bytes')}",
+                                f"{remote_client_timing.get('response_wire_bytes')} "
+                                f"format={remote_client_timing.get('response_format')} "
+                                f"connection_reused={remote_client_timing.get('server_connection_reused')}",
                                 flush=True,
                             )
                     finally:
