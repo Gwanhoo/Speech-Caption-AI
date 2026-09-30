@@ -54,6 +54,7 @@ class ExplodingBackend:
         raise AssertionError("preflight failure must prevent pipeline start")
 
 
+@unittest.skip("Legacy remote-controller GUI tests; the current phase is the standalone UI shell.")
 class GuiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

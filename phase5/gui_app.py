@@ -437,6 +437,16 @@ class MainWindow(QMainWindow):
         label.setStyleSheet(f"color: {color}; font-weight: 700;")
 
 
+# Keep this historical module path as the executable entry point while the
+# standalone shell remains isolated from the remote controller implementation.
+try:
+    from .ui_shell import MainWindow as ShellMainWindow
+except ImportError:  # Direct execution: python phase5/gui_app.py
+    from ui_shell import MainWindow as ShellMainWindow  # type: ignore[no-redef]
+
+MainWindow = ShellMainWindow
+
+
 def main() -> int:
     app = QApplication.instance() or QApplication(sys.argv)
     window = MainWindow()
