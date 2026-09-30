@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import os
 import threading
 from dataclasses import dataclass, field
 from importlib import import_module
@@ -29,7 +30,11 @@ from remote_gpu_client import (  # noqa: E402
 )
 
 
-DEFAULT_REMOTE_SERVER_URL = "https://1djm8of460wbeh-8787.proxy.runpod.net"
+# Keep the deployment address in one place.  The GUI exposes this value for a
+# per-run override, while installations set GPU_SERVER_URL before launch.
+DEFAULT_REMOTE_SERVER_URL = os.environ.get(
+    "GPU_SERVER_URL", "https://1djm8of460wbeh-8787.proxy.runpod.net"
+).rstrip("/")
 DEFAULT_GUI_OUTPUT = ROOT / "phase5" / "output" / "gui_last_run.json"
 
 

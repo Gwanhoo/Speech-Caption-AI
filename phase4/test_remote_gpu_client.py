@@ -260,7 +260,9 @@ class ClientTests(TestCase):
         states = [SpeakerSubtitleState(i) for i in (0, 1)]
         try:
             client.health()
-            audio, _ = sf.read(ROOT / "phase2/input/chunk_000_mixed_16k.wav", dtype="float32")
+            # Keep this transport/continuity test self-contained: phase2 input
+            # recordings are generated artifacts and are not part of every clone.
+            audio = np.zeros(80000, dtype=np.float32)
             for window in (0, 1):
                 mixture = audio[window * 32000:window * 32000 + 48000]
                 result = client.process(mixture, window)

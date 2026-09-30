@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
 from typing import Any
 
 # See live_caption_controller.py: this import must precede PySide6 on Python 3.10.
@@ -12,6 +11,7 @@ from PySide6.QtGui import QCloseEvent, QFont
 from PySide6.QtWidgets import (
     QApplication,
     QAbstractItemView,
+    QCheckBox,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -21,6 +21,8 @@ from PySide6.QtWidgets import (
     QPushButton,
     QSizePolicy,
     QStyledItemDelegate,
+    QSlider,
+    QSpinBox,
     QStyleOptionViewItem,
     QVBoxLayout,
     QWidget,
@@ -32,12 +34,16 @@ try:
         LiveCaptionConfig,
         LiveCaptionController,
     )
+    from .subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState
+    from .subtitle_overlay import OverlayStyle, SubtitleOverlay
 except ImportError:  # Direct execution: python phase5/gui_app.py
     from live_caption_controller import (  # type: ignore[no-redef]
         DEFAULT_REMOTE_SERVER_URL,
         LiveCaptionConfig,
         LiveCaptionController,
     )
+    from subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState  # type: ignore[no-redef]
+    from subtitle_overlay import OverlayStyle, SubtitleOverlay  # type: ignore[no-redef]
 
 
 APP_STYLE = """
@@ -49,6 +55,7 @@ QFrame#infoCard, QFrame#subtitleCard, QFrame#statusCard {
     border: 1px solid #dbe3ef;
     border-radius: 12px;
 }
+QFrame#overlaySettingsCard { background: #ffffff; border: 1px solid #dbe3ef; border-radius: 12px; }
 QLabel#fieldTitle { color: #526078; font-weight: 600; }
 QLineEdit {
     background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 7px;
@@ -69,21 +76,13 @@ QLabel#latencyText { color: #475569; font-size: 13px; }
 """
 
 
-@dataclass
-class SubtitleFeedEntry:
-    speaker_id: str
-    utterance_id: int
-    sequence: int
-    status: str
-    text: str
-    timestamp: int | float | None = None
-
-
 class SubtitleFeedModel(QAbstractListModel):
-    """Bounded chronological utterance model; speaker identity stays internal."""
+    """Qt adapter for the bounded reader-focused subtitle presentation state."""
 
     entry_upserted = Signal(int, bool)
-    MAX_ENTRIES = 80
+    entries_changed = Signal(object)
+    MAX_FINAL_ENTRIES = SubtitlePresentationState.MAX_FINAL_ENTRIES
+    MAX_ENTRIES = MAX_FINAL_ENTRIES + 1
     SpeakerRole = Qt.ItemDataRole.UserRole + 1
     UtteranceRole = Qt.ItemDataRole.UserRole + 2
     SequenceRole = Qt.ItemDataRole.UserRole + 3
@@ -92,7 +91,7 @@ class SubtitleFeedModel(QAbstractListModel):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._entries: list[SubtitleFeedEntry] = []
-        self._rows_by_utterance: dict[tuple[str, int], int] = {}
+        self._presentation = SubtitlePresentationState()
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:  # noqa: N802
         return 0 if parent.isValid() else len(self._entries)
@@ -117,91 +116,27 @@ class SubtitleFeedModel(QAbstractListModel):
 
     def clear(self) -> None:
         self.beginResetModel()
-        self._entries.clear()
-        self._rows_by_utterance.clear()
+        self._presentation.clear()
+        self._entries = []
         self.endResetModel()
+        self.entries_changed.emit(())
 
     def upsert_event(self, event: dict[str, Any]) -> bool:
-        speaker_id = self._speaker_id(event.get("speaker"))
-        utterance_id = event.get("utterance_id")
-        sequence = event.get("sequence")
-        status = event.get("status")
-        text = event.get("text")
-        if (
-            speaker_id is None
-            or not isinstance(utterance_id, int)
-            or not isinstance(sequence, int)
-            or status not in {"partial", "final"}
-            or not isinstance(text, str)
-            or not text.strip()
-        ):
+        if not self._presentation.apply(event):
             return False
-
-        key = (speaker_id, utterance_id)
-        existing_row = self._rows_by_utterance.get(key)
-        if existing_row is not None:
-            existing = self._entries[existing_row]
-            if sequence < existing.sequence or existing.status == "final":
-                return False
-            self._entries[existing_row] = SubtitleFeedEntry(
-                speaker_id=speaker_id,
-                utterance_id=utterance_id,
-                sequence=sequence,
-                status=status,
-                text=text.strip(),
-                timestamp=event.get("timestamp"),
-            )
-            model_index = self.index(existing_row)
-            self.dataChanged.emit(
-                model_index,
-                model_index,
-                [Qt.ItemDataRole.DisplayRole, self.SequenceRole, self.StatusRole],
-            )
-            self.entry_upserted.emit(existing_row, False)
-            return True
-
-        row = len(self._entries)
-        self.beginInsertRows(QModelIndex(), row, row)
-        self._entries.append(
-            SubtitleFeedEntry(
-                speaker_id=speaker_id,
-                utterance_id=utterance_id,
-                sequence=sequence,
-                status=status,
-                text=text.strip(),
-                timestamp=event.get("timestamp"),
-            )
-        )
-        self._rows_by_utterance[key] = row
-        self.endInsertRows()
-        self._trim_old_entries()
-        inserted_row = self._rows_by_utterance[key]
-        self.entry_upserted.emit(inserted_row, True)
+        self.beginResetModel()
+        self._entries = list(self._presentation.entries)
+        self.endResetModel()
+        self.entries_changed.emit(tuple(self._entries))
+        self.entry_upserted.emit(len(self._entries) - 1, True)
         return True
 
     def entry_at(self, row: int) -> SubtitleFeedEntry:
         return self._entries[row]
 
-    @staticmethod
-    def _speaker_id(value: Any) -> str | None:
-        if value in (0, "speaker_0"):
-            return "speaker_0"
-        if value in (1, "speaker_1"):
-            return "speaker_1"
-        return None
-
-    def _trim_old_entries(self) -> None:
-        overflow = len(self._entries) - self.MAX_ENTRIES
-        if overflow <= 0:
-            return
-        self.beginRemoveRows(QModelIndex(), 0, overflow - 1)
-        del self._entries[:overflow]
-        self.endRemoveRows()
-        self._rows_by_utterance = {
-            (entry.speaker_id, entry.utterance_id): row
-            for row, entry in enumerate(self._entries)
-        }
-
+    @property
+    def entries(self) -> tuple[SubtitleFeedEntry, ...]:
+        return tuple(self._entries)
 
 class SubtitleFeedDelegate(QStyledItemDelegate):
     """Large, centered, wrapped text rendering kept separate for future overlay use."""
@@ -258,6 +193,7 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.controller = controller or LiveCaptionController()
         self._close_when_finished = False
+        self.overlay: SubtitleOverlay | None = None
         self.setWindowTitle("AI 실시간 자막")
         self.resize(1080, 820)
 
@@ -328,6 +264,29 @@ class MainWindow(QMainWindow):
         controls.addWidget(self.stop_button)
         root.addLayout(controls)
 
+        overlay_card = QFrame()
+        overlay_card.setObjectName("overlaySettingsCard")
+        overlay_layout = QHBoxLayout(overlay_card)
+        overlay_layout.setContentsMargins(16, 10, 16, 10)
+        overlay_layout.setSpacing(12)
+        self.overlay_visible_checkbox = QCheckBox("Overlay 표시")
+        self.overlay_visible_checkbox.setChecked(True)
+        self.overlay_font_size = QSpinBox()
+        self.overlay_font_size.setRange(16, 52)
+        self.overlay_font_size.setValue(28)
+        self.overlay_opacity = QSlider(Qt.Orientation.Horizontal)
+        self.overlay_opacity.setRange(20, 95)
+        self.overlay_opacity.setValue(72)
+        self.overlay_bold_checkbox = QCheckBox("굵게")
+        self.overlay_bold_checkbox.setChecked(True)
+        overlay_layout.addWidget(self.overlay_visible_checkbox)
+        overlay_layout.addWidget(QLabel("글자 크기"))
+        overlay_layout.addWidget(self.overlay_font_size)
+        overlay_layout.addWidget(QLabel("배경 투명도"))
+        overlay_layout.addWidget(self.overlay_opacity, 1)
+        overlay_layout.addWidget(self.overlay_bold_checkbox)
+        root.addWidget(overlay_card)
+
         subtitle_card = QFrame()
         subtitle_card.setObjectName("subtitleCard")
         subtitle_layout = QVBoxLayout(subtitle_card)
@@ -363,6 +322,10 @@ class MainWindow(QMainWindow):
         self.controller.error.connect(self.show_error)
         self.controller.state_changed.connect(self.apply_controller_state)
         self.controller.run_finished.connect(self._run_finished)
+        self.overlay_visible_checkbox.toggled.connect(self.set_overlay_visible)
+        self.overlay_font_size.valueChanged.connect(self.apply_overlay_style)
+        self.overlay_opacity.valueChanged.connect(self.apply_overlay_style)
+        self.overlay_bold_checkbox.toggled.connect(self.apply_overlay_style)
 
         self.setStyleSheet(APP_STYLE)
 
@@ -372,13 +335,21 @@ class MainWindow(QMainWindow):
         if not server_url:
             self.show_error("RunPod 서버 URL을 입력해주세요.")
             return
+        if self.controller.state != "idle":
+            return
         self.subtitle_model.clear()
         self.latency_label.setText("최근 latency: —")
-        self.controller.start(LiveCaptionConfig(server_url=server_url))
+        if self.controller.start(LiveCaptionConfig(server_url=server_url)):
+            self._ensure_overlay()
+            if self.overlay_visible_checkbox.isChecked() and self.overlay is not None:
+                self.overlay.show()
+                self.overlay.raise_()
 
     @Slot()
     def stop_captioning(self) -> None:
         self.controller.stop()
+        self._hide_and_clear_overlay()
+        self.subtitle_model.clear()
 
     @Slot(bool, str)
     def set_server_state(self, connected: bool, text: str) -> None:
@@ -389,6 +360,39 @@ class MainWindow(QMainWindow):
     @Slot(dict)
     def apply_subtitle_event(self, event: dict[str, Any]) -> None:
         self.subtitle_model.upsert_event(event)
+
+    @Slot(bool)
+    def set_overlay_visible(self, visible: bool) -> None:
+        if visible and self.controller.state in {"starting", "running"}:
+            overlay = self._ensure_overlay()
+            overlay.show()
+            overlay.raise_()
+        elif self.overlay is not None:
+            self.overlay.hide()
+
+    def apply_overlay_style(self, *_args: object) -> None:
+        if self.overlay is not None:
+            self.overlay.apply_style(self._overlay_style())
+
+    def _overlay_style(self) -> OverlayStyle:
+        return OverlayStyle(
+            font_size=self.overlay_font_size.value(),
+            background_opacity=self.overlay_opacity.value(),
+            bold=self.overlay_bold_checkbox.isChecked(),
+        )
+
+    def _ensure_overlay(self) -> SubtitleOverlay:
+        if self.overlay is None:
+            self.overlay = SubtitleOverlay()
+            self.subtitle_model.entries_changed.connect(self.overlay.set_entries)
+        self.overlay.apply_style(self._overlay_style())
+        self.overlay.set_entries(self.subtitle_model.entries)
+        return self.overlay
+
+    def _hide_and_clear_overlay(self) -> None:
+        if self.overlay is not None:
+            self.overlay.clear_entries()
+            self.overlay.hide()
 
     @Slot(float)
     def set_latency(self, milliseconds: float) -> None:
@@ -415,6 +419,7 @@ class MainWindow(QMainWindow):
 
     @Slot(bool, str)
     def _run_finished(self, success: bool, message: str) -> None:
+        self._hide_and_clear_overlay()
         if success:
             self.status_label.setStyleSheet("color: #334155;")
             self.status_label.setText("대기 중")
@@ -426,6 +431,10 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:  # noqa: N802 (Qt API)
         if self.controller.state == "idle":
+            self._hide_and_clear_overlay()
+            if self.overlay is not None:
+                self.overlay.close()
+                self.overlay = None
             event.accept()
             return
         self._close_when_finished = True
@@ -435,16 +444,6 @@ class MainWindow(QMainWindow):
     @staticmethod
     def _set_indicator(label: QLabel, color: str) -> None:
         label.setStyleSheet(f"color: {color}; font-weight: 700;")
-
-
-# Keep this historical module path as the executable entry point while the
-# standalone shell remains isolated from the remote controller implementation.
-try:
-    from .ui_shell import MainWindow as ShellMainWindow
-except ImportError:  # Direct execution: python phase5/gui_app.py
-    from ui_shell import MainWindow as ShellMainWindow  # type: ignore[no-redef]
-
-MainWindow = ShellMainWindow
 
 
 def main() -> int:

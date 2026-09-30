@@ -54,7 +54,6 @@ class ExplodingBackend:
         raise AssertionError("preflight failure must prevent pipeline start")
 
 
-@unittest.skip("Legacy remote-controller GUI tests; the current phase is the standalone UI shell.")
 class GuiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -107,7 +106,7 @@ class GuiTests(unittest.TestCase):
     def test_pyside_python310_self_compatibility_is_primed(self) -> None:
         self.assertEqual(str(Union[int, TypingExtensionsSelf]).split("[")[0], "typing.Union")
 
-    def test_speaker_zero_and_one_events_share_single_feed(self) -> None:
+    def test_latest_final_replaces_an_older_current_partial(self) -> None:
         window = MainWindow()
         try:
             window.apply_subtitle_event(
@@ -116,20 +115,14 @@ class GuiTests(unittest.TestCase):
             window.apply_subtitle_event(
                 self.event("speaker_1", 1, 11, "네, 잘 들립니다.", "final")
             )
+            self.assertEqual(self.feed_texts(window), ["네, 잘 들립니다."])
             self.assertEqual(
-                self.feed_texts(window),
-                ["발표를 시작합니다.", "네, 잘 들립니다."],
-            )
-            self.assertEqual(
-                window.subtitle_model.entry_at(0).speaker_id, "speaker_0"
-            )
-            self.assertEqual(
-                window.subtitle_model.entry_at(1).speaker_id, "speaker_1"
+                window.subtitle_model.entry_at(0).speaker_id, "speaker_1"
             )
         finally:
             window.close()
 
-    def test_simultaneous_speakers_are_both_preserved_in_sequence_order(self) -> None:
+    def test_latest_partial_uses_the_single_current_caption_position(self) -> None:
         window = MainWindow()
         try:
             window.apply_subtitle_event(
@@ -138,10 +131,7 @@ class GuiTests(unittest.TestCase):
             window.apply_subtitle_event(
                 self.event("speaker_1", 7, 101, "오늘 하루 어땠어?")
             )
-            self.assertEqual(
-                self.feed_texts(window),
-                ["나는 아직 저녁 안 먹었어", "오늘 하루 어땠어?"],
-            )
+            self.assertEqual(self.feed_texts(window), ["오늘 하루 어땠어?"])
         finally:
             window.close()
 
@@ -187,28 +177,15 @@ class GuiTests(unittest.TestCase):
         finally:
             window.close()
 
-    def test_new_entries_auto_scroll_to_latest(self) -> None:
+    def test_long_text_is_left_intact_for_qt_word_wrap(self) -> None:
         window = MainWindow()
         try:
-            window.resize(720, 480)
-            window.show()
-            self.app.processEvents()
-            for sequence in range(1, 25):
-                speaker = f"speaker_{sequence % 2}"
-                window.apply_subtitle_event(
-                    self.event(
-                        speaker,
-                        sequence,
-                        sequence,
-                        f"자동 스크롤 확인 문장 {sequence}",
-                        "final",
-                    )
-                )
-            scroll_bar = window.subtitle_feed.verticalScrollBar()
-            self.pump_until(
-                lambda: scroll_bar.maximum() > 0
-                and scroll_bar.value() == scroll_bar.maximum()
+            text = "이 문장은 UI 폭에 맞춰 자연스럽게 표시되며 데이터에 고정 폭 줄바꿈을 추가하지 않습니다."
+            window.apply_subtitle_event(
+                self.event("speaker_0", 1, 1, text)
             )
+            self.assertEqual(self.feed_texts(window), [text])
+            self.assertNotIn("\n", self.feed_texts(window)[0])
         finally:
             window.close()
 
@@ -225,9 +202,53 @@ class GuiTests(unittest.TestCase):
                         "final",
                     )
                 )
-            self.assertEqual(window.subtitle_model.rowCount(), 80)
-            self.assertEqual(window.subtitle_model.entry_at(0).text, "문장 11")
-            self.assertEqual(window.subtitle_model.entry_at(79).text, "문장 90")
+            self.assertEqual(window.subtitle_model.rowCount(), 2)
+            self.assertEqual(window.subtitle_model.entry_at(0).text, "문장 89")
+            self.assertEqual(window.subtitle_model.entry_at(1).text, "문장 90")
+        finally:
+            window.close()
+
+    def test_overlay_lifecycle_reuses_one_window_and_snapshot(self) -> None:
+        backend = BlockingBackend()
+        controller = LiveCaptionController(backend=backend)
+        window = MainWindow(controller=controller)
+        try:
+            window.start_captioning()
+            self.pump_until(backend.started.is_set)
+            self.pump_until(
+                lambda: window.overlay is not None
+                and window.overlay.isVisible()
+                and [entry.text for entry in window.overlay.entries] == ["테스트 자막"]
+            )
+            overlay = window.overlay
+            self.assertIsNotNone(overlay)
+            self.assertTrue(overlay.style_config.bold)
+
+            window.stop_captioning()
+            self.assertFalse(overlay.isVisible())
+            self.assertEqual(overlay.entries, ())
+            self.pump_until(lambda: controller.state == "idle")
+
+            window.start_captioning()
+            self.pump_until(lambda: overlay.isVisible())
+            self.assertIs(window.overlay, overlay)
+        finally:
+            if controller.state != "idle":
+                window.stop_captioning()
+                self.pump_until(lambda: controller.state == "idle")
+            window.close()
+
+    def test_overlay_settings_apply_without_recreation(self) -> None:
+        window = MainWindow()
+        try:
+            overlay = window._ensure_overlay()
+            window.overlay_font_size.setValue(34)
+            window.overlay_opacity.setValue(55)
+            window.overlay_bold_checkbox.setChecked(False)
+            self.assertIs(window._ensure_overlay(), overlay)
+            self.assertEqual(overlay.style_config.font_size, 34)
+            self.assertEqual(overlay.style_config.background_opacity, 55)
+            self.assertFalse(overlay.style_config.bold)
         finally:
             window.close()
 

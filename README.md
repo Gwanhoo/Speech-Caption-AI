@@ -23,10 +23,16 @@ Windows PowerShell에서 의존성을 설치하고 실행합니다.
 .\.venv\Scripts\python.exe -m phase5.gui_app
 ```
 
-기본 RunPod URL은 GUI의 서버 URL 입력란에서 실행 전에 변경할 수 있습니다. `중지`는
+기본 RunPod URL은 `GPU_SERVER_URL` 환경변수로 설정하며, GUI의 서버 URL 입력란에서
+실행 전에 한 번만 변경할 수도 있습니다. `중지`는
 강제 thread 종료를 사용하지 않고 capture stop event를 설정한 뒤 기존 queue와 worker가
 drain/join되기를 기다립니다. GUI 실행 중에도 기존 WebSocket endpoint
 `ws://127.0.0.1:8765`가 함께 제공됩니다.
+
+```powershell
+$env:GPU_SERVER_URL = "https://YOUR-RUNPOD-8787.proxy.runpod.net"
+.\.venv\Scripts\python.exe -m phase5.gui_app
+```
 
 오디오/네트워크를 사용하지 않는 headless GUI 테스트:
 
