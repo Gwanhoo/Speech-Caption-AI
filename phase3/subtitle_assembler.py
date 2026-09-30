@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import time
+import unicodedata
 from dataclasses import asdict, dataclass
 from difflib import SequenceMatcher
 
@@ -139,6 +140,53 @@ def fuzzy_suffix_prefix(
     return best_similarity, best_cut
 
 
+def corrected_suffix_prefix(previous: str, current: str) -> tuple[int, int, float] | None:
+    """Align a bounded, word-delimited seam, allowing Korean syllable errors.
+
+    Return old normalized suffix length, new display cut, and similarity.
+    Only adjacent windows may use this; it never searches session history.
+    Short matches need close decomposed Hangul (jamo) agreement as well as
+    syllable agreement. A new hypothesis is evidence, not ground truth.
+    """
+    left, left_positions = normalize_with_positions(previous)
+    right, right_positions = normalize_with_positions(current)
+    best = None
+    best_rank = (0.0, 0)
+    for length in range(4, min(48, len(left)) + 1):
+        start = left_positions[len(left) - length]
+        if not is_boundary_before(previous, start):
+            continue
+        suffix = left[-length:]
+        for count in range(max(4, length - 2), min(len(right), length + 2) + 1):
+            cut = right_positions[count - 1] + 1
+            if not is_boundary_after(current, cut):
+                continue
+            prefix = right[:count]
+            syllable_score = SequenceMatcher(None, suffix, prefix, autojunk=False).ratio()
+            jamo_score = SequenceMatcher(
+                None, unicodedata.normalize("NFD", suffix),
+                unicodedata.normalize("NFD", prefix), autojunk=False,
+            ).ratio()
+            # Do not merge different short phrases solely because their endings
+            # look similar. Longer seams permit modest spelling corrections.
+            required = 0.82 if min(length, count) <= 6 else 0.88
+            if min(length, count) <= 6 and suffix[0] != prefix[0]:
+                continue
+            common_prefix = normalized_common_prefix_length(suffix, prefix)
+            if (common_prefix >= 6 and max(length, count) - common_prefix <= 4
+                    and syllable_score >= 0.80):
+                # A shared multiword stem with a revised Korean ending, e.g.
+                # "공원에는 운동을 하거든요" -> "공원에는 운동을 하거나".
+                required = min(required, 0.86)
+            if syllable_score < 0.60 or jamo_score < required:
+                continue
+            rank = (jamo_score, min(length, count))
+            if rank > best_rank:
+                best_rank = rank
+                best = (length, cut, jamo_score)
+    return best
+
+
 def append_preserving_text(assembled: str, new_text: str) -> str:
     if not assembled:
         return new_text.strip()
@@ -171,6 +219,7 @@ class AssemblyEvent:
     new_fragment: str
     utterance_hypothesis: str
     session_text: str
+    confirmed_prefix_length: int = 0
 
     def to_dict(self) -> dict[str, object]:
         result = asdict(self)
@@ -188,9 +237,13 @@ class SubtitleAssembler:
         self.assembled = ""
         self.utterance_hypothesis = ""
         self.last_window = -1
+        self._finalized_session = ""
+        self.confirmed_prefix_length = 0
 
     def reset_utterance(self) -> None:
         """Start a new utterance without discarding finalized session history."""
+        self._finalized_session = self.assembled
+        self.confirmed_prefix_length = 0
         self.previous = ""
         self.utterance_hypothesis = ""
 
@@ -203,7 +256,8 @@ class SubtitleAssembler:
             )
 
         raw = raw.strip()
-        previous = self.previous
+        before_hypothesis = self.utterance_hypothesis
+        previous = self.previous if window == self.last_window + 1 else ""
         match_type = "none"
         overlap = ""
         new_text = raw
@@ -253,11 +307,49 @@ class SubtitleAssembler:
                                 normalized_overlap_length = len(normalize_for_matching(overlap))
                                 new_text = raw[fuzzy_cut:]
 
+        correction = corrected_suffix_prefix(previous, raw) if previous and raw else None
+        if correction and match_type in {"none", "fuzzy"}:
+            old_length, new_cut, similarity = correction
+            old_suffix = normalize_for_matching(previous)[-old_length:]
+            # The old seam must actually be the end of the active hypothesis.
+            # A finalized utterance is never revised.
+            if normalize_for_matching(self.utterance_hypothesis).endswith(old_suffix):
+                _, positions = normalize_with_positions(self.utterance_hypothesis)
+                cut = positions[len(positions) - old_length]
+                self.utterance_hypothesis = self.utterance_hypothesis[:cut] + raw
+                match_type = "fuzzy_replace"
+                overlap = raw[:new_cut].strip()
+                normalized_overlap_length = len(normalize_for_matching(overlap))
+                new_text = raw[new_cut:]
+            else:
+                correction = None
+        else:
+            correction = None
         new_text = LEADING_SEPARATOR_PATTERN.sub("", new_text).strip()
-        self.utterance_hypothesis = append_preserving_text(
-            self.utterance_hypothesis, new_text
+        if correction is None:
+            # Rebuild exact seams from the current display text. Appending a
+            # fragment beginning inside an eojeol would create "아침 에".
+            normalized_active, positions = normalize_with_positions(self.utterance_hypothesis)
+            exact = match_type in {"token_exact", "raw_exact", "normalized_exact", "boundary_exact"}
+            normalized_overlap = normalize_for_matching(overlap)
+            if exact and normalized_active.endswith(normalized_overlap):
+                seam_start = len(positions) - len(normalized_overlap)
+                cut = positions[seam_start]
+                if seam_start <= self.confirmed_prefix_length:
+                    self.confirmed_prefix_length = seam_start + len(normalized_overlap)
+                self.utterance_hypothesis = self.utterance_hypothesis[:cut] + raw
+            else:
+                self.utterance_hypothesis = append_preserving_text(
+                    self.utterance_hypothesis, new_text
+                )
+        if correction is not None:
+            self.confirmed_prefix_length = min(
+                self.confirmed_prefix_length,
+                normalized_common_prefix_length(before_hypothesis, self.utterance_hypothesis),
+            )
+        self.assembled = append_preserving_text(
+            self._finalized_session, self.utterance_hypothesis
         )
-        self.assembled = append_preserving_text(self.assembled, new_text)
         self.previous = raw
         self.last_window = window
 
@@ -268,7 +360,10 @@ class SubtitleAssembler:
             review_reasons.append("overlap_at_minimum_threshold")
         if normalized_raw_length and normalized_overlap_length / normalized_raw_length >= 0.8:
             review_reasons.append("overlap_consumes_at_least_80_percent")
-        duplicate_only = bool(raw and not new_text and overlap)
+        duplicate_only = bool(
+            raw and not new_text and overlap
+            and normalize_for_matching(before_hypothesis) == normalize_for_matching(self.utterance_hypothesis)
+        )
         elapsed = time.perf_counter() - started
         return AssemblyEvent(
             window=window,
@@ -291,6 +386,7 @@ class SubtitleAssembler:
             new_fragment=new_text,
             utterance_hypothesis=self.utterance_hypothesis,
             session_text=self.assembled,
+            confirmed_prefix_length=self.confirmed_prefix_length,
         )
 
 
@@ -501,6 +597,8 @@ class SpeakerSubtitleState:
         hypothesis: str,
         speech_detected: bool,
         stream_time_seconds: float,
+        *,
+        confirmed_prefix_length: int | None = None,
     ) -> list[SubtitleStateEvent]:
         if window <= self.last_window:
             raise ValueError(
@@ -586,6 +684,16 @@ class SpeakerSubtitleState:
                 ).ratio()
                 stability_action = "consensus_correction"
 
+        if confirmed_prefix_length is not None:
+            # Assembled prefixes copied from the last hypothesis are not an
+            # independent observation. Only the assembler knows that provenance.
+            self.stable_text, self.tentative_text = split_hypothesis_at_normalized_prefix(
+                hypothesis, max(0, confirmed_prefix_length)
+            )
+            stability_action = (
+                "independent_window_support" if self.stable_text
+                else "awaiting_independent_support"
+            )
         self.partial_text = self._display_text()
         self.previous_raw = hypothesis
         self.last_update_time = stream_time_seconds

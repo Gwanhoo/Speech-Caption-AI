@@ -437,10 +437,21 @@ def build_window_diagnostic(
 def secondary_transcript_suppression_reason(
     diagnostic: dict[str, Any], transcript: str
 ) -> str | None:
-    """Suppress only non-empty STT output that contains no lexical characters."""
+    """Require both waveform and text agreement before rejecting lexical output."""
     secondary_active = diagnostic["speaker_metrics"][1]["vad_speech_detected"]
     if secondary_active and transcript.strip() and not _NORMALIZE_PATTERN.sub("", transcript):
         return "secondary_nonlexical_transcript"
+    # Similar words alone are not leakage evidence: two real speakers can say
+    # the same thing. Near-identical waveforms in the same window plus an exact
+    # normalized transcript indicate a duplicated separator output.
+    correlation = diagnostic.get("abs_waveform_pearson_correlation")
+    if (
+        diagnostic.get("activity_relationship") == "both_active"
+        and len(normalize_lexical_text(transcript)) >= 4
+        and correlation is not None and correlation >= 0.98
+        and diagnostic.get("text_similarity", {}).get("normalized") == 1.0
+    ):
+        return "duplicate_waveform_and_transcript"
     return None
 
 

@@ -43,11 +43,15 @@ from validate_end_to_end_gpu import (  # noqa: E402
 MAX_REQUEST_BYTES = 16 * 1024 * 1024
 MAX_AUDIO_SECONDS = 30.0
 FASTER_WHISPER_MODEL_NAME = "base"
+DEFAULT_STT_MODEL = "small"
+STT_MODEL_CHOICES = ("base", "small", "medium", "large-v3-turbo", "large-v3")
 FASTER_WHISPER_CHECKPOINT_ROOT = ROOT / "checkpoints" / "faster-whisper"
 
 
-def faster_whisper_model_source() -> str:
+def faster_whisper_model_source(model_name: str = FASTER_WHISPER_MODEL_NAME) -> str:
     """Use a valid project-local base model when present, otherwise use HF's base ID."""
+    if model_name != "base":
+        return model_name  # faster-whisper resolves the supported ID and its own cache.
     model_cache = (
         FASTER_WHISPER_CHECKPOINT_ROOT
         / "models--Systran--faster-whisper-base"
@@ -72,7 +76,12 @@ class LoadedModels:
 
 
 class PipelineService:
-    def __init__(self) -> None:
+    whisper_model_name = DEFAULT_STT_MODEL
+
+    def __init__(self, whisper_model_name: str = DEFAULT_STT_MODEL, *, warm_up: bool = True) -> None:
+        if whisper_model_name not in STT_MODEL_CHOICES:
+            raise ValueError(f"Unsupported STT model: {whisper_model_name}")
+        self.whisper_model_name = whisper_model_name
         self.started_at = time.time()
         self.ready = False
         self.load_error: str | None = None
@@ -89,6 +98,25 @@ class PipelineService:
         self.memory: dict[str, dict[str, int | None]] = {}
         self._cached_memory = {"device_used_mib": None, "process_used_mib": None}
         self.models = self._load_models()
+        self.ready = False
+        try:
+            if warm_up:
+                started = time.perf_counter()
+                self._inference_executor.submit(self._warm_up_models).result()
+                self.load_times["warm_up_seconds"] = time.perf_counter() - started
+            self.ready = True
+        except BaseException:
+            self.close()
+            raise
+
+    def _warm_up_models(self) -> None:
+        """Initialize CUDA in the same persistent thread used for requests."""
+        audio = np.random.default_rng(0).normal(0, 0.01, SAMPLE_RATE * 3).astype(np.float32)
+        separated = separate_amp(self.models.separator, self.models.separation_device, audio)
+        for slot in range(2):
+            detect_speech_activity(self.models.vad, separated.output[slot, 0], VAD_MINIMUM_SPEECH_MS)
+        # Warm decoding even when the synthetic separator output is VAD-negative.
+        transcribe_base(self.models.whisper, np.zeros(SAMPLE_RATE * 3, dtype=np.float32))
 
     def close(self) -> None:
         self._inference_executor.shutdown(wait=True, cancel_futures=False)
@@ -108,7 +136,9 @@ class PipelineService:
 
             started = time.perf_counter()
             whisper = WhisperModel(
-                faster_whisper_model_source(), device="cuda", compute_type="float16"
+                faster_whisper_model_source(self.whisper_model_name),
+                device="cuda", compute_type="float16",
+                download_root=str(FASTER_WHISPER_CHECKPOINT_ROOT),
             )
             self.load_times["faster_whisper_seconds"] = time.perf_counter() - started
             self.memory["after_faster_whisper"] = self._memory_record()
@@ -148,6 +178,8 @@ class PipelineService:
                 },
                 "uptime_seconds": time.time() - self.started_at,
                 "load_error": self.load_error,
+                "stt_model": self.whisper_model_name,
+                "stt_options": dict(LIVE_WHISPER_OPTIONS),
             }
         return (HTTPStatus.OK if self.ready else HTTPStatus.SERVICE_UNAVAILABLE), payload
 
@@ -359,7 +391,7 @@ class PipelineService:
             "models": {
                 "mossformer2": {"device": str(self.models.separation_device), "amp": True},
                 "faster_whisper": {
-                    "model": "base",
+                    "model": self.whisper_model_name,
                     "device": str(self.models.whisper.model.device),
                     "compute_type": str(self.models.whisper.model.compute_type),
                     "options": LIVE_WHISPER_OPTIONS,
@@ -659,10 +691,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Local Runpod GPU processing server prototype")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8787)
+    parser.add_argument("--whisper-model", choices=STT_MODEL_CHOICES, default=DEFAULT_STT_MODEL,
+                        help="Multilingual STT model; use base to reproduce the previous baseline")
+    parser.add_argument("--no-warmup", action="store_true", help="Disable startup warm-up for cold-start benchmarks")
     args = parser.parse_args()
 
     print("Loading GPU pipeline models once at server startup...", flush=True)
-    service = PipelineService()
+    service = PipelineService(args.whisper_model, warm_up=not args.no_warmup)
     server = ProcessingHTTPServer((args.host, args.port), service)
     print(
         f"GPU processing server ready: http://{args.host}:{args.port}; "

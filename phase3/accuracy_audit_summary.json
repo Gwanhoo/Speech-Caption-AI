@@ -1,0 +1,713 @@
+{
+  "date": "2026-09-30",
+  "baseline_git_commit": "3ffaf2d0516cddf594aee8eaf26fc880aa9574d6",
+  "initial_git_status": "clean",
+  "gpu": "RTX A5000 24564 MiB",
+  "versions": {
+    "faster-whisper": "1.2.1",
+    "ctranslate2": "4.8.2",
+    "torch": "2.8.0+cu128",
+    "silero-vad": "6.2.3",
+    "clearvoice": "0.1.2"
+  },
+  "window_seconds": 3,
+  "stride_seconds": 2,
+  "options": {
+    "language": "ko",
+    "beam_size": 5,
+    "condition_on_previous_text": false
+  },
+  "effective_library_defaults": {
+    "temperature": [
+      0.0,
+      0.2,
+      0.4,
+      0.6,
+      0.8,
+      1.0
+    ],
+    "vad_filter": false,
+    "word_timestamps": false,
+    "initial_prompt": null,
+    "no_speech_threshold": 0.6,
+    "compression_ratio_threshold": 2.4,
+    "log_prob_threshold": -1.0
+  },
+  "voice_cer": null,
+  "voice_accuracy_note": "No verified reference transcript. Speech quality improvements are examples, not a corpus CER claim.",
+  "models": [
+    {
+      "name": "base",
+      "stt_calls": 52,
+      "speech_windows": 21,
+      "stt_seconds": {
+        "mean": 0.3851834090337867,
+        "p95": 1.3115832190960646,
+        "max": 1.3312808405607939,
+        "count": 21
+      },
+      "cached_separation_plus_vad_stt_seconds": {
+        "mean": 0.7779633854294107,
+        "p95": 1.6074863579124212,
+        "max": 3.384638525545597,
+        "count": 21
+      },
+      "offline_over_stride_count": 1,
+      "stt_process_peak_mib": 542,
+      "noise_output": [
+        "여러분이 어떻게 해? 276",
+        ""
+      ],
+      "noise_false_text_characters": 11,
+      "single_B_before": [
+        "안녕하세요. 오늘은 아침에 일어나서 간단하나 게 식사를 하고 10분 초 공원으로 집든처 공원으로 산책을 나갔습니다. 평소 평소보다 날씨가 상상해서 천천히 거 선에서 천천히 걷기 좋았고 공원에는 운동을 하고 공원회는 운동을 하거나, 강아지와 산책하는 사람들이 많이 있었습니다. 산책을...",
+        ""
+      ],
+      "single_B_after": [
+        "안녕하세요. 오늘은 아침에 일어나서 간단하게 식사를 하고 10분 초 공원으로 집든처 공원으로 산책을 나갔습니다. 평소 평소보다 날씨가 상상해서 천천히 거 선에서 천천히 걷기 좋았고 공원에는 운동을 하고 공원회는 운동을 하거나, 강아지와 산책하는 사람들이 많이 있었습니다. 산책을...",
+        ""
+      ],
+      "assembler_milliseconds": {
+        "mean": 0.26541597963798613,
+        "p95": 0.6322352215647696,
+        "max": 0.899212434887886,
+        "count": 42
+      }
+    },
+    {
+      "name": "small",
+      "stt_calls": 52,
+      "speech_windows": 21,
+      "stt_seconds": {
+        "mean": 0.395928921798865,
+        "p95": 0.6921601444482803,
+        "max": 0.9882837571203709,
+        "count": 21
+      },
+      "cached_separation_plus_vad_stt_seconds": {
+        "mean": 0.788708898194489,
+        "p95": 1.3872756697237492,
+        "max": 2.4246081933379173,
+        "count": 21
+      },
+      "offline_over_stride_count": 1,
+      "stt_process_peak_mib": 958,
+      "noise_output": [
+        "",
+        ""
+      ],
+      "noise_false_text_characters": 0,
+      "single_B_before": [
+        "안녕하세요. 오늘은 아침에 일어나서 간단한 하게 식사를 하고 집 근처 공원으로 산책을 나갔습니다. 평소보다 날씨가 선선해서 천천히 거... 공원에서 천천히 걷기 좋았고 공원에는 운동을 하거든요. 공원에는 운동을 하거나 강아지와 산책하는 사람들이 많이 있었습니다.",
+        ""
+      ],
+      "single_B_after": [
+        "안녕하세요. 오늘은 아침에 일어나서 간단하게 식사를 하고 집 근처 공원으로 산책을 나갔습니다. 평소보다 날씨가 선선해서 천천히 거... 공원에서 천천히 걷기 좋았고 공원에는 운동을 하거나 강아지와 산책하는 사람들이 많이 있었습니다.",
+        ""
+      ],
+      "assembler_milliseconds": {
+        "mean": 0.2710869358409019,
+        "p95": 0.7362512871623038,
+        "max": 0.802990049123764,
+        "count": 42
+      }
+    },
+    {
+      "name": "medium",
+      "stt_calls": 52,
+      "speech_windows": 21,
+      "stt_seconds": {
+        "mean": 1.0712519803394873,
+        "p95": 4.51404270529747,
+        "max": 5.656183583661914,
+        "count": 21
+      },
+      "cached_separation_plus_vad_stt_seconds": {
+        "mean": 1.4640319567351114,
+        "p95": 4.8095614314079285,
+        "max": 5.961169505491853,
+        "count": 21
+      },
+      "offline_over_stride_count": 3,
+      "stt_process_peak_mib": 2974,
+      "noise_output": [
+        "MBC 뉴스 이재경입니다.",
+        ""
+      ],
+      "noise_false_text_characters": 11,
+      "single_B_before": [
+        "안녕하세요. 오늘은 아침에 일어나서 간단한... 하게 식사를 하고 집 근처 공원으로 산책을 나갔습니다. 평소보다 날씨가 선선해서 천천히 걷고 공원에서 천천히 걷기 좋았고 공원에는 운동을 하고 거나 강아지와 산책하는 사람들이 많이 있었습니다.",
+        ""
+      ],
+      "single_B_after": [
+        "안녕하세요. 오늘은 아침에 일어나서 간단하게 식사를 하고 집 근처 공원으로 산책을 나갔습니다. 평소보다 날씨가 선선해서 천천히 걷고 공원에서 천천히 걷기 좋았고 공원에는 운동을 하거나 강아지와 산책하는 사람들이 많이 있었습니다.",
+        ""
+      ],
+      "assembler_milliseconds": {
+        "mean": 0.26890928191798075,
+        "p95": 0.7129575125873089,
+        "max": 0.7774699479341507,
+        "count": 42
+      }
+    },
+    {
+      "name": "large-v3-turbo",
+      "stt_calls": 52,
+      "speech_windows": 21,
+      "stt_seconds": {
+        "mean": 0.4428309842589356,
+        "p95": 1.0224486105144024,
+        "max": 1.1959283109754324,
+        "count": 21
+      },
+      "cached_separation_plus_vad_stt_seconds": {
+        "mean": 0.8356109606545596,
+        "p95": 1.5800029002130032,
+        "max": 2.450965130701661,
+        "count": 21
+      },
+      "offline_over_stride_count": 1,
+      "stt_process_peak_mib": 2366,
+      "noise_output": [
+        "감사합니다.",
+        ""
+      ],
+      "noise_false_text_characters": 5,
+      "single_B_before": [
+        "안녕하세요 오늘은 아침에 일어나서 간단 하게 식사를 하고 집 근처 공원으로 산책을 나갔습니다. 평소보다 날씨가 선선해서 천천히 거울 수 있습니다. 천천히 걷기 좋았고 공원에는 운동을 하거든요. 공원에는 운동을 하거나 강아지와 산책하는 사람들이 이만 있었습니다.",
+        ""
+      ],
+      "single_B_after": [
+        "안녕하세요 오늘은 아침에 일어나서 간단하게 식사를 하고 집 근처 공원으로 산책을 나갔습니다. 평소보다 날씨가 선선해서 천천히 거울 수 있습니다. 천천히 걷기 좋았고 공원에는 운동을 하거나 강아지와 산책하는 사람들이 많이 있었습니다.",
+        ""
+      ],
+      "assembler_milliseconds": {
+        "mean": 0.2799545902581442,
+        "p95": 0.7603180594742298,
+        "max": 0.9194351732730865,
+        "count": 42
+      }
+    },
+    {
+      "name": "large-v3",
+      "stt_calls": 52,
+      "speech_windows": 21,
+      "stt_seconds": {
+        "mean": 0.9458036711882978,
+        "p95": 1.7750921361148357,
+        "max": 3.8254559133201838,
+        "count": 21
+      },
+      "cached_separation_plus_vad_stt_seconds": {
+        "mean": 1.3385836475839217,
+        "p95": 3.449827076867223,
+        "max": 4.2095305025577545,
+        "count": 21
+      },
+      "offline_over_stride_count": 3,
+      "stt_process_peak_mib": 4318,
+      "noise_output": [
+        "감사합니다.",
+        ""
+      ],
+      "noise_false_text_characters": 5,
+      "single_B_before": [
+        "안녕하세요. 오늘은 아침에 일어나서 간단한 하게 식사를 하고 집 근처 공원으로 산책을 나갔습니다. 평소보다 날씨가 선선해서 천천히 공원에서 천천히 걷기 좋았고 공원에는 운동을 하거였다. 공원에는 운동을 하거나 강아지와 산책하는 사람들이 많습니다.",
+        ""
+      ],
+      "single_B_after": [
+        "안녕하세요. 오늘은 아침에 일어나서 간단하게 식사를 하고 집 근처 공원으로 산책을 나갔습니다. 평소보다 날씨가 선선해서 천천히 공원에서 천천히 걷기 좋았고 공원에는 운동을 하거나 강아지와 산책하는 사람들이 많이 있었습니다.",
+        ""
+      ],
+      "assembler_milliseconds": {
+        "mean": 0.27619550625483197,
+        "p95": 0.7556872442364685,
+        "max": 1.039331778883934,
+        "count": 42
+      }
+    }
+  ],
+  "text_regressions": [
+    {
+      "fragments": [
+        "안뇽하세요",
+        "안녕하세여 오늘은 아침에"
+      ],
+      "reference_kind": "constructed_text_fixture_not_audio_ground_truth",
+      "expected": "안녕하세여 오늘은 아침에",
+      "before": {
+        "text": "안뇽하세요 안녕하세여 오늘은 아침에",
+        "score": {
+          "cer": 0.45454545454545453,
+          "reference_characters": 11,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 5,
+          "wer": 0.3333333333333333,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 8.806586265563965e-05
+      },
+      "after": {
+        "text": "안녕하세여 오늘은 아침에",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 11,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 0.00023520924150943756
+      }
+    },
+    {
+      "fragments": [
+        "오늘은 익스트림 모두",
+        "익스트림 모드 실행합니다"
+      ],
+      "reference_kind": "constructed_text_fixture_not_audio_ground_truth",
+      "expected": "오늘은 익스트림 모드 실행합니다",
+      "before": {
+        "text": "오늘은 익스트림 모두 익스트림 모드 실행합니다",
+        "score": {
+          "cer": 0.42857142857142855,
+          "reference_characters": 14,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 6,
+          "wer": 0.5,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 9.608641266822815e-05
+      },
+      "after": {
+        "text": "오늘은 익스트림 모드 실행합니다",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 14,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 0.0002393815666437149
+      }
+    },
+    {
+      "fragments": [
+        "안녕하세요. 오늘은 아침",
+        "오늘은 아침에 일어나서"
+      ],
+      "reference_kind": "constructed_text_fixture_not_audio_ground_truth",
+      "expected": "안녕하세요. 오늘은 아침에 일어나서",
+      "before": {
+        "text": "안녕하세요. 오늘은 아침 에 일어나서",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.5,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 4.7031790018081665e-05
+      },
+      "after": {
+        "text": "안녕하세요. 오늘은 아침에 일어나서",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 0.0001537315547466278
+      }
+    },
+    {
+      "fragments": [
+        "집에서 토마토 파스타를 만들어봤는데",
+        "봤는데 처음 시도한 요리입니다"
+      ],
+      "reference_kind": "constructed_text_fixture_not_audio_ground_truth",
+      "expected": "집에서 토마토 파스타를 만들어봤는데 처음 시도한 요리입니다",
+      "before": {
+        "text": "집에서 토마토 파스타를 만들어봤는데 처음 시도한 요리입니다",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 26,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 5.433522164821625e-05
+      },
+      "after": {
+        "text": "집에서 토마토 파스타를 만들어봤는데 처음 시도한 요리입니다",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 26,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 0.00023734942078590393
+      }
+    },
+    {
+      "fragments": [
+        "오늘은 밥을 먹었습니다",
+        "내일은 밥을 먹겠습니다"
+      ],
+      "reference_kind": "constructed_text_fixture_not_audio_ground_truth",
+      "expected": "오늘은 밥을 먹었습니다 내일은 밥을 먹겠습니다",
+      "before": {
+        "text": "오늘은 밥을 먹었습니다 내일은 밥을 먹겠습니다",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 7.785111665725708e-05
+      },
+      "after": {
+        "text": "오늘은 밥을 먹었습니다 내일은 밥을 먹겠습니다",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 0.00025242194533348083
+      }
+    },
+    {
+      "fragments": [
+        "사람입니다",
+        "바람입니다"
+      ],
+      "reference_kind": "constructed_text_fixture_not_audio_ground_truth",
+      "expected": "사람입니다 바람입니다",
+      "before": {
+        "text": "사람입니다 바람입니다",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 3.628060221672058e-05
+      },
+      "after": {
+        "text": "사람입니다 바람입니다",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 7.921084761619568e-05
+      }
+    },
+    {
+      "fragments": [
+        "진짜 진짜 맛있다"
+      ],
+      "reference_kind": "constructed_text_fixture_not_audio_ground_truth",
+      "expected": "진짜 진짜 맛있다",
+      "before": {
+        "text": "진짜 진짜 맛있다",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 7,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 4.76837158203125e-06
+      },
+      "after": {
+        "text": "진짜 진짜 맛있다",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 7,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 5.660578608512878e-06
+      }
+    },
+    {
+      "fragments": [
+        "공원에서 천천히 걷기 좋았고 공원에는 운동을 하거든요.",
+        "공원에는 운동을 하거나 강아지와 산책하는 사람들이"
+      ],
+      "reference_kind": "constructed_text_fixture_not_audio_ground_truth",
+      "expected": "공원에서 천천히 걷기 좋았고 공원에는 운동을 하거나 강아지와 산책하는 사람들이",
+      "before": {
+        "text": "공원에서 천천히 걷기 좋았고 공원에는 운동을 하거든요. 공원에는 운동을 하거나 강아지와 산책하는 사람들이",
+        "score": {
+          "cer": 0.3235294117647059,
+          "reference_characters": 34,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 11,
+          "wer": 0.3,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 0.00011785700917243958
+      },
+      "after": {
+        "text": "공원에서 천천히 걷기 좋았고 공원에는 운동을 하거나 강아지와 산책하는 사람들이",
+        "score": {
+          "cer": 0.0,
+          "reference_characters": 34,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "wer": 0.0,
+          "silence_output_characters": null
+        },
+        "matching_seconds": 0.0007220879197120667
+      }
+    }
+  ],
+  "text_regression_aggregate": {
+    "before": {
+      "cases": 8,
+      "exact_display_failures": 4,
+      "reference_characters": 137,
+      "edit_errors": 22,
+      "cer": 0.16058394160583941,
+      "insertions": 22,
+      "deletions": 0,
+      "substitutions": 0
+    },
+    "after": {
+      "cases": 8,
+      "exact_display_failures": 0,
+      "reference_characters": 137,
+      "edit_errors": 0,
+      "cer": 0.0,
+      "insertions": 0,
+      "deletions": 0,
+      "substitutions": 0
+    }
+  },
+  "latency": {
+    "base": {
+      "requests": 27,
+      "events": 36,
+      "request_seconds": {
+        "mean": 0.6042677872572784,
+        "p95": 0.8369793659076095,
+        "max": 3.9948583226650953,
+        "count": 27
+      },
+      "capture_ready_to_receive_seconds": {
+        "mean": 0.9396404958226614,
+        "p95": 3.0959300813265145,
+        "max": 4.010187532752752,
+        "count": 36
+      },
+      "first_subtitle_from_stream_start_seconds": [
+        7.009547671303153,
+        3.517787301912904,
+        3.6554902214556932
+      ],
+      "queue_wait_max_seconds": 2.007150936871767,
+      "max_queue_depth": 2,
+      "drop_count": 0,
+      "warmup_seconds": 0,
+      "gpu_memory_after": {
+        "device_used_mib": 3482,
+        "process_used_mib": 1016
+      },
+      "success": true
+    },
+    "small": {
+      "requests": 27,
+      "events": 36,
+      "request_seconds": {
+        "mean": 0.6264912574379532,
+        "p95": 1.399849325045943,
+        "max": 2.6624126564711332,
+        "count": 27
+      },
+      "capture_ready_to_receive_seconds": {
+        "mean": 0.86666685089262,
+        "p95": 1.8742710277438164,
+        "max": 2.6781733464449644,
+        "count": 36
+      },
+      "first_subtitle_from_stream_start_seconds": [
+        5.677329692989588,
+        3.5810721833258867,
+        3.7113458402454853
+      ],
+      "queue_wait_max_seconds": 0.6755382623523474,
+      "max_queue_depth": 1,
+      "drop_count": 0,
+      "warmup_seconds": 0,
+      "gpu_memory_after": {
+        "device_used_mib": 2461,
+        "process_used_mib": 1430
+      },
+      "success": true
+    },
+    "small_warm": {
+      "requests": 27,
+      "events": 36,
+      "request_seconds": {
+        "mean": 0.5913351332699811,
+        "p95": 0.9690507238730788,
+        "max": 0.9828825853765011,
+        "count": 27
+      },
+      "capture_ready_to_receive_seconds": {
+        "mean": 0.7515471785122322,
+        "p95": 1.0122467605397105,
+        "max": 1.0137010235339403,
+        "count": 36
+      },
+      "first_subtitle_from_stream_start_seconds": [
+        3.877501890063286,
+        3.600692505016923,
+        3.908811815083027
+      ],
+      "queue_wait_max_seconds": 0.0014120489358901978,
+      "max_queue_depth": 1,
+      "drop_count": 0,
+      "warmup_seconds": 2.6604166850447655,
+      "gpu_memory_after": {
+        "device_used_mib": 4917,
+        "process_used_mib": 1430
+      },
+      "success": true
+    }
+  },
+  "audio_vad_audit": {
+    "resample": {
+      "input": "B.wav resampled to 48kHz as a WASAPI-format surrogate",
+      "duration": 15,
+      "output_samples": 240000,
+      "relative_rms_error_db": -54.505062103271484,
+      "maximum_error": 0.05292048305273056,
+      "nonzero_difference_samples": 114,
+      "sample_count_matches": true
+    },
+    "vad": {
+      "single_A": {
+        "windows": 7,
+        "active_counts_original_primary_secondary": {
+          "100": [
+            7,
+            7,
+            3
+          ],
+          "200": [
+            7,
+            7,
+            2
+          ]
+        }
+      },
+      "single_B": {
+        "windows": 7,
+        "active_counts_original_primary_secondary": {
+          "100": [
+            7,
+            7,
+            0
+          ],
+          "200": [
+            7,
+            7,
+            0
+          ]
+        }
+      },
+      "mixture": {
+        "windows": 7,
+        "active_counts_original_primary_secondary": {
+          "100": [
+            7,
+            7,
+            7
+          ],
+          "200": [
+            7,
+            7,
+            7
+          ]
+        }
+      },
+      "silence": {
+        "windows": 2,
+        "active_counts_original_primary_secondary": {
+          "100": [
+            0,
+            0,
+            0
+          ],
+          "200": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "noise": {
+        "windows": 2,
+        "active_counts_original_primary_secondary": {
+          "100": [
+            0,
+            1,
+            0
+          ],
+          "200": [
+            0,
+            1,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "fixture_hashes": {
+    "single_A": "60b2120ca9aab13899fbada3626a9d829ca1ea58012b358d6de9b21dbb5d4251",
+    "single_B": "c1104f07dfd670ef75c5237d72d3f7e363f4f14b5fca146cbecdd3741700b2cb",
+    "mixture": "89fe28e9cdff79265fedcfc1841ce0bb65308d17a9fc146179c6282beb546d17",
+    "silence": "ac2878215ad33205d1732578c89f25ededaad1b676911c540825bcf4baa42d9b",
+    "noise": "3ad603f147f68f50b6b5343179fa38f610e9aa93e07d7307b60255732c6b1d26"
+  },
+  "baseline_assembler_sha256": "25e802dbdacec37ea24f3e28efc4e8c48f453ef99308e25d4930f8becb8b8cb6"
+}

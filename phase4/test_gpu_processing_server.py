@@ -42,6 +42,40 @@ class FasterWhisperModelSourceTests(TestCase):
                 self.assertEqual(server.faster_whisper_model_source(), str(local_model))
 
 
+    def test_selected_model_does_not_reuse_legacy_base_snapshot(self):
+        self.assertEqual(server.faster_whisper_model_source("small"), "small")
+        self.assertEqual(server.faster_whisper_model_source("large-v3-turbo"), "large-v3-turbo")
+
+    def test_invalid_model_is_rejected_before_loading_gpu(self):
+        with patch.object(server.PipelineService, "_load_models") as load:
+            with self.assertRaises(ValueError):
+                server.PipelineService("invented-model")
+            load.assert_not_called()
+
+    def test_selected_model_is_reported_by_health(self):
+        with patch.object(server.PipelineService, "_load_models", return_value=Mock()), \
+                patch.object(server, "query_gpu_memory", return_value=(1024, 512)):
+            service = server.PipelineService("medium", warm_up=False)
+            try:
+                self.assertEqual(service.health()[1]["stt_model"], "medium")
+            finally:
+                service.close()
+
+
+    def test_warmup_finishes_on_inference_worker_before_ready(self):
+        thread_ids = []
+        with patch.object(server.PipelineService, "_load_models", return_value=Mock()), \
+                patch.object(server.PipelineService, "_warm_up_models", side_effect=lambda: thread_ids.append(threading.get_ident())):
+            service = server.PipelineService("small")
+            try:
+                self.assertTrue(service.ready)
+                self.assertNotEqual(thread_ids, [threading.get_ident()])
+                self.assertEqual(service._inference_executor.submit(threading.get_ident).result(), thread_ids[0])
+                self.assertIn("warm_up_seconds", service.load_times)
+            finally:
+                service.close()
+
+
 class ServerLatencyDiagnosticsTests(TestCase):
     def test_process_uses_cached_gpu_memory_without_nvidia_smi(self):
         service = object.__new__(server.PipelineService)

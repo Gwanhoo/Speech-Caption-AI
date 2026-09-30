@@ -26,6 +26,7 @@ sys.path.insert(0, str(ROOT / "phase3"))
 sys.path.insert(0, str(ROOT / "phase4"))
 
 import run_realtime_pipeline as base  # noqa: E402
+from audio_diagnostics import select_capture_channel, capture_audio_diagnostics
 from separation_recovery import (  # noqa: E402
     Fp32FallbackError,
     InvalidSeparationInput,
@@ -119,6 +120,7 @@ class AudioWindow:
     capture_ended: float
     capture_timestamp: str
     audio_queue_size: int
+    capture_audio_stats: dict[str, Any] = field(default_factory=dict)
     latency_timing: dict[str, Any] = field(default_factory=dict)
 
 
@@ -395,6 +397,8 @@ def main(
     parser.add_argument("--vad-min-speech-ms", type=int, default=200)
     parser.add_argument("--json-output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--save-wav", action="store_true")
+    parser.add_argument("--capture-channel", choices=("first", "mean"), default="first",
+                        help="Channel selection; compare diagnostics before choosing mean")
     parser.add_argument(
         "--diagnostic-audio",
         action="store_true",
@@ -788,7 +792,7 @@ def main(
             for name, (path, audio) in comparison_audio.items():
                 if not len(audio):
                     raise ValueError(f"Diagnostic audio is empty: {path.name}")
-                sf.write(path, audio, SAMPLE_RATE, subtype="PCM_16")
+                sf.write(path, audio, SAMPLE_RATE, subtype="FLOAT")
                 comparison_files[name] = {
                     "path": str(path),
                     "sample_rate": SAMPLE_RATE,
@@ -806,7 +810,7 @@ def main(
             for path, audio in diagnostic_inputs.values():
                 if not len(audio):
                     raise ValueError(f"Diagnostic audio is empty: {path.name}")
-                sf.write(path, audio, SAMPLE_RATE, subtype="PCM_16")
+                sf.write(path, audio, SAMPLE_RATE, subtype="FLOAT")
 
             print("\n========== Phase 4-B Diagnostic STT ==========", flush=True)
             report: dict[str, Any] = {
@@ -924,8 +928,10 @@ def main(
                             )
                             index += 1
                             continue
+                        capture_mono = select_capture_channel(raw, args.capture_channel)
+                        capture_stats = capture_audio_diagnostics(raw, capture_mono, args.capture_channel)
                         new_audio = base._resample(
-                            np.asarray(raw[:, 0], dtype=np.float32),
+                            capture_mono,
                             base.CAPTURE_SAMPLE_RATE,
                             SAMPLE_RATE,
                         )
@@ -973,6 +979,7 @@ def main(
                             capture_started=capture_started,
                             capture_ended=capture_ended,
                             capture_timestamp=datetime.now().astimezone().isoformat(timespec="milliseconds"),
+                            capture_audio_stats=capture_stats,
                             audio_queue_size=audio_queue.qsize(),
                             latency_timing=(
                                 {
@@ -990,7 +997,7 @@ def main(
                                 DEBUG_OUTPUT_DIR / f"window_{index:03d}_mixed.wav",
                                 audio,
                                 SAMPLE_RATE,
-                                subtype="PCM_16",
+                                subtype="FLOAT",
                             )
                         audio_queue_enqueue_started = time.perf_counter()
                         accepted = base.enqueue_or_drop(
@@ -1032,7 +1039,7 @@ def main(
                             raw_remainder = recorder.record(numframes=remainder * base.CAPTURE_SAMPLE_RATE)
                             if args.diagnostic_audio:
                                 remainder_audio = base._resample(
-                                    np.asarray(raw_remainder[:, 0], dtype=np.float32),
+                                    select_capture_channel(raw_remainder, args.capture_channel),
                                     base.CAPTURE_SAMPLE_RATE,
                                     SAMPLE_RATE,
                                 )
@@ -1253,13 +1260,13 @@ def main(
                                     DEBUG_OUTPUT_DIR / f"window_{item.index:03d}_speaker_{source}.wav",
                                     audio,
                                     SAMPLE_RATE,
-                                    subtype="PCM_16",
+                                    subtype="FLOAT",
                                 )
                                 sf.write(
                                     DEBUG_OUTPUT_DIR / f"window_{item.index:03d}_raw_slot_{source}.wav",
                                     audio,
                                     SAMPLE_RATE,
-                                    subtype="PCM_16",
+                                    subtype="FLOAT",
                                 )
                             if args.diagnostic_audio:
                                 diagnostic_raw_slot_windows[source][item.index] = audio.copy()
@@ -1283,7 +1290,7 @@ def main(
                                     / f"window_{item.index:03d}_logical_speaker_{logical_speaker}.wav",
                                     audio,
                                     SAMPLE_RATE,
-                                    subtype="PCM_16",
+                                    subtype="FLOAT",
                                 )
                             if args.diagnostic_audio:
                                 diagnostic_logical_speaker_windows[logical_speaker][
@@ -1613,11 +1620,14 @@ def main(
                                     if args.vad
                                     else bool(transcripts[speaker_index])
                                 )
+                                if speaker_index == 1 and suppression_reason is not None:
+                                    speech_detected = False
                                 state_events = subtitle_states[speaker_index].process(
                                     window=item.source.index,
                                     hypothesis=hypothesis,
                                     speech_detected=speech_detected,
                                     stream_time_seconds=item.source.stream_end_seconds,
+                                    confirmed_prefix_length=window_assembly_events[speaker_index]["confirmed_prefix_length"],
                                 )
                                 for state_event in state_events:
                                     window_subtitle_state_events.append(state_event.to_dict())
@@ -1678,6 +1688,7 @@ def main(
                                 args.window_seconds if item.source.index == 0 else args.stride_seconds
                             ),
                             "capture_seconds": item.source.capture_ended - item.source.capture_started,
+                            "capture_audio": item.source.capture_audio_stats,
                             "separation_started_timestamp": item.separation_started_timestamp,
                             "separation_ended_timestamp": item.separation_ended_timestamp,
                             "separation_started_after_capture_complete": (
@@ -1984,7 +1995,7 @@ def main(
                     for event in assembler_events
                 ),
                 "fuzzy_overlap_count": sum(
-                    event["match_type"] == "fuzzy" for event in assembler_events
+                    event["match_type"] in {"fuzzy", "fuzzy_replace"} for event in assembler_events
                 ),
                 "no_overlap_count": sum(
                     event["match_type"] == "none" for event in assembler_events
@@ -2028,7 +2039,7 @@ def main(
                             for event in assembler_events
                         ),
                         "fuzzy_overlap_count": sum(
-                            event["speaker"] == speaker and event["match_type"] == "fuzzy"
+                            event["speaker"] == speaker and event["match_type"] in {"fuzzy", "fuzzy_replace"}
                             for event in assembler_events
                         ),
                         "duplicate_only_count": sum(
