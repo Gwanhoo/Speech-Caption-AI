@@ -39,6 +39,7 @@ from separation_recovery import (  # noqa: E402
 )
 from secondary_leakage_diagnostics import (  # noqa: E402
     SecondaryValidityTracker,
+    admit_subtitle_streams,
     build_summary as build_secondary_leakage_summary,
     build_secondary_validity_summary,
     build_full_window_diagnostic,
@@ -1594,6 +1595,23 @@ def main(
                                     f"speech_corr={routing['candidate_speech_correlations']}",
                                     flush=True,
                                 )
+                            transcripts, subtitle_vads, admission = admit_subtitle_streams(
+                                mixture=item.source.audio,
+                                speakers=item.speakers,
+                                transcripts=transcripts,
+                                vad_results=subtitle_vads,
+                                active_hypotheses=[state.partial_text for state in subtitle_states],
+                                speaker_assignment=item.speaker_assignment,
+                            )
+                            secondary_leakage["subtitle_admission"] = admission
+                            for decision in admission["streams"]:
+                                if decision["suppressed"]:
+                                    print(
+                                        f"[SUBTITLE ADMISSION] window={item.source.index:03d} "
+                                        f"speaker={decision['speaker']} suppressed "
+                                        f"reason={decision['reason']}",
+                                        flush=True,
+                                    )
                         subtitle_created_times: list[float] = []
                         window_assembly_events: list[dict[str, Any]] = []
                         utterance_hypotheses: list[str] = []

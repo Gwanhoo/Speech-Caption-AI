@@ -8,7 +8,9 @@ from typing import Any
 import numpy as np
 import soundfile as sf
 
-from speaker_tracking import HIGH_SOURCE_CORRELATION, safe_absolute_correlation
+from speaker_tracking import (
+    DEFAULT_SOURCE_CONFIDENCE, HIGH_SOURCE_CORRELATION, safe_absolute_correlation,
+)
 from subtitle_assembler import append_preserving_text
 
 
@@ -601,6 +603,154 @@ def resolve_subtitle_fragments(
     vads[candidate]["timestamps"] = []
     evidence.update({"applied": True, "reason": reason})
     return texts, vads, evidence
+
+
+def _speech_local_source_evidence(
+    mixture: np.ndarray, owner: np.ndarray, candidate: np.ndarray,
+) -> dict[str, Any] | None:
+    """Compare input support after removing shared audio, independent of level.
+
+    A quiet real source may have little full-window mixture correlation. Its
+    component orthogonal to the owner can still explain the mixture residual.
+    This is evidence about separated signals, not speaker recognition.
+    """
+    values = [np.asarray(audio, dtype=np.float64) for audio in (mixture, owner, candidate)]
+    if any(value.ndim != 1 or value.size < 3 or not np.isfinite(value).all() for value in values):
+        return None
+    if len({value.shape for value in values}) != 1:
+        return None
+    values = [value - value.mean() for value in values]
+    norms = [float(np.linalg.norm(value)) for value in values]
+    if any(norm == 0 for norm in norms):
+        return None
+    source, primary, secondary = [value / norm for value, norm in zip(values, norms)]
+    input_residual = source - np.dot(source, primary) * primary
+    candidate_residual = secondary - np.dot(secondary, primary) * primary
+    input_energy = float(np.dot(input_residual, input_residual))
+    candidate_energy = float(np.dot(candidate_residual, candidate_residual))
+    # Only a numerical degeneracy guard, not a minimum speaker volume. Normalized
+    # residual correlation below remains usable for a very quiet second source.
+    independent = (
+        safe_absolute_correlation(
+            input_residual / np.sqrt(input_energy),
+            candidate_residual / np.sqrt(candidate_energy),
+        ) if min(input_energy, candidate_energy) > 1e-14 else 0.0
+    )
+    return {
+        "pair_correlation": safe_absolute_correlation(primary, secondary),
+        "owner_input_correlation": safe_absolute_correlation(source, primary),
+        "candidate_input_correlation": safe_absolute_correlation(source, secondary),
+        "independent_input_correlation": independent,
+        "input_residual_energy_fraction": input_energy,
+        "candidate_residual_energy_fraction": candidate_energy,
+    }
+
+
+def admit_subtitle_streams(
+    *,
+    mixture: np.ndarray,
+    speakers: tuple[np.ndarray, np.ndarray],
+    transcripts: list[str],
+    vad_results: list[dict[str, Any]],
+    active_hypotheses: list[str],
+    speaker_assignment: dict[str, Any],
+) -> tuple[list[str], list[dict[str, Any]], dict[str, Any]]:
+    """Reject evidenced residuals before a new logical utterance can start.
+
+    Evaluate each window afresh: persistence, lexical stability, and historical
+    tracker confirmation are never promotion evidence. No candidate text enters
+    the assembler, so suppressed fragments cannot later leak into FINAL/flush.
+    Missing/ambiguous acoustics fail open; existing utterances stay untouched.
+    """
+    texts = list(transcripts)
+    vads = [dict(vad) for vad in vad_results]
+    if len(vads) != 2:
+        return texts, vads, {"applied": False, "reason": "vad_unavailable", "streams": []}
+    decisions = []
+    mapping = speaker_assignment.get("raw_to_logical_mapping", {})
+    active_logical = {
+        mapping.get(str(raw)) for raw in speaker_assignment.get("active_raw_slots", [])
+    }
+    intervals = [speech_intervals(vad, len(mixture)) for vad in vad_results]
+    for candidate in (0, 1):
+        owner = 1 - candidate
+        evidence: dict[str, Any] = {
+            "speaker": candidate, "owner": owner, "suppressed": False,
+            "reason": "insufficient_evidence", "existing_partial": bool(active_hypotheses[candidate]),
+            "vad_ratio": vad_results[candidate].get("speech_ratio"),
+            "vad_duration_ms": vad_results[candidate].get("speech_duration_ms"),
+            "tracking_method": speaker_assignment.get("assignment_method"),
+            "tracking_active_logical": sorted(i for i in active_logical if i in (0, 1)),
+            "speech_intervals": intervals[candidate],
+            "owner_speech_intervals": intervals[owner],
+            "speech_local_evidence": [],
+        }
+        decisions.append(evidence)
+        if not transcripts[candidate].strip() or not vad_results[candidate].get("speech_detected"):
+            evidence["reason"] = "inactive"
+            continue
+        if active_hypotheses[candidate]:
+            evidence["reason"] = "existing_utterance"
+            continue
+        # Apply the existing nonlexical rule symmetrically, including bootstrap
+        # before either logical stream has acquired a PARTIAL.
+        if not normalize_lexical_text(transcripts[candidate]):
+            evidence.update(suppressed=True, reason="nonlexical_new_stream")
+        elif (
+            transcripts[owner].strip() and vad_results[owner].get("speech_detected")
+            and intervals[candidate] and intervals[owner]
+        ):
+            contained = all(
+                any(left <= start and end <= right for left, right in intervals[owner])
+                for start, end in intervals[candidate]
+            )
+            evidence["speech_contained_in_owner"] = contained
+            evidence["reason"] = "insufficient_owner_evidence" if contained else "speech_outside_owner"
+            owner_only = (
+                active_logical == {owner}
+                and not speaker_assignment.get("input_silence", False)
+                and not speaker_assignment.get("low_energy_tail", False)
+            )
+            if contained and (active_hypotheses[owner] or owner_only):
+                local = [
+                    _speech_local_source_evidence(
+                        mixture[start:end], speakers[owner][start:end], speakers[candidate][start:end],
+                    ) for start, end in intervals[candidate]
+                ]
+                evidence["speech_local_evidence"] = local
+                evidence["reason"] = "ambiguous_acoustics" if all(row is not None for row in local) else "invalid_speech_audio"
+                if all(row is not None for row in local):
+                    # Any independently input-supported interval protects the
+                    # entire short utterance, even if other intervals leak.
+                    if any(row["independent_input_correlation"] is not None and
+                           row["independent_input_correlation"] >= DEFAULT_SOURCE_CONFIDENCE for row in local):
+                        evidence["reason"] = "independent_input_support"
+                    # Reuse the conservative 0.95/0.20 input dominance pattern
+                    # recorded by validity diagnostics, now on speech intervals.
+                    elif all(row["independent_input_correlation"] is not None and
+                             row["independent_input_correlation"] <= 0.20 for row in local):
+                        duplicate = all(row["pair_correlation"] is not None and
+                                        row["pair_correlation"] >= HIGH_SOURCE_CORRELATION for row in local)
+                        unsupported = owner_only and all(
+                            row["owner_input_correlation"] is not None and row["owner_input_correlation"] >= 0.95
+                            and row["candidate_input_correlation"] is not None and row["candidate_input_correlation"] <= 0.20
+                            for row in local
+                        )
+                        if duplicate or unsupported:
+                            evidence.update(suppressed=True, reason=(
+                                "duplicated_speech_without_independent_support" if duplicate
+                                else "unsupported_residual_during_primary_speech"
+                            ))
+        elif not intervals[candidate] or not intervals[owner]:
+            evidence["reason"] = "missing_speech_intervals"
+        if evidence["suppressed"]:
+            texts[candidate] = ""
+            vads[candidate]["speech_detected"] = False
+            vads[candidate]["timestamps"] = []
+    return texts, vads, {
+        "applied": any(row["suppressed"] for row in decisions),
+        "raw_to_logical_mapping": dict(mapping), "streams": decisions,
+    }
 
 
 def build_full_window_diagnostic(

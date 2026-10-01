@@ -158,6 +158,73 @@ class PipelineTests(TestCase):
         self.assertTrue(rows[1]["vad"][1]["speech_detected"])
         self.assertEqual(rows[2]["speaker_assignment"]["raw_to_logical_mapping"], {"0": 1, "1": 0})
 
+    def test_new_stream_admission_in_real_workers_with_permutation(self):
+        for kind in ("residual", "short_quiet_speaker", "simultaneous_speakers"):
+            with self.subTest(kind=kind):
+                def response(audio, index):
+                    result = payload("r", index, len(audio))
+                    secondary = np.random.default_rng(90 + index).normal(0, .1, len(audio)).astype(np.float32)
+                    primary = audio.copy()
+                    texts = ["실제 본문 계속", ""]
+                    spans = [[(0, len(audio))], []]
+                    if index in (1, 2):
+                        spans[1] = [(16000, 27200)]
+                        texts[1] = "렁쇼" if index == 1 else "챔피언 롤러쯩"
+                        if kind != "residual":
+                            # Construct two input-supported components, including
+                            # one very short, quiet response with no persistence.
+                            mask = np.zeros(len(audio), dtype=np.float32)
+                            if kind == "short_quiet_speaker":
+                                spans[1] = [(16000, 17600)] if index == 1 else []
+                                mask[16000:17600:2] = .001
+                                texts[1] = "네" if index == 1 else ""
+                            else:
+                                spans[1] = [(0, len(audio))]
+                                mask[::2] = 1.
+                            secondary = audio * mask
+                            primary = audio - secondary
+                    elif index == 3:
+                        primary = secondary = audio * 0
+                        texts, spans = ["", ""], [[], []]
+                    waves = [primary, secondary]
+                    if index == 2:
+                        waves.reverse()
+                        texts.reverse()
+                        spans.reverse()
+                    for i, slot in enumerate(result["speakers"]):
+                        slot["waveform"]["data"] = base64.b64encode(waves[i].astype("<f4").tobytes()).decode()
+                        slot["raw_transcript"] = texts[i]
+                        duration = sum(end - start for start, end in spans[i])
+                        slot["vad"].update({
+                            "speech_detected": bool(spans[i]), "speech_duration_ms": duration / 16,
+                            "speech_ratio": duration / len(audio),
+                            "timestamps": [{"start": start, "end": end} for start, end in spans[i]],
+                        })
+                    return result
+                subtitles = []
+                code, result = self.run_pipeline(
+                    True, response_factory=response, duration=9, websocket=False,
+                    runtime_hooks=pipeline.LivePipelineHooks(on_subtitle=subtitles.append),
+                )
+                self.assertEqual(code, 0)
+                self.assertEqual(result["errors"], [])
+                self.assertEqual(result["stt_window_success"], 4)
+                self.assertEqual(subtitles, result["subtitle_events"])
+                rows = result["windows"]
+                self.assertEqual(rows[2]["speaker_assignment"]["raw_to_logical_mapping"], {"0": 1, "1": 0})
+                for row in rows[1:3]:
+                    admission = row["secondary_leakage_diagnostic"]["subtitle_admission"]
+                    self.assertEqual(admission["applied"], kind == "residual")
+                if kind == "residual":
+                    self.assertEqual({e["speaker"] for e in subtitles}, {"speaker_0"})
+                    self.assertEqual(rows[1]["secondary_leakage_diagnostic"]["raw_transcripts"]["speaker_1"], "렁쇼")
+                    self.assertTrue(rows[1]["vad"][1]["speech_detected"])
+                else:
+                    self.assertEqual({e["speaker"] for e in subtitles}, {"speaker_0", "speaker_1"})
+                    if kind == "short_quiet_speaker":
+                        self.assertTrue(any(e["speaker"] == "speaker_1" and e["text"] == "네"
+                                            and e["status"] == "final" for e in subtitles))
+
     def test_structured_runtime_hooks_receive_subtitles_and_metrics(self):
         subtitle_events = []
         metrics = []
