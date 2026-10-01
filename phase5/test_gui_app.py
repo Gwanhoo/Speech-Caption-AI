@@ -106,7 +106,7 @@ class GuiTests(unittest.TestCase):
     def test_pyside_python310_self_compatibility_is_primed(self) -> None:
         self.assertEqual(str(Union[int, TypingExtensionsSelf]).split("[")[0], "typing.Union")
 
-    def test_latest_final_replaces_an_older_current_partial(self) -> None:
+    def test_other_stream_final_preserves_current_partial(self) -> None:
         window = MainWindow()
         try:
             window.apply_subtitle_event(
@@ -115,14 +115,14 @@ class GuiTests(unittest.TestCase):
             window.apply_subtitle_event(
                 self.event("speaker_1", 1, 11, "네, 잘 들립니다.", "final")
             )
-            self.assertEqual(self.feed_texts(window), ["네, 잘 들립니다."])
+            self.assertEqual(self.feed_texts(window), ["네, 잘 들립니다.", "발표를 시작합니다."])
             self.assertEqual(
                 window.subtitle_model.entry_at(0).speaker_id, "speaker_1"
             )
         finally:
             window.close()
 
-    def test_latest_partial_uses_the_single_current_caption_position(self) -> None:
+    def test_two_stream_partials_share_the_snapshot(self) -> None:
         window = MainWindow()
         try:
             window.apply_subtitle_event(
@@ -131,7 +131,7 @@ class GuiTests(unittest.TestCase):
             window.apply_subtitle_event(
                 self.event("speaker_1", 7, 101, "오늘 하루 어땠어?")
             )
-            self.assertEqual(self.feed_texts(window), ["오늘 하루 어땠어?"])
+            self.assertEqual(self.feed_texts(window), ["나는 아직 저녁 안 먹었어", "오늘 하루 어땠어?"])
         finally:
             window.close()
 

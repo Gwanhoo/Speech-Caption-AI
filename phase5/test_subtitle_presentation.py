@@ -58,8 +58,39 @@ class SubtitlePresentationStateTests(unittest.TestCase):
 
     def test_out_of_order_event_cannot_replace_the_current_caption(self) -> None:
         self.state.apply(event("speaker_0", 1, 2, "최신 자막"))
-        self.assertFalse(self.state.apply(event("speaker_1", 1, 1, "지연된 자막")))
+        self.assertFalse(self.state.apply(event("speaker_0", 1, 1, "지연된 자막")))
         self.assertEqual(self.texts(), ["최신 자막"])
+
+    def test_two_partials_update_and_finalize_independently(self) -> None:
+        self.state.apply(event("speaker_0", 1, 1, "오늘 학교에 갔는데"))
+        self.state.apply(event("speaker_1", 1, 2, "그러면 다음 단계는"))
+        self.assertEqual(self.texts(), ["오늘 학교에 갔는데", "그러면 다음 단계는"])
+        self.state.apply(event("speaker_0", 1, 3, "오늘 학교에 갔는데 친구가"))
+        self.assertEqual(self.texts(), ["오늘 학교에 갔는데 친구가", "그러면 다음 단계는"])
+        self.assertFalse(self.state.apply(event("speaker_0", 1, 1, "옛 자막")))
+        self.state.apply(event("speaker_0", 1, 4, "오늘 학교에 갔는데 친구가", "final"))
+        self.assertEqual([entry.status for entry in self.state.entries], ["final", "partial"])
+        self.assertEqual(self.state.entries[-1].speaker_id, "speaker_1")
+        self.assertFalse(self.state.apply(event("speaker_0", 1, 5, "재개 금지")))
+
+    def test_active_partials_take_priority_over_recent_finals(self) -> None:
+        self.state.apply(event("speaker_0", 1, 1, "첫 확정", "final"))
+        self.state.apply(event("speaker_1", 1, 2, "둘째 확정", "final"))
+        self.state.apply(event("speaker_0", 2, 3, "진행 0"))
+        self.state.apply(event("speaker_1", 2, 4, "진행 1"))
+        self.assertEqual(self.texts(), ["둘째 확정", "진행 0", "진행 1"])
+        self.assertEqual(len(self.state.entries), 3)
+        self.state.apply(event("speaker_0", 2, 5, "완료 0", "final"))
+        self.assertEqual(self.texts(), ["둘째 확정", "완료 0", "진행 1"])
+
+    def test_sequences_are_checked_per_stream_and_clear_resets_both(self) -> None:
+        self.state.apply(event("speaker_1", 1, 20, "진행 1"))
+        self.assertTrue(self.state.apply(event("speaker_0", 1, 10, "진행 0")))
+        self.assertEqual(self.texts(), ["진행 0", "진행 1"])
+        self.assertFalse(self.state.apply(event("speaker_1", 1, 19, "옛 확정", "final")))
+        self.state.clear()
+        self.assertEqual(self.state.entries, ())
+        self.assertTrue(self.state.apply(event("speaker_0", 1, 1, "재시작")))
 
     def test_long_text_is_preserved_without_inserted_line_breaks(self) -> None:
         text = "이 문장은 화면의 폭에 따라 Qt가 자연스럽게 줄바꿈해야 하며 데이터에는 임의의 줄바꿈이 들어가면 안 됩니다."

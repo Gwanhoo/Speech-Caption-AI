@@ -172,6 +172,39 @@ class SubtitleAdmissionTests(unittest.TestCase):
             self.assertEqual(evidence["streams"][1 - owner]["reason"], "nonlexical_new_stream")
             self.assertEqual((texts, vads), originals)
 
+    def test_weak_noise_single_observation_never_becomes_final_but_short_speech_does(self):
+        for text in ("감사합니다.", "고맙습니다.", "새로운 문장입니다."):
+            for genuine in (False, True):
+                for speaker in (0, 1):
+                    with self.subTest(text=text, genuine=genuine, speaker=speaker):
+                        noise = self.rng.normal(0, .0001, SIZE).astype(np.float32)
+                        mixture = noise.copy() if not genuine else np.zeros(SIZE, dtype=np.float32)
+                        mixture[SR:SR + 320] = noise[SR:SR + 320]
+                        waves = [np.zeros(SIZE, dtype=np.float32)] * 2
+                        waves[speaker] = mixture * 1000  # separator-normalized level
+                        raw = ["", ""]
+                        raw[speaker] = text
+                        raw_vads = [vad(), vad()]
+                        raw_vads[speaker] = vad((SR, SR + 320))
+                        original = copy.deepcopy(raw_vads)
+                        texts, effective, diagnostic = admit_subtitle_streams(
+                            mixture=mixture, speakers=tuple(waves), transcripts=raw,
+                            vad_results=raw_vads, active_hypotheses=["", ""], speaker_assignment={},
+                        )
+                        self.assertEqual(diagnostic["streams"][speaker]["suppressed"], not genuine)
+                        self.assertEqual(raw_vads, original)
+                        assembler, state = SubtitleAssembler(speaker), SpeakerSubtitleState(speaker)
+                        assembly = assembler.process(0, texts[speaker])
+                        events = state.process(0, assembly.utterance_hypothesis,
+                                               effective[speaker]["speech_detected"], 3)
+                        self.assertEqual(bool(events), genuine)
+                        final = state.process(1, "", False, 5)
+                        self.assertEqual(bool(final), genuine)
+                        if genuine:
+                            self.assertEqual(final[0].text, text)
+                            self.assertEqual(final[0].status, "final")
+                        self.assertIsNone(state.flush(1, 5))
+
     def test_vad_disabled_preserves_inputs(self):
         texts, vads, evidence = admit_subtitle_streams(
             mixture=self.primary, speakers=(self.primary, self.secondary),

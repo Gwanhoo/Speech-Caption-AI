@@ -9,7 +9,8 @@ import numpy as np
 import soundfile as sf
 
 from speaker_tracking import (
-    DEFAULT_SOURCE_CONFIDENCE, HIGH_SOURCE_CORRELATION, safe_absolute_correlation,
+    DEFAULT_SILENCE_RMS, DEFAULT_SOURCE_CONFIDENCE, HIGH_SOURCE_CORRELATION,
+    safe_absolute_correlation,
 )
 from subtitle_assembler import append_preserving_text
 
@@ -646,6 +647,40 @@ def _speech_local_source_evidence(
     }
 
 
+
+def weak_speech_evidence(mixture: np.ndarray, vad: dict[str, Any]) -> dict[str, Any]:
+    """Reject a new hypothesis only with joint weak VAD and input evidence.
+
+    Use original input, since separator RMS normalization can amplify noise.
+    A short/quiet but localized speech burst passes without a second observation.
+    Missing evidence fails open; this is not a general noise/speech classifier.
+    """
+    evidence: dict[str, Any] = {"suppressed": False}
+    intervals = speech_intervals(vad, len(mixture))
+    duration = _finite_float(vad.get("speech_duration_ms"))
+    ratio = _finite_float(vad.get("speech_ratio"))
+    if not intervals or duration is None or ratio is None or not np.isfinite(mixture).all():
+        return evidence
+    mask = np.zeros(len(mixture), dtype=bool)
+    for start, end in intervals:
+        mask[start:end] = True
+    speech_rms, speech_peak = safe_audio_levels(mixture[mask])
+    background_rms, _ = safe_audio_levels(mixture[~mask])
+    evidence.update(input_speech_rms=speech_rms, input_speech_peak=speech_peak,
+                    input_background_rms=background_rms)
+    if speech_rms is None or speech_peak is None or background_rms is None:
+        return evidence
+    # Bounded low-level noise, sparse VAD, AND no localized energy increase must
+    # agree. Duration, volume, or observation count alone never rejects speech.
+    weak_vad = 0 < duration <= 500 and 0 < ratio <= 0.20
+    no_burst = speech_rms <= 1.5 * max(background_rms, ENERGY_EPSILON)
+    evidence["suppressed"] = bool(
+        weak_vad and speech_rms <= DEFAULT_SILENCE_RMS
+        and speech_peak <= 5 * DEFAULT_SILENCE_RMS and no_burst
+    )
+    return evidence
+
+
 def admit_subtitle_streams(
     *,
     mixture: np.ndarray,
@@ -691,6 +726,14 @@ def admit_subtitle_streams(
             continue
         if active_hypotheses[candidate]:
             evidence["reason"] = "existing_utterance"
+            continue
+        weak_speech = weak_speech_evidence(mixture, vad_results[candidate])
+        evidence["weak_speech_evidence"] = weak_speech
+        if weak_speech["suppressed"]:
+            evidence.update(suppressed=True, reason="weak_vad_and_unlocalized_low_energy_input")
+            texts[candidate] = ""
+            vads[candidate]["speech_detected"] = False
+            vads[candidate]["timestamps"] = []
             continue
         # Apply the existing nonlexical rule symmetrically, including bootstrap
         # before either logical stream has acquired a PARTIAL.

@@ -20,39 +20,40 @@ class SubtitleFeedEntry:
 
 
 class SubtitlePresentationState:
-    """Keep recent final captions and one latest in-progress caption.
+    """Keep recent finals and one in-progress caption per logical stream.
 
     Event identity, rather than caption text, protects against an accidental
     duplicate delivery.  A later utterance with identical words remains valid.
     """
 
     MAX_FINAL_ENTRIES = 2
+    MAX_ROWS = 3
     MAX_SEEN_EVENT_IDS = 128
 
     def __init__(self) -> None:
         self._final_entries: list[SubtitleFeedEntry] = []
-        self._current_partial: SubtitleFeedEntry | None = None
+        self._partials: dict[str, SubtitleFeedEntry] = {}
         self._finalized_utterances: set[tuple[str, int]] = set()
         self._finalized_utterance_order: list[tuple[str, int]] = []
         self._seen_event_ids: set[tuple[str, int, str, int]] = set()
         self._seen_event_order: list[tuple[str, int, str, int]] = []
-        self._latest_sequence = -1
+        self._latest_sequence: dict[str, int] = {}
 
     @property
     def entries(self) -> tuple[SubtitleFeedEntry, ...]:
-        entries = sorted(self._final_entries, key=lambda entry: entry.sequence)
-        if self._current_partial is not None:
-            entries.append(self._current_partial)
-        return tuple(entries)
+        partials = sorted(self._partials.values(), key=lambda entry: entry.speaker_id)
+        available = self.MAX_ROWS - len(partials)
+        finals = sorted(self._final_entries, key=lambda entry: entry.sequence)
+        return tuple(finals[-available:] + partials) if available else tuple(partials)
 
     def clear(self) -> None:
         self._final_entries.clear()
-        self._current_partial = None
+        self._partials.clear()
         self._finalized_utterances.clear()
         self._finalized_utterance_order.clear()
         self._seen_event_ids.clear()
         self._seen_event_order.clear()
-        self._latest_sequence = -1
+        self._latest_sequence.clear()
 
     def apply(self, event: dict[str, Any]) -> bool:
         entry = self._entry_from_event(event)
@@ -67,37 +68,23 @@ class SubtitlePresentationState:
         )
         if event_id in self._seen_event_ids:
             return False
-        if entry.sequence <= self._latest_sequence:
+        if entry.sequence <= self._latest_sequence.get(entry.speaker_id, -1):
             return False
 
         key = (entry.speaker_id, entry.utterance_id)
         if entry.status == "partial":
             if key in self._finalized_utterances:
                 return False
-            current = self._current_partial
-            if current is not None:
-                current_key = (current.speaker_id, current.utterance_id)
-                if key == current_key and entry.sequence <= current.sequence:
-                    return False
-                if key != current_key and entry.sequence <= current.sequence:
-                    return False
-            self._current_partial = entry
+            current = self._partials.get(entry.speaker_id)
+            if current is not None and entry.utterance_id < current.utterance_id:
+                return False
+            self._partials[entry.speaker_id] = entry
         else:
             if key in self._finalized_utterances:
                 return False
-            current = self._current_partial
-            if (
-                current is not None
-                and key == (current.speaker_id, current.utterance_id)
-                and entry.sequence < current.sequence
-            ):
-                return False
-            if current is not None and key == (current.speaker_id, current.utterance_id):
-                self._current_partial = None
-            elif current is not None and entry.sequence > current.sequence:
-                # The display has one writing position.  A later finalized
-                # utterance takes that position's place in the reading order.
-                self._current_partial = None
+            current = self._partials.get(entry.speaker_id)
+            if current is not None and entry.utterance_id == current.utterance_id:
+                del self._partials[entry.speaker_id]
             self._finalized_utterances.add(key)
             self._finalized_utterance_order.append(key)
             self._final_entries.append(entry)
@@ -107,7 +94,7 @@ class SubtitlePresentationState:
                 del self._final_entries[:overflow]
 
         self._remember_event(event_id)
-        self._latest_sequence = entry.sequence
+        self._latest_sequence[entry.speaker_id] = entry.sequence
         return True
 
     def _remember_event(self, event_id: tuple[str, int, str, int]) -> None:

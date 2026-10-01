@@ -35,12 +35,13 @@ finally:
 class PipelineTests(TestCase):
     def run_pipeline(self, remote, fail_first=False, failure=None, fail_all=False,
                      latency_diagnostics=False, runtime_hooks=None,
-                     response_factory=None, duration=5, websocket=True):
+                     response_factory=None, duration=5, websocket=True, capture_factory=None):
         capture = MagicMock()
         capture.__enter__.return_value = capture
         def record(numframes):
             time.sleep(.04)
-            return np.random.default_rng(numframes).normal(0, .1, (numframes, 1)).astype(np.float32)
+            audio = np.random.default_rng(numframes).normal(0, .1, (numframes, 1)).astype(np.float32)
+            return capture_factory(audio) if capture_factory else audio
         capture.record.side_effect = record
         loopback = Mock()
         loopback.recorder.return_value = capture
@@ -224,6 +225,42 @@ class PipelineTests(TestCase):
                     if kind == "short_quiet_speaker":
                         self.assertTrue(any(e["speaker"] == "speaker_1" and e["text"] == "네"
                                             and e["status"] == "final" for e in subtitles))
+
+    def test_weak_noise_and_genuine_short_speech_finalization_in_workers(self):
+        for genuine in (False, True):
+            with self.subTest(genuine=genuine):
+                def capture(audio):
+                    audio = audio * .001
+                    if genuine:
+                        audio[1600:] = 0
+                    return audio
+
+                def response(audio, index):
+                    result = payload("r", index, len(audio))
+                    for i, slot in enumerate(result["speakers"]):
+                        active = index == 0 and i == 0
+                        wave = audio * 1000 if active else audio * 0
+                        slot["waveform"]["data"] = base64.b64encode(wave.astype("<f4").tobytes()).decode()
+                        slot["raw_transcript"] = "감사합니다." if active else ""
+                        slot["vad"].update({
+                            "speech_detected": active, "speech_duration_ms": 100 if active else 0,
+                            "speech_ratio": 1600 / len(audio) if active else 0,
+                            "timestamps": [{"start": 0, "end": 1600}] if active else [],
+                        })
+                    return result
+
+                code, result = self.run_pipeline(True, response_factory=response,
+                    capture_factory=capture, websocket=False)
+                # Existing aggregate success requires some transcript output.
+                # An entirely suppressed noise run has code 1 without worker errors.
+                self.assertEqual(code, 0 if genuine else 1, result["errors"])
+                self.assertEqual(result["errors"], [])
+                self.assertEqual(result["stt_window_success"], 2)
+                final = [e for e in result["subtitle_events"] if e["status"] == "final"]
+                self.assertEqual([e["text"] for e in final], ["감사합니다."] if genuine else [])
+                evidence = result["windows"][0]["secondary_leakage_diagnostic"]
+                self.assertEqual(evidence["subtitle_admission"]["applied"], not genuine)
+                self.assertEqual(evidence["raw_transcripts"]["speaker_0"], "감사합니다.")
 
     def test_structured_runtime_hooks_receive_subtitles_and_metrics(self):
         subtitle_events = []
