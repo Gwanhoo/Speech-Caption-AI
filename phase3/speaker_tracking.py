@@ -19,6 +19,7 @@ DEFAULT_SOURCE_CONFIDENCE = 0.45
 DEFAULT_CONTINUITY_SCORE = 0.45
 DEFAULT_SCORE_MARGIN = 0.12
 DEFAULT_LOW_ENERGY_TAIL_RATIO = 0.25
+HIGH_SOURCE_CORRELATION = 0.85
 
 
 def _finite_rms(audio: np.ndarray) -> float | None:
@@ -255,6 +256,21 @@ class PersistentSpeakerTracker:
                 logical_confidence[logical_speaker] = current_confidence[raw_slot]
                 self._confirmed_logical_speakers.add(logical_speaker)
 
+        # Two references containing the same overlap audio cannot vote as two
+        # independent identities in the next window. Prefer the reference with
+        # clearly stronger full-window mixture support; leave tied/independent
+        # sources alone. This does not suppress either source or veto a swap.
+        tail_correlation = safe_absolute_correlation(
+            logical_speakers[0][-self.overlap_samples:],
+            logical_speakers[1][-self.overlap_samples:],
+        )
+        excluded_reference = None
+        if (tail_correlation is not None and tail_correlation >= HIGH_SOURCE_CORRELATION
+                and abs(logical_confidence[0] - logical_confidence[1]) >= self.score_margin
+                and max(logical_confidence) >= self.source_confidence):
+            excluded_reference = min((0, 1), key=lambda speaker: logical_confidence[speaker])
+            logical_confidence[excluded_reference] = 0.0
+
         self._mapping = mapping
         self._previous_window = window
         self._previous_logical_tails = (
@@ -295,6 +311,9 @@ class PersistentSpeakerTracker:
                 str(raw_slot): current_confidence[raw_slot] for raw_slot in (0, 1)
             },
             "active_raw_slots": active_raw_slots,
+            "tail_source_correlation": tail_correlation,
+            "excluded_duplicate_tail_reference": excluded_reference,
+            "next_reference_confidence": list(logical_confidence),
             "confirmed_logical_speakers": sorted(self._confirmed_logical_speakers),
             "input_rms": input_rms,
             "input_rms_ratio_to_previous": input_rms_ratio,

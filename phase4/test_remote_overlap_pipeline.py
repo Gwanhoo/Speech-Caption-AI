@@ -1,5 +1,6 @@
 """Real pipeline workers, synthetic capture only. Never opens WASAPI on Linux."""
 import io
+import base64
 import json
 import queue
 import sys
@@ -33,7 +34,8 @@ finally:
 
 class PipelineTests(TestCase):
     def run_pipeline(self, remote, fail_first=False, failure=None, fail_all=False,
-                     latency_diagnostics=False, runtime_hooks=None):
+                     latency_diagnostics=False, runtime_hooks=None,
+                     response_factory=None, duration=5, websocket=True):
         capture = MagicMock()
         capture.__enter__.return_value = capture
         def record(numframes):
@@ -47,14 +49,19 @@ class PipelineTests(TestCase):
         def process(audio, index, *args, **kwargs):
             if fail_all or (fail_first and index == 0):
                 raise failure or RemoteTimeoutError("injected timeout")
-            return parse_result(payload("r", index, len(audio)), "r", index, len(audio), .02)
+            response = (response_factory(audio, index) if response_factory is not None
+                        else payload("r", index, len(audio)))
+            return parse_result(response, "r", index, len(audio), .02)
         client.process.side_effect = process
         def separation(audio, **kwargs):
             return SeparationRecoveryResult(np.stack([audio, -audio])[:, None, :], finite_audio_stats(audio), .01, 0., False, False, False)
         with tempfile.TemporaryDirectory() as directory, ExitStack() as stack:
             output = Path(directory) / "result.json"
-            argv = ["run_overlap_pipeline", "--live", "--duration", "5", "--assemble", "--json-output", str(output)]
-            if remote: argv += ["--processing-mode", "remote", "--websocket", "--ws-port", "0"]
+            argv = ["run_overlap_pipeline", "--live", "--duration", str(duration), "--assemble", "--json-output", str(output)]
+            if remote:
+                argv += ["--processing-mode", "remote"]
+                if websocket:
+                    argv += ["--websocket", "--ws-port", "0"]
             if latency_diagnostics: argv += ["--latency-diagnostics"]
             stack.enter_context(patch.object(pipeline.sys, "argv", argv))
             stack.enter_context(patch.object(pipeline.sys, "platform", "win32"))
@@ -104,6 +111,52 @@ class PipelineTests(TestCase):
         self.assertEqual(result["errors"], [])
         self.assertGreater(result["websocket"]["published"], 0)
         self.assertEqual(result["websocket"]["dropped_oldest"], 0)
+
+    def test_fragment_routing_permutation_and_revision_in_real_workers(self):
+        """Exercise actual worker wiring/remote parsing with synthetic VAD/STT."""
+        def response(audio, index):
+            result = payload("r", index, len(audio))
+            unrelated = np.random.default_rng(90 + index).normal(0, .1, len(audio)).astype(np.float32)
+            if index == 0:
+                waves, texts, spans = (audio, unrelated), ["지금 오신 분들 위해서 랜덤 챔피언", ""], [[(0, 48000)], []]
+            elif index == 1:
+                residual = audio.copy()
+                residual[:32000] *= .2
+                residual *= np.sqrt(np.mean(audio ** 2) / np.mean(residual ** 2))
+                waves, texts, spans = (audio, residual), ["랜덤 챔피언 혀당인데요", "룰렛 돌려서"], [[(0, 32000)], [(32000, 48000)]]
+            elif index == 2:
+                waves, texts, spans = (unrelated, audio), ["", "제가 돌려서 AB 챔피언 3개 AP 챔피언 3개"], [[], [(0, 48000)]]
+            else:
+                waves, texts, spans = (audio * 0, audio * 0), ["", ""], [[], []]
+            for i, slot in enumerate(result["speakers"]):
+                slot["waveform"]["data"] = base64.b64encode(waves[i].astype("<f4").tobytes()).decode()
+                slot["raw_transcript"] = texts[i]
+                duration = sum(end - start for start, end in spans[i])
+                slot["vad"].update({
+                    "speech_detected": bool(spans[i]), "speech_duration_ms": duration / 16,
+                    "speech_ratio": duration / 48000,
+                    "timestamps": [{"start": start, "end": end} for start, end in spans[i]],
+                })
+            return result
+        subtitles, metrics = [], []
+        hooks = pipeline.LivePipelineHooks(on_subtitle=subtitles.append, on_metric=metrics.append)
+        code, result = self.run_pipeline(
+            True, response_factory=response, duration=9, websocket=False,
+            latency_diagnostics=True, runtime_hooks=hooks,
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(result["stt_window_success"], 4)
+        self.assertEqual(len(metrics), 4)
+        self.assertEqual(subtitles, result["subtitle_events"])
+        self.assertEqual({e["speaker"] for e in subtitles}, {"speaker_0"})
+        self.assertEqual(subtitles[-1]["status"], "final")
+        self.assertEqual(subtitles[-1]["text"], "지금 오신 분들 위해서 랜덤 챔피언 혀당인데요 제가 돌려서 AB 챔피언 3개 AP 챔피언 3개")
+        rows = result["windows"]
+        self.assertTrue(rows[1]["secondary_leakage_diagnostic"]["subtitle_routing"]["applied"])
+        self.assertEqual(rows[1]["secondary_leakage_diagnostic"]["raw_transcripts"]["speaker_1"], "룰렛 돌려서")
+        self.assertTrue(rows[1]["vad"][1]["speech_detected"])
+        self.assertEqual(rows[2]["speaker_assignment"]["raw_to_logical_mapping"], {"0": 1, "1": 0})
 
     def test_structured_runtime_hooks_receive_subtitles_and_metrics(self):
         subtitle_events = []

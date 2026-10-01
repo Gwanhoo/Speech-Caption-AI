@@ -187,6 +187,33 @@ def corrected_suffix_prefix(previous: str, current: str) -> tuple[int, int, floa
     return best
 
 
+def anchored_prefix_revision(previous: str, current: str) -> tuple[int, int, float] | None:
+    """Revise a short modifier before a shared word, with external timing support.
+
+    E.g. '룰렛 돌려서' / '제가 돌려서 ...'. This is lexical alignment, not
+    semantic equivalence. The caller must establish that the previous speech
+    tail occupies the shared audio. Never generalize to numbers, repeated words,
+    arbitrary common endings, or a whole-phrase duplicate without new content.
+    """
+    old_tokens = list(TOKEN_PATTERN.finditer(previous))
+    new_tokens = list(TOKEN_PATTERN.finditer(current))
+    if len(old_tokens) < 2 or len(new_tokens) < 3:
+        return None
+    old_modifier, old_anchor = [normalize_for_matching(m.group()) for m in old_tokens[-2:]]
+    new_modifier, new_anchor = [normalize_for_matching(m.group()) for m in new_tokens[:2]]
+    if not (
+        old_anchor == new_anchor and len(old_anchor) >= MINIMUM_RELAXED_BOUNDARY_CHARACTERS
+        and 1 <= len(old_modifier) <= 2 and 1 <= len(new_modifier) <= 2
+        and old_modifier != new_modifier
+        and all(re.fullmatch(r"[가-힣]+", token) for token in (old_modifier, new_modifier, old_anchor))
+        and old_modifier not in old_anchor and new_modifier not in old_anchor
+    ):
+        return None
+    old_seam = old_modifier + old_anchor
+    new_seam = new_modifier + new_anchor
+    return len(old_seam), new_tokens[1].end(), SequenceMatcher(None, old_seam, new_seam).ratio()
+
+
 def append_preserving_text(assembled: str, new_text: str) -> str:
     if not assembled:
         return new_text.strip()
@@ -247,7 +274,11 @@ class SubtitleAssembler:
         self.previous = ""
         self.utterance_hypothesis = ""
 
-    def process(self, window: int, raw: str) -> AssemblyEvent:
+    def process(
+        self, window: int, raw: str, *,
+        shared_speech: bool | None = None,
+        supported_tail_revision: bool = False,
+    ) -> AssemblyEvent:
         started = time.perf_counter()
         if window <= self.last_window:
             raise ValueError(
@@ -257,7 +288,7 @@ class SubtitleAssembler:
 
         raw = raw.strip()
         before_hypothesis = self.utterance_hypothesis
-        previous = self.previous if window == self.last_window + 1 else ""
+        previous = self.previous if window == self.last_window + 1 and shared_speech is not False else ""
         match_type = "none"
         overlap = ""
         new_text = raw
@@ -308,6 +339,8 @@ class SubtitleAssembler:
                                 new_text = raw[fuzzy_cut:]
 
         correction = corrected_suffix_prefix(previous, raw) if previous and raw else None
+        if correction is None and previous and raw and supported_tail_revision:
+            correction = anchored_prefix_revision(previous, raw)
         if correction and match_type in {"none", "fuzzy"}:
             old_length, new_cut, similarity = correction
             old_suffix = normalize_for_matching(previous)[-old_length:]

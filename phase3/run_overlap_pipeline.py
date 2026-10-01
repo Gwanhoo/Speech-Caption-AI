@@ -45,6 +45,8 @@ from secondary_leakage_diagnostics import (  # noqa: E402
     build_window_diagnostic,
     save_candidate_full_window_wavs,
     secondary_transcript_suppression_reason,
+    resolve_subtitle_fragments,
+    subtitle_overlap_evidence,
 )
 from speaker_tracking import PersistentSpeakerTracker  # noqa: E402
 from remote_gpu_client import (  # noqa: E402
@@ -1418,6 +1420,9 @@ def main(
                         errors.append(("separation-stop", exc))
 
         def stt_worker() -> None:
+            previous_subtitle_window: int | None = None
+            previous_subtitle_audio: tuple[np.ndarray, np.ndarray] | None = None
+            previous_subtitle_vads: list[dict[str, Any]] = []
             try:
                 while True:
                     item = separated_queue.get()
@@ -1563,16 +1568,58 @@ def main(
                                 flush=True,
                             )
                         assembler_subtitle_started = time.perf_counter()
+                        subtitle_vads = [dict(vad) for vad in vad_results]
+                        if suppression_reason is not None and len(subtitle_vads) == 2:
+                            subtitle_vads[1]["speech_detected"] = False
+                            subtitle_vads[1]["timestamps"] = []
+                        if args.assemble:
+                            transcripts, subtitle_vads, routing = resolve_subtitle_fragments(
+                                speakers=item.speakers,
+                                transcripts=transcripts,
+                                vad_results=subtitle_vads,
+                                diagnostic=secondary_leakage,
+                                previous_texts=[
+                                    assembler.previous
+                                    if assembler.last_window == item.source.index - 1 else ""
+                                    for assembler in assemblers
+                                ],
+                                active_hypotheses=[state.partial_text for state in subtitle_states],
+                            )
+                            secondary_leakage["subtitle_routing"] = routing
+                            if routing["applied"]:
+                                print(
+                                    f"[SUBTITLE ROUTING] window={item.source.index:03d} "
+                                    f"source={routing['candidate']} target={routing['owner']} "
+                                    f"reason={routing['reason']} "
+                                    f"speech_corr={routing['candidate_speech_correlations']}",
+                                    flush=True,
+                                )
                         subtitle_created_times: list[float] = []
                         window_assembly_events: list[dict[str, Any]] = []
                         utterance_hypotheses: list[str] = []
                         window_subtitle_state_events: list[dict[str, Any]] = []
                         if args.assemble:
                             for speaker_index, transcript in enumerate(transcripts):
+                                overlap_evidence: dict[str, Any] = {}
+                                if (
+                                    previous_subtitle_window == item.source.index - 1
+                                    and previous_subtitle_audio is not None
+                                    and len(previous_subtitle_vads) == len(subtitle_vads) == 2
+                                ):
+                                    overlap_evidence = subtitle_overlap_evidence(
+                                        previous_subtitle_audio[speaker_index],
+                                        item.speakers[speaker_index],
+                                        previous_subtitle_vads[speaker_index],
+                                        subtitle_vads[speaker_index],
+                                        (args.window_seconds - args.stride_seconds) * SAMPLE_RATE,
+                                    )
                                 event = assemblers[speaker_index].process(
-                                    item.source.index, transcript
+                                    item.source.index, transcript,
+                                    shared_speech=overlap_evidence.get("shared_speech"),
+                                    supported_tail_revision=overlap_evidence.get("supported_tail_revision", False),
                                 )
                                 event_dict = event.to_dict()
+                                event_dict["audio_overlap_evidence"] = overlap_evidence
                                 window_assembly_events.append(event_dict)
                                 assembler_events.append(event_dict)
                                 utterance_hypotheses.append(event.utterance_hypothesis)
@@ -1616,7 +1663,7 @@ def main(
                                 )
                             for speaker_index, hypothesis in enumerate(utterance_hypotheses):
                                 speech_detected = (
-                                    vad_results[speaker_index]["speech_detected"]
+                                    subtitle_vads[speaker_index]["speech_detected"]
                                     if args.vad
                                     else bool(transcripts[speaker_index])
                                 )
@@ -1638,6 +1685,9 @@ def main(
                                     subtitle_created_times.append(time.perf_counter())
                                     if state_event.status == "final":
                                         assemblers[speaker_index].reset_utterance()
+                            previous_subtitle_window = item.source.index
+                            previous_subtitle_audio = item.speakers
+                            previous_subtitle_vads = subtitle_vads
                         else:
                             for speaker_index, transcript in enumerate(transcripts):
                                 if transcript:

@@ -8,14 +8,18 @@ from typing import Any
 import numpy as np
 import soundfile as sf
 
+from speaker_tracking import HIGH_SOURCE_CORRELATION, safe_absolute_correlation
+from subtitle_assembler import append_preserving_text
+
 
 ENERGY_EPSILON = 1e-12
 SECONDARY_ARTIFACT_CONFIG = {
-    # These label suspicious observations only. They never control the live pipeline.
+    # Diagnostic labels, also reused by subtitle routing ONLY with independent
+    # waveform, lexical, timing and existing-utterance evidence below.
     "primary_vad_ratio_min": 0.60,
     "secondary_vad_ratio_max": 0.50,
     "secondary_fragment_max_normalized_characters": 12,
-    "high_abs_waveform_correlation": 0.85,
+    "high_abs_waveform_correlation": HIGH_SOURCE_CORRELATION,
 }
 RMS_NORMALIZATION_NOTE = (
     "ClearVoice normalizes every separated output to the input RMS; "
@@ -453,6 +457,150 @@ def secondary_transcript_suppression_reason(
     ):
         return "duplicate_waveform_and_transcript"
     return None
+
+
+def speech_intervals(vad: dict[str, Any], samples: int) -> list[tuple[int, int]]:
+    """Read existing Silero sample timestamps; missing/invalid evidence fails open."""
+    intervals = []
+    stamps = vad.get("timestamps", [])
+    if not isinstance(stamps, (list, tuple)):
+        return []
+    for stamp in stamps:
+        if not isinstance(stamp, dict):
+            return []
+        start, end = stamp.get("start"), stamp.get("end")
+        if (type(start) is not int or type(end) is not int
+                or not 0 <= start < end <= samples
+                or (intervals and start < intervals[-1][1])):
+            return []
+        intervals.append((start, end))
+    return intervals
+
+
+def subtitle_overlap_evidence(
+    previous_audio: np.ndarray, current_audio: np.ndarray,
+    previous_vad: dict[str, Any], current_vad: dict[str, Any],
+    overlap_samples: int,
+) -> dict[str, Any]:
+    """Local evidence for text matching; no word timestamps are assumed."""
+    evidence: dict[str, Any] = {"shared_speech": None, "supported_tail_revision": False}
+    previous = speech_intervals(previous_vad, len(previous_audio))
+    current = speech_intervals(current_vad, len(current_audio))
+    if not previous or not current or not 0 < overlap_samples <= min(len(previous_audio), len(current_audio)):
+        return evidence
+    stride = len(previous_audio) - overlap_samples
+    shared = [
+        (max(0, start - stride, head_start), min(overlap_samples, end - stride, head_end))
+        for start, end in previous for head_start, head_end in current
+        if max(0, start - stride, head_start) < min(overlap_samples, end - stride, head_end)
+    ]
+    evidence["shared_speech"] = bool(shared)
+    if not shared:
+        return evidence
+    correlation = safe_absolute_correlation(
+        previous_audio[-overlap_samples:], current_audio[:overlap_samples]
+    )
+    evidence["overlap_correlation"] = correlation
+    evidence["previous_tail_in_overlap"] = previous[-1][0] >= stride
+    evidence["tail_covered_by_current_prefix"] = (
+        current[0][0] <= previous[-1][0] - stride
+        and previous[-1][1] - stride <= current[0][1]
+    )
+    evidence["supported_tail_revision"] = bool(
+        previous[-1][0] >= stride
+        and evidence["tail_covered_by_current_prefix"]
+        and correlation is not None
+        and correlation >= SECONDARY_ARTIFACT_CONFIG["high_abs_waveform_correlation"]
+    )
+    return evidence
+
+
+def resolve_subtitle_fragments(
+    *,
+    speakers: tuple[np.ndarray, np.ndarray],
+    transcripts: list[str],
+    vad_results: list[dict[str, Any]],
+    diagnostic: dict[str, Any],
+    previous_texts: list[str],
+    active_hypotheses: list[str],
+) -> tuple[list[str], list[dict[str, Any]], dict[str, Any]]:
+    """Keep a new, acoustically duplicated fragment in an established utterance.
+
+    This is subtitle routing, not a change to separator/tracker identities. Never
+    discard novel lexical content: append only with ordered VAD intervals. A
+    short/quiet secondary alone is NOT grounds for routing. Independent or
+    already established speakers, missing timestamps and ambiguous order all
+    retain their original streams. RMS ratios are deliberately not used.
+    """
+    texts = list(transcripts)
+    vads = [dict(vad) for vad in vad_results]
+    evidence: dict[str, Any] = {"applied": False, "reason": "insufficient_evidence"}
+    established = [i for i in (0, 1) if active_hypotheses[i] and previous_texts[i]]
+    if len(vads) != 2 or len(established) != 1:
+        return texts, vads, evidence
+    owner = established[0]
+    candidate = 1 - owner
+    evidence.update({"owner": owner, "candidate": candidate})
+    if active_hypotheses[candidate]:
+        evidence["reason"] = "established_secondary"
+        return texts, vads, evidence
+    primary_text = normalize_lexical_text(texts[owner])
+    fragment = normalize_lexical_text(texts[candidate])
+    metrics = diagnostic["speaker_metrics"]
+    primary_ratio = metrics[owner].get("vad_speech_ratio")
+    secondary_ratio = metrics[candidate].get("vad_speech_ratio")
+    primary_ms = metrics[owner].get("vad_speech_duration_ms")
+    secondary_ms = metrics[candidate].get("vad_speech_duration_ms")
+    continuity = _suffix_prefix_continuity(
+        normalize_lexical_text(previous_texts[owner]), primary_text
+    )
+    evidence["owner_text_continuity"] = continuity
+    if not (
+        all(vad.get("speech_detected") for vad in vads)
+        and primary_ratio is not None and secondary_ratio is not None
+        and primary_ms is not None and secondary_ms is not None
+        and primary_ratio >= SECONDARY_ARTIFACT_CONFIG["primary_vad_ratio_min"]
+        and secondary_ratio <= SECONDARY_ARTIFACT_CONFIG["secondary_vad_ratio_max"]
+        and primary_ms > secondary_ms > 0
+        and TEMPORAL_CONTINUITY_CONFIG["fuzzy_overlap_min_characters"] <= len(fragment)
+        <= SECONDARY_ARTIFACT_CONFIG["secondary_fragment_max_normalized_characters"]
+        and continuity["detected"]
+    ):
+        return texts, vads, evidence
+    intervals = [speech_intervals(vad, len(speakers[0])) for vad in vads]
+    if not all(intervals):
+        evidence["reason"] = "missing_speech_intervals"
+        return texts, vads, evidence
+    # Compare every candidate speech interval, not whole-window RMS or a
+    # correlation dominated by the primary speaker elsewhere in the window.
+    correlations = [
+        safe_absolute_correlation(speakers[owner][start:end], speakers[candidate][start:end])
+        for start, end in intervals[candidate]
+    ]
+    evidence["candidate_speech_correlations"] = correlations
+    if not all(value is not None and value >= SECONDARY_ARTIFACT_CONFIG[
+        "high_abs_waveform_correlation"
+    ] for value in correlations):
+        evidence["reason"] = "independent_or_uncertain_waveform"
+        return texts, vads, evidence
+    if fragment in primary_text:
+        reason = "duplicate_fragment_on_same_waveform"
+    elif intervals[candidate][0][0] >= intervals[owner][-1][1]:
+        reason = "ordered_continuation_on_same_waveform"
+        texts[owner] = append_preserving_text(texts[owner], texts[candidate])
+        vads[owner]["timestamps"] = [
+            {"start": start, "end": end}
+            for start, end in intervals[owner] + intervals[candidate]
+        ]
+    else:
+        evidence["reason"] = "ambiguous_fragment_order"
+        return texts, vads, evidence
+    texts[candidate] = ""
+    # Effective subtitle activity only: the original VAD/STT records stay intact.
+    vads[candidate]["speech_detected"] = False
+    vads[candidate]["timestamps"] = []
+    evidence.update({"applied": True, "reason": reason})
+    return texts, vads, evidence
 
 
 def build_full_window_diagnostic(
