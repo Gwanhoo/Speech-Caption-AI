@@ -5,7 +5,7 @@ from unittest.mock import patch
 import numpy as np
 
 from secondary_leakage_diagnostics import admit_subtitle_streams
-from subtitle_assembler import SpeakerSubtitleState, SubtitleAssembler
+from subtitle_assembler import SpeakerSubtitleState, SubtitleAssembler, normalize_for_matching
 
 
 class FinalizationEvidenceTests(unittest.TestCase):
@@ -15,9 +15,12 @@ class FinalizationEvidenceTests(unittest.TestCase):
             partial = state.process(0, "미확인 발화", True, 3,
                 confirmed_prefix_length=0, source_supported=False)[0]
             self.assertEqual(partial.stable_text, "")
+            self.assertEqual(partial.text, "미확인 발화")
+            self.assertEqual(partial.publication_text, "")
             event = state.flush(0, 3) if flush else state.process(1, "", False, 5)[0]
             self.assertEqual(event.action, "discard")
             self.assertEqual(event.text, "")
+            self.assertEqual(event.publication_text, "")
             self.assertEqual(state.final_segments, [])
             self.assertEqual(state.partial_text, "")
             self.assertIsNone(state.flush(1, 5))
@@ -27,7 +30,10 @@ class FinalizationEvidenceTests(unittest.TestCase):
 
     def test_source_supported_short_speech_and_temporal_prefix_are_preserved(self):
         state = SpeakerSubtitleState(0, require_final_support=True)
-        state.process(0, "네", True, 3, confirmed_prefix_length=0, source_supported=True)
+        partial = state.process(
+            0, "네", True, 3, confirmed_prefix_length=0, source_supported=True
+        )[0]
+        self.assertEqual(partial.publication_text, "네")
         self.assertEqual(state.process(1, "", False, 5)[0].text, "네")
         state.process(2, "확인된 내용", True, 7, confirmed_prefix_length=0, source_supported=False)
         state.process(3, "확인된 내용 미확인 꼬리", True, 9,
@@ -35,6 +41,51 @@ class FinalizationEvidenceTests(unittest.TestCase):
         final = state.flush(3, 9)
         self.assertEqual(final.text, "확인된 내용")
         self.assertNotIn("미확인", state.final_segments[-1])
+
+    def test_unsupported_first_window_is_published_after_independent_window_support(self):
+        text = "다음 창에서 확인되는 실제 발화"
+        state = SpeakerSubtitleState(0, require_final_support=True)
+        first = state.process(
+            0, text, True, 3, confirmed_prefix_length=0, source_supported=False
+        )[0]
+        self.assertEqual(first.publication_text, "")
+        self.assertEqual(state.partial_text, text)
+
+        supported = state.process(
+            1,
+            text,
+            True,
+            5,
+            confirmed_prefix_length=len(normalize_for_matching(text)),
+            source_supported=False,
+        )[0]
+        self.assertEqual(supported.stability_action, "independent_window_support")
+        self.assertEqual(supported.publication_text, text)
+        final = state.process(2, "", False, 7)[0]
+        self.assertEqual(final.action, "finalize")
+        self.assertEqual(final.publication_text, text)
+
+    def test_supported_prefix_remains_visible_without_unsupported_suffix(self):
+        prefix = "확인된 내용"
+        full = prefix + " 미확인 꼬리"
+        state = SpeakerSubtitleState(0, require_final_support=True)
+        first = state.process(
+            0, prefix, True, 3, confirmed_prefix_length=0, source_supported=True
+        )[0]
+        self.assertEqual(first.publication_text, prefix)
+
+        extended = state.process(
+            1,
+            full,
+            True,
+            5,
+            confirmed_prefix_length=len(normalize_for_matching(prefix)),
+            source_supported=False,
+        )[0]
+        self.assertEqual(extended.text, full)
+        self.assertEqual(extended.publication_text, prefix)
+        self.assertEqual(extended.tentative_text, "미확인 꼬리")
+        self.assertEqual(state.flush(1, 5).publication_text, prefix)
 
     def test_copied_unsupported_prefix_does_not_gain_later_source_support(self):
         state = SpeakerSubtitleState(0, require_final_support=True)
@@ -68,8 +119,9 @@ class FinalizationEvidenceTests(unittest.TestCase):
             self.assertFalse(diagnostic["applied"])
             self.assertFalse(effective[1]["source_supported"])
             state = SpeakerSubtitleState(1, require_final_support=True)
-            state.process(0, texts[1], True, 3, confirmed_prefix_length=0,
-                          source_supported=effective[1]["source_supported"])
+            partial = state.process(0, texts[1], True, 3, confirmed_prefix_length=0,
+                                    source_supported=effective[1]["source_supported"])[0]
+            self.assertEqual(partial.publication_text, "")
             self.assertEqual(state.flush(0, 3).text, "")
 
 

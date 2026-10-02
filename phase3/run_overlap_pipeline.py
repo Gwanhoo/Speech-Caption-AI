@@ -474,6 +474,7 @@ def main(
     assembler_events: list[dict[str, Any]] = []
     subtitle_state_events: list[dict[str, Any]] = []
     subtitle_events: list[dict[str, Any]] = []
+    published_subtitle_utterances: set[tuple[int, int]] = set()
     websocket_server: Any | None = None
     websocket_stats: dict[str, Any] = {"enabled": False}
     event_sequence = itertools.count(1)
@@ -528,12 +529,42 @@ def main(
             return {}
         state_event = event.to_dict()
         subtitle_state_events.append(state_event)
+        print(
+            f"[SUBTITLE] window={event.window:03d} speaker={event.speaker} "
+            f"utterance={event.utterance_id} status={event.status} action={event.action}"
+            + (f" reason={event.finalize_reason}" if event.finalize_reason else "")
+            + f"\n  raw=\"{truncate_assembler_text(event.raw_text)}\""
+            + f"\n  before=\"{truncate_assembler_text(event.before)}\""
+            + f"\n  after=\"{truncate_assembler_text(event.text)}\"",
+            flush=True,
+        )
+        print(
+            f"[CONSENSUS] window={event.window:03d} speaker={event.speaker} "
+            f"utterance={event.utterance_id} action={event.stability_action} "
+            f"history={event.history_size}\n"
+            f"  stable=\"{truncate_assembler_text(event.stable_text)}\"\n"
+            f"  tentative=\"{truncate_assembler_text(event.tentative_text)}\"",
+            flush=True,
+        )
+        utterance_key = (event.speaker, event.utterance_id)
+        needs_retraction = (
+            event.action == "discard" and utterance_key in published_subtitle_utterances
+        )
+        if not event.publication_text and not needs_retraction:
+            print(
+                f"[SUBTITLE PUBLICATION] window={event.window:03d} "
+                f"speaker={event.speaker} utterance={event.utterance_id} "
+                f"withheld reason="
+                f"{'discarded_unsupported_tentative' if event.action == 'discard' else 'awaiting_independent_support'}",
+                flush=True,
+            )
+            return {}
         state = subtitle_states[event.speaker]
         display_text = ""
         for segment in state.final_segments:
             display_text = append_preserving_text(display_text, segment)
-        if state.partial_text:
-            display_text = append_preserving_text(display_text, state.partial_text)
+        if event.status == "partial":
+            display_text = append_preserving_text(display_text, event.publication_text)
         subtitle_event: dict[str, Any] = {
             "type": "subtitle",
             "status": event.status,
@@ -542,7 +573,7 @@ def main(
             "sequence": next(event_sequence),
             "window_index": event.window,
             "speaker": f"speaker_{event.speaker}",
-            "text": event.text,
+            "text": event.publication_text,
             "assembled_text": display_text,
             "raw_text": event.raw_text,
             "overlap_text": event.overlap_text,
@@ -562,23 +593,6 @@ def main(
                 else 0.0
             ),
         }
-        print(
-            f"[SUBTITLE] window={event.window:03d} speaker={event.speaker} "
-            f"utterance={event.utterance_id} status={event.status} action={event.action}"
-            + (f" reason={event.finalize_reason}" if event.finalize_reason else "")
-            + f"\n  raw=\"{truncate_assembler_text(event.raw_text)}\""
-            + f"\n  before=\"{truncate_assembler_text(event.before)}\""
-            + f"\n  after=\"{truncate_assembler_text(event.text)}\"",
-            flush=True,
-        )
-        print(
-            f"[CONSENSUS] window={event.window:03d} speaker={event.speaker} "
-            f"utterance={event.utterance_id} action={event.stability_action} "
-            f"history={event.history_size}\n"
-            f"  stable=\"{truncate_assembler_text(event.stable_text)}\"\n"
-            f"  tentative=\"{truncate_assembler_text(event.tentative_text)}\"",
-            flush=True,
-        )
         if websocket_server is not None:
             publication = websocket_server.publish(subtitle_event)
             subtitle_event["websocket_accepted"] = publication.accepted
@@ -596,6 +610,10 @@ def main(
             subtitle_event,
             "subtitle",
         )
+        if event.status == "partial":
+            published_subtitle_utterances.add(utterance_key)
+        else:
+            published_subtitle_utterances.discard(utterance_key)
         return subtitle_event
 
     try:
@@ -1708,11 +1726,12 @@ def main(
                                 )
                                 for state_event in state_events:
                                     window_subtitle_state_events.append(state_event.to_dict())
-                                    publish_subtitle_state_event(
+                                    published_event = publish_subtitle_state_event(
                                         state_event,
                                         stt_inference_ended=stt_inference_ended,
                                     )
-                                    subtitle_created_times.append(time.perf_counter())
+                                    if published_event:
+                                        subtitle_created_times.append(time.perf_counter())
                                     if state_event.status == "final":
                                         assemblers[speaker_index].reset_utterance(final_text=state_event.text)
                             previous_subtitle_window = item.source.index

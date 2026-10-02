@@ -260,11 +260,13 @@ class PipelineTests(TestCase):
                 self.assertEqual(result["stt_window_success"], 2)
                 final = [e for e in result["subtitle_events"] if e["status"] == "final"]
                 self.assertEqual([e["text"] for e in final], ["감사합니다."] if genuine else [])
+                partial = [e for e in result["subtitle_events"] if e["status"] == "partial"]
+                self.assertEqual([e["text"] for e in partial], ["감사합니다."] if genuine else [])
                 evidence = result["windows"][0]["secondary_leakage_diagnostic"]
                 self.assertEqual(evidence["subtitle_admission"]["applied"], not genuine)
                 self.assertEqual(evidence["raw_transcripts"]["speaker_0"], "감사합니다.")
 
-    def test_ambiguous_tentative_is_retracted_on_silence_and_pipeline_end(self):
+    def test_ambiguous_tentative_is_withheld_and_discarded_internally(self):
         from phase5.subtitle_presentation import SubtitlePresentationState
         for duration in (3, 5):
             with self.subTest(duration=duration):
@@ -293,14 +295,80 @@ class PipelineTests(TestCase):
                 self.assertFalse(admission["suppressed"])
                 self.assertFalse(admission["source_supported"])
                 events = [e for e in result["subtitle_events"] if e["speaker"] == "speaker_1"]
-                self.assertEqual([e["action"] for e in events], ["start", "discard"])
-                self.assertEqual(events[-1]["text"], "")
-                self.assertEqual(events[-1]["history_size"], 1)
-                self.assertTrue(events[-1]["websocket_accepted"])
+                self.assertEqual(events, [])
+                state_events = [e for e in result["subtitle_state_events"] if e["speaker"] == 1]
+                self.assertEqual([e["action"] for e in state_events], ["start", "discard"])
+                self.assertEqual([e["publication_text"] for e in state_events], ["", ""])
+                self.assertEqual(state_events[-1]["history_size"], 1)
+                self.assertEqual(result["websocket"]["published"], len(result["subtitle_events"]))
                 presentation = SubtitlePresentationState()
                 for event in result["subtitle_events"]:
                     presentation.apply(event)
                 self.assertEqual([entry.text for entry in presentation.entries], ["정상 발화"])
+
+    def test_withheld_tentative_is_published_after_next_window_support(self):
+        text = "다음 창에서 확인되는 실제 발화"
+
+        def response(audio, index):
+            result = payload("r", index, len(audio))
+            waves = (audio, audio)
+            for i, slot in enumerate(result["speakers"]):
+                active = index in (0, 1)
+                wave = waves[i] if active else audio * 0
+                if i == 0:
+                    start, end = 0, len(audio)
+                elif index == 0:
+                    start, end = len(audio) - 800 * 16, len(audio)
+                else:
+                    start, end = 0, 800 * 16
+                slot["waveform"]["data"] = base64.b64encode(wave.astype("<f4").tobytes()).decode()
+                slot["raw_transcript"] = ("정상 발화" if i == 0 else text) if active else ""
+                slot["vad"].update({
+                    "speech_detected": active,
+                    "speech_duration_ms": (end - start) / 16 if active else 0,
+                    "speech_ratio": (end - start) / len(audio) if active else 0,
+                    "timestamps": [{"start": start, "end": end}] if active else [],
+                })
+            return result
+
+        delivered = []
+        hooks = pipeline.LivePipelineHooks(on_subtitle=delivered.append)
+        evidence_calls = 0
+
+        def source_evidence(*_args):
+            nonlocal evidence_calls
+            evidence_calls += 1
+            supported = evidence_calls > 2
+            return {
+                "candidate_input_correlation": .9 if supported else .1044,
+                "owner_input_correlation": .1 if supported else .9847,
+                "independent_input_correlation": .9 if supported else .2842,
+                "pair_correlation": .05,
+            }
+
+        with patch(
+            "secondary_leakage_diagnostics.source_input_evidence",
+            side_effect=source_evidence,
+        ):
+            code, result = self.run_pipeline(
+                True, response_factory=response, duration=7, runtime_hooks=hooks
+            )
+        self.assertEqual(code, 0)
+        self.assertEqual(result["errors"], [])
+        state_events = [e for e in result["subtitle_state_events"] if e["speaker"] == 1]
+        self.assertEqual(state_events[0]["stability_action"], "awaiting_independent_support")
+        self.assertEqual(state_events[0]["publication_text"], "")
+        admissions = [
+            row["secondary_leakage_diagnostic"]["subtitle_admission"]["streams"][1]
+            for row in result["windows"][:2]
+        ]
+        self.assertEqual([row["source_supported"] for row in admissions], [False, True])
+        self.assertEqual(state_events[1]["publication_text"], text)
+        published = [e for e in result["subtitle_events"] if e["speaker"] == "speaker_1"]
+        self.assertEqual([e["status"] for e in published], ["partial", "final"])
+        self.assertEqual([e["text"] for e in published], [text, text])
+        self.assertEqual(delivered, result["subtitle_events"])
+        self.assertEqual(result["websocket"]["published"], len(result["subtitle_events"]))
 
     def test_stop_during_remote_response_prevents_late_publication(self):
         delivered = []

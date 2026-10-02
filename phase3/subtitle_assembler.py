@@ -447,6 +447,7 @@ class SubtitleStateEvent:
     tentative_text: str
     history_size: int
     stability_action: str
+    publication_text: str
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
@@ -631,6 +632,14 @@ class SpeakerSubtitleState:
     def _display_text(self) -> str:
         return append_preserving_text(self.stable_text, self.tentative_text)
 
+    def _publication_text(self) -> str:
+        if not self.require_final_support:
+            return self.partial_text
+        return max(
+            (self.stable_text, self._source_supported_text),
+            key=lambda value: len(normalize_for_matching(value)),
+        )
+
     def process(
         self,
         window: int,
@@ -772,6 +781,7 @@ class SpeakerSubtitleState:
                 tentative_text=self.tentative_text,
                 history_size=len(self.hypothesis_history),
                 stability_action=stability_action,
+                publication_text=self._publication_text(),
             )
         ]
 
@@ -813,6 +823,7 @@ class SpeakerSubtitleState:
             history_size=len(self.hypothesis_history),
             stability_action=("tentative_retained_at_final" if text == before
                               else "tentative_discarded_at_final"),
+            publication_text=text,
         )
         if text:
             self.final_segments.append(text)
