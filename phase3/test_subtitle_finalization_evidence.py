@@ -35,14 +35,14 @@ class FinalizationEvidenceTests(unittest.TestCase):
         )[0]
         self.assertEqual(partial.publication_text, "네")
         self.assertEqual(state.process(1, "", False, 5)[0].text, "네")
-        state.process(2, "확인된 내용", True, 7, confirmed_prefix_length=0, source_supported=False)
+        state.process(2, "확인된 내용", True, 7, confirmed_prefix_length=0, source_supported=True)
         state.process(3, "확인된 내용 미확인 꼬리", True, 9,
                       confirmed_prefix_length=5, source_supported=False)
         final = state.flush(3, 9)
         self.assertEqual(final.text, "확인된 내용")
         self.assertNotIn("미확인", state.final_segments[-1])
 
-    def test_unsupported_first_window_is_published_after_independent_window_support(self):
+    def test_repeated_unsupported_text_never_becomes_publishable_support(self):
         text = "다음 창에서 확인되는 실제 발화"
         state = SpeakerSubtitleState(0, require_final_support=True)
         first = state.process(
@@ -51,7 +51,7 @@ class FinalizationEvidenceTests(unittest.TestCase):
         self.assertEqual(first.publication_text, "")
         self.assertEqual(state.partial_text, text)
 
-        supported = state.process(
+        repeated = state.process(
             1,
             text,
             True,
@@ -59,7 +59,41 @@ class FinalizationEvidenceTests(unittest.TestCase):
             confirmed_prefix_length=len(normalize_for_matching(text)),
             source_supported=False,
         )[0]
-        self.assertEqual(supported.stability_action, "independent_window_support")
+        self.assertEqual(repeated.stability_action, "independent_window_support")
+        self.assertEqual(repeated.stable_text, text)
+        self.assertEqual(repeated.publication_text, "")
+        repeated_again = state.process(
+            2,
+            text,
+            True,
+            7,
+            confirmed_prefix_length=len(normalize_for_matching(text)),
+            source_supported=False,
+        )[0]
+        self.assertEqual(repeated_again.publication_text, "")
+        final = state.process(3, "", False, 9)[0]
+        self.assertEqual(final.action, "discard")
+        self.assertEqual(final.publication_text, "")
+
+    def test_unsupported_first_window_is_published_after_source_support(self):
+        text = "다음 창에서 확인되는 실제 발화"
+        state = SpeakerSubtitleState(0, require_final_support=True)
+        first = state.process(
+            0, text, True, 3, confirmed_prefix_length=0, source_supported=False
+        )[0]
+        self.assertEqual(first.publication_text, "")
+
+        supported = state.process(
+            1,
+            text,
+            True,
+            5,
+            confirmed_prefix_length=len(normalize_for_matching(text)),
+            source_supported=True,
+            source_text=text,
+        )[0]
+        self.assertTrue(supported.source_supported)
+        self.assertEqual(supported.source_supported_text, text)
         self.assertEqual(supported.publication_text, text)
         final = state.process(2, "", False, 7)[0]
         self.assertEqual(final.action, "finalize")
@@ -91,8 +125,17 @@ class FinalizationEvidenceTests(unittest.TestCase):
         state = SpeakerSubtitleState(0, require_final_support=True)
         state.process(0, "미확인 후보", True, 3, confirmed_prefix_length=0,
                       source_supported=False, source_text="미확인 후보")
-        state.process(1, "미확인 후보 새로운 발화", True, 5, confirmed_prefix_length=0,
-                      source_supported=True, source_text="새로운 발화")
+        second = state.process(
+            1,
+            "미확인 후보 새로운 발화",
+            True,
+            5,
+            confirmed_prefix_length=len(normalize_for_matching("미확인 후보")),
+            source_supported=True,
+            source_text="새로운 발화",
+        )[0]
+        self.assertEqual(second.stable_text, "미확인 후보")
+        self.assertEqual(second.publication_text, "")
         self.assertEqual(state.flush(1, 5).text, "")
 
     def test_discard_does_not_commit_assembler_session_history(self):

@@ -50,8 +50,18 @@ class PipelineTests(TestCase):
         def process(audio, index, *args, **kwargs):
             if fail_all or (fail_first and index == 0):
                 raise failure or RemoteTimeoutError("injected timeout")
-            response = (response_factory(audio, index) if response_factory is not None
-                        else payload("r", index, len(audio)))
+            if response_factory is not None:
+                response = response_factory(audio, index)
+            else:
+                response = payload("r", index, len(audio))
+                mask = np.zeros(len(audio), dtype=np.float32)
+                mask[::2] = 1
+                waves = (audio * mask, audio * (1 - mask))
+                for slot, wave in zip(response["speakers"], waves):
+                    slot["waveform"]["data"] = base64.b64encode(
+                        wave.astype("<f4").tobytes()
+                    ).decode()
+                    slot["vad"]["timestamps"] = [{"start": 0, "end": len(audio)}]
             return parse_result(response, "r", index, len(audio), .02)
         client.process.side_effect = process
         def separation(audio, **kwargs):
@@ -104,6 +114,7 @@ class PipelineTests(TestCase):
                 load.assert_called_once(); self.assertEqual(stt.call_count, 4)
                 self.assertEqual(result["audio_queue_maxsize"], 2)
                 self.assertEqual(result["separated_queue_maxsize"], 2)
+        self.last_stdout = stdout_buffer.getvalue()
         return code, result
 
     def test_remote_workers(self):
@@ -306,7 +317,75 @@ class PipelineTests(TestCase):
                     presentation.apply(event)
                 self.assertEqual([entry.text for entry in presentation.entries], ["정상 발화"])
 
-    def test_withheld_tentative_is_published_after_next_window_support(self):
+    def test_repeated_unsupported_tentative_never_reaches_external_publishers(self):
+        text = "반복되는 미지원 후보"
+
+        def response(audio, index):
+            result = payload("r", index, len(audio))
+            rng = np.random.default_rng(129)
+            noise = [rng.normal(size=len(audio)).astype(np.float32) for _ in range(2)]
+            for wave in noise:
+                wave *= np.sqrt(np.mean(audio ** 2) / np.mean(wave ** 2))
+            waves = (audio + .1 * noise[0], .1 * audio - .3 * noise[0] + noise[1])
+            for i, slot in enumerate(result["speakers"]):
+                active = index in (0, 1)
+                wave = waves[i] if active else audio * 0
+                span = len(audio) if i == 0 else 764 * 16
+                slot["waveform"]["data"] = base64.b64encode(wave.astype("<f4").tobytes()).decode()
+                slot["raw_transcript"] = ("정상 발화" if i == 0 else text) if active else ""
+                slot["vad"].update({
+                    "speech_detected": active,
+                    "speech_duration_ms": span / 16 if active else 0,
+                    "speech_ratio": span / len(audio) if active else 0,
+                    "timestamps": [{"start": 0, "end": span}] if active else [],
+                })
+            return result
+
+        evidence_calls = 0
+
+        def source_evidence(*_args):
+            nonlocal evidence_calls
+            supported = evidence_calls % 2 == 0
+            evidence_calls += 1
+            return {
+                "candidate_input_correlation": .9 if supported else .1044,
+                "owner_input_correlation": .1 if supported else .9847,
+                "independent_input_correlation": .9 if supported else .2842,
+                "pair_correlation": .05,
+            }
+
+        delivered = []
+        hooks = pipeline.LivePipelineHooks(on_subtitle=delivered.append)
+        with patch(
+            "secondary_leakage_diagnostics.source_input_evidence",
+            side_effect=source_evidence,
+        ):
+            code, result = self.run_pipeline(
+                True, response_factory=response, duration=7, runtime_hooks=hooks
+            )
+        self.assertEqual(code, 0)
+        self.assertEqual(result["errors"], [])
+        admissions = [
+            row["secondary_leakage_diagnostic"]["subtitle_admission"]["streams"][1]
+            for row in result["windows"][:2]
+        ]
+        self.assertEqual([row["source_supported"] for row in admissions], [False, False])
+        state_events = [e for e in result["subtitle_state_events"] if e["speaker"] == 1]
+        self.assertEqual(len(state_events), 3)
+        self.assertEqual(state_events[0]["action"], "start")
+        self.assertIn(state_events[1]["action"], {"retain", "extend"})
+        self.assertEqual(state_events[2]["action"], "discard")
+        self.assertEqual(state_events[1]["history_size"], 2)
+        self.assertEqual([e["publication_text"] for e in state_events], ["", "", ""])
+        self.assertFalse(any(e["speaker"] == "speaker_1" for e in result["subtitle_events"]))
+        self.assertFalse(any(e["speaker"] == "speaker_1" for e in delivered))
+        self.assertEqual(delivered, result["subtitle_events"])
+        self.assertEqual(result["websocket"]["published"], len(result["subtitle_events"]))
+        self.assertIn('publication_text=""', self.last_stdout)
+        self.assertIn("source_supported=False", self.last_stdout)
+        self.assertIn("will_publish=False", self.last_stdout)
+
+    def test_withheld_tentative_is_published_after_genuine_source_support(self):
         text = "다음 창에서 확인되는 실제 발화"
 
         def response(audio, index):
@@ -363,6 +442,8 @@ class PipelineTests(TestCase):
             for row in result["windows"][:2]
         ]
         self.assertEqual([row["source_supported"] for row in admissions], [False, True])
+        self.assertFalse(state_events[0]["source_supported"])
+        self.assertTrue(state_events[1]["source_supported"])
         self.assertEqual(state_events[1]["publication_text"], text)
         published = [e for e in result["subtitle_events"] if e["speaker"] == "speaker_1"]
         self.assertEqual([e["status"] for e in published], ["partial", "final"])

@@ -448,6 +448,9 @@ class SubtitleStateEvent:
     history_size: int
     stability_action: str
     publication_text: str
+    source_supported_text: str
+    source_supported: bool
+    require_final_support: bool
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
@@ -635,10 +638,11 @@ class SpeakerSubtitleState:
     def _publication_text(self) -> str:
         if not self.require_final_support:
             return self.partial_text
-        return max(
-            (self.stable_text, self._source_supported_text),
-            key=lambda value: len(normalize_for_matching(value)),
-        )
+        # ``stable_text`` is textual consensus from overlapping STT windows.
+        # Repeated ghost text can create it without independent acoustic
+        # evidence, so production VAD publication must remain grounded in the
+        # retained source-supported prefix.
+        return self._source_supported_text
 
     def process(
         self,
@@ -754,7 +758,10 @@ class SpeakerSubtitleState:
         if source_supported:
             normalized = normalize_for_matching(self.partial_text)
             observed = normalize_for_matching(hypothesis if source_text is None else source_text)
-            known_prefix = max(retained_length, len(normalize_for_matching(self.stable_text)))
+            # A copied assembler prefix is not made source-supported merely
+            # because the current raw window supports a later suffix. Only a
+            # prefix that was already acoustically supported may bridge them.
+            known_prefix = retained_length
             if observed and normalized.endswith(observed) and len(normalized) - len(observed) <= known_prefix:
                 self._source_supported_text = self.partial_text
         self.previous_raw = hypothesis
@@ -782,6 +789,9 @@ class SpeakerSubtitleState:
                 history_size=len(self.hypothesis_history),
                 stability_action=stability_action,
                 publication_text=self._publication_text(),
+                source_supported_text=self._source_supported_text,
+                source_supported=source_supported,
+                require_final_support=self.require_final_support,
             )
         ]
 
@@ -797,10 +807,10 @@ class SpeakerSubtitleState:
         before = self.partial_text
         text = before
         if self.require_final_support:
-            # Silence and pipeline_end add no evidence. Keep only a prefix
-            # supported by actual windows or the retained acoustic observation.
-            text = max((self.stable_text, self._source_supported_text),
-                       key=lambda value: len(normalize_for_matching(value)))
+            # Silence and pipeline_end add no acoustic evidence. Textual
+            # repetition alone cannot turn an unsupported hypothesis into a
+            # user-visible FINAL.
+            text = self._source_supported_text
         event = SubtitleStateEvent(
             window=window,
             speaker=self.speaker,
@@ -824,6 +834,9 @@ class SpeakerSubtitleState:
             stability_action=("tentative_retained_at_final" if text == before
                               else "tentative_discarded_at_final"),
             publication_text=text,
+            source_supported_text=self._source_supported_text,
+            source_supported=False,
+            require_final_support=self.require_final_support,
         )
         if text:
             self.final_segments.append(text)

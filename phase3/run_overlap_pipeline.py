@@ -550,14 +550,33 @@ def main(
         needs_retraction = (
             event.action == "discard" and utterance_key in published_subtitle_utterances
         )
-        if not event.publication_text and not needs_retraction:
-            print(
-                f"[SUBTITLE PUBLICATION] window={event.window:03d} "
-                f"speaker={event.speaker} utterance={event.utterance_id} "
-                f"withheld reason="
-                f"{'discarded_unsupported_tentative' if event.action == 'discard' else 'awaiting_independent_support'}",
-                flush=True,
-            )
+        will_publish = bool(event.publication_text or needs_retraction)
+        publication_reason = (
+            "retraction"
+            if needs_retraction
+            else "source_supported_text"
+            if event.publication_text and event.require_final_support
+            else "support_not_required"
+            if event.publication_text
+            else "discarded_unsupported_tentative"
+            if event.action == "discard"
+            else "awaiting_source_support"
+        )
+        print(
+            f"[SUBTITLE PUBLICATION] window={event.window:03d} "
+            f"speaker={event.speaker} utterance={event.utterance_id} "
+            f"status={event.status} action={event.action} "
+            f'event_text="{truncate_assembler_text(event.text)}" '
+            f'publication_text="{truncate_assembler_text(event.publication_text)}" '
+            f'stable_text="{truncate_assembler_text(event.stable_text)}" '
+            f'source_supported_text="{truncate_assembler_text(event.source_supported_text)}" '
+            f"source_supported={event.source_supported} "
+            f"require_final_support={event.require_final_support} "
+            f"needs_retraction={needs_retraction} will_publish={will_publish} "
+            f"reason={publication_reason}",
+            flush=True,
+        )
+        if not will_publish:
             return {}
         state = subtitle_states[event.speaker]
         display_text = ""

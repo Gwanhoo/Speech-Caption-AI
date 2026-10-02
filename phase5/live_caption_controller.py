@@ -115,6 +115,13 @@ class Phase4PipelineBackend:
         hooks: RuntimeHooks,
     ) -> int:
         pipeline = _load_phase4_pipeline()
+        module_file = getattr(pipeline, "__file__", None)
+        module_path = (
+            str(Path(module_file).resolve())
+            if isinstance(module_file, str)
+            else "<unknown>"
+        )
+        print(f"[PIPELINE CODE] module={module_path}", flush=True)
         argv = [
             "--live",
             "--processing-mode",
