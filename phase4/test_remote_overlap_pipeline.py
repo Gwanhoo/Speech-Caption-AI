@@ -81,6 +81,8 @@ class PipelineTests(TestCase):
             for name in ("is_available", "reset_peak_memory_stats", "memory_allocated", "memory_reserved", "max_memory_allocated"):
                 cuda_calls.append(stack.enter_context(patch.object(pipeline.torch.cuda, name, return_value=True if name == "is_available" else 0)))
             code = pipeline.main(runtime_hooks=runtime_hooks)
+            if remote:
+                client.close.assert_called_once()
             result = json.loads(output.read_text())
             if latency_diagnostics:
                 self.assertTrue(result["latency_diagnostics"]["enabled"])
@@ -261,6 +263,55 @@ class PipelineTests(TestCase):
                 evidence = result["windows"][0]["secondary_leakage_diagnostic"]
                 self.assertEqual(evidence["subtitle_admission"]["applied"], not genuine)
                 self.assertEqual(evidence["raw_transcripts"]["speaker_0"], "감사합니다.")
+
+    def test_ambiguous_tentative_is_retracted_on_silence_and_pipeline_end(self):
+        from phase5.subtitle_presentation import SubtitlePresentationState
+        for duration in (3, 5):
+            with self.subTest(duration=duration):
+                def response(audio, index):
+                    result = payload("r", index, len(audio))
+                    rng = np.random.default_rng(129)
+                    noise = [rng.normal(size=len(audio)).astype(np.float32) for _ in range(2)]
+                    for wave in noise:
+                        wave *= np.sqrt(np.mean(audio ** 2) / np.mean(wave ** 2))
+                    waves = (audio + .1 * noise[0], .1 * audio - .3 * noise[0] + noise[1])
+                    for i, slot in enumerate(result["speakers"]):
+                        active = index == 0
+                        wave = waves[i] if active else audio * 0
+                        span = len(audio) if i == 0 else 764 * 16
+                        slot["waveform"]["data"] = base64.b64encode(wave.astype("<f4").tobytes()).decode()
+                        slot["raw_transcript"] = ("정상 발화" if i == 0 else "미확인 후보") if active else ""
+                        slot["vad"].update({"speech_detected": active,
+                            "speech_duration_ms": span / 16 if active else 0,
+                            "speech_ratio": span / len(audio) if active else 0,
+                            "timestamps": [{"start": 0, "end": span}] if active else []})
+                    return result
+                code, result = self.run_pipeline(True, response_factory=response, duration=duration)
+                self.assertEqual(code, 0)
+                self.assertEqual(result["errors"], [])
+                admission = result["windows"][0]["secondary_leakage_diagnostic"]["subtitle_admission"]["streams"][1]
+                self.assertFalse(admission["suppressed"])
+                self.assertFalse(admission["source_supported"])
+                events = [e for e in result["subtitle_events"] if e["speaker"] == "speaker_1"]
+                self.assertEqual([e["action"] for e in events], ["start", "discard"])
+                self.assertEqual(events[-1]["text"], "")
+                self.assertEqual(events[-1]["history_size"], 1)
+                self.assertTrue(events[-1]["websocket_accepted"])
+                presentation = SubtitlePresentationState()
+                for event in result["subtitle_events"]:
+                    presentation.apply(event)
+                self.assertEqual([entry.text for entry in presentation.entries], ["정상 발화"])
+
+    def test_stop_during_remote_response_prevents_late_publication(self):
+        delivered = []
+        hooks = pipeline.LivePipelineHooks(on_subtitle=delivered.append)
+        def response(audio, index):
+            hooks.stop_event.set()  # STOP while the remote request is in flight.
+            return payload("r", index, len(audio))
+        _, result = self.run_pipeline(True, response_factory=response, runtime_hooks=hooks)
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(result["subtitle_events"], [])
+        self.assertEqual(delivered, [])
 
     def test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes(self):
         for duration_ms, owner_ms, start_ms in ((508, 1718, 1400), (1144, 3000, 1000), (764, 0, 1200)):

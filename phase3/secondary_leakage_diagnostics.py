@@ -686,6 +686,25 @@ def admit_subtitle_streams(
         if not transcripts[candidate].strip() or not vad_results[candidate].get("speech_detected"):
             evidence["reason"] = "inactive"
             continue
+        local = [
+            source_input_evidence(
+                mixture[start:end], speakers[owner][start:end], speakers[candidate][start:end],
+            ) for start, end in intervals[candidate]
+        ]
+        evidence["speech_local_evidence"] = local
+        # Positive support is separate from fail-open PARTIAL admission. Reuse
+        # the tracker/admission source confidence, including quiet independent
+        # components. A missing/zero owner can still leave direct input support.
+        supported = any(
+            (row["candidate_input_correlation"] or 0) >= DEFAULT_SOURCE_CONFIDENCE
+            or (row["independent_input_correlation"] or 0) >= DEFAULT_SOURCE_CONFIDENCE
+            if row is not None else
+            (safe_absolute_correlation(mixture[start:end], speakers[candidate][start:end]) or 0)
+            >= DEFAULT_SOURCE_CONFIDENCE
+            for (start, end), row in zip(intervals[candidate], local)
+        )
+        evidence["source_supported"] = supported
+        vads[candidate]["source_supported"] = supported
         if active_hypotheses[candidate]:
             evidence["reason"] = "existing_utterance"
             continue
@@ -701,12 +720,6 @@ def admit_subtitle_streams(
         # the owner VAD/STT is missing or its timestamps do not contain it.
         # Inspect ALL candidate speech intervals before those metadata gates.
         # A single independently supported interval protects a short response.
-        local = [
-            source_input_evidence(
-                mixture[start:end], speakers[owner][start:end], speakers[candidate][start:end],
-            ) for start, end in intervals[candidate]
-        ]
-        evidence["speech_local_evidence"] = local
         if (normalize_lexical_text(transcripts[candidate]) and local
                 and all(unsupported_source(row) for row in local)):
             evidence.update(suppressed=True, reason="unsupported_source_on_speech_intervals")

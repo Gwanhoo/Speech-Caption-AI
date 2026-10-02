@@ -28,6 +28,32 @@ class SubtitlePresentationStateTests(unittest.TestCase):
     def texts(self) -> list[str]:
         return [entry.text for entry in self.state.entries]
 
+    def test_final_expiry_preserves_partials_and_rejects_replayed_final(self):
+        now = [10.0]
+        state = SubtitlePresentationState(clock=lambda: now[0])
+        final = event("speaker_0", 1, 1, "완료된 문장", "final")
+        state.apply(final)
+        state.apply(event("speaker_0", 2, 2, "현재 발화"))
+        state.apply(event("speaker_1", 1, 3, "동시 발화"))
+        now[0] = 13.99
+        self.assertFalse(state.expire())
+        self.assertEqual(len(state.entries), 3)
+        now[0] = 14.0
+        self.assertTrue(state.expire())
+        self.assertEqual([e.text for e in state.entries], ["현재 발화", "동시 발화"])
+        self.assertFalse(state.apply(dict(final, sequence=4)))
+        now[0] = 100.0
+        self.assertFalse(state.expire())
+        self.assertEqual(len(state.entries), 2)
+
+    def test_discard_closes_only_matching_partial_without_a_final_caption(self):
+        self.state.apply(event("speaker_0", 1, 1, "미확인 후보"))
+        self.state.apply(event("speaker_1", 1, 2, "다른 발화"))
+        discard = dict(event("speaker_0", 1, 3, "", "final"), action="discard")
+        self.assertTrue(self.state.apply(discard))
+        self.assertEqual(self.texts(), ["다른 발화"])
+        self.assertFalse(self.state.apply(event("speaker_0", 1, 4, "늦은 후보")))
+
     def test_partial_updates_one_current_caption(self) -> None:
         self.assertTrue(self.state.apply(event("speaker_0", 1, 1, "안녕하세요")))
         self.assertTrue(self.state.apply(event("speaker_0", 1, 2, "안녕하세요 오늘")))

@@ -6,7 +6,7 @@ from typing import Any
 # See live_caption_controller.py: this import must precede PySide6 on Python 3.10.
 from typing_extensions import Self as _TypingExtensionsSelf  # noqa: F401
 
-from PySide6.QtCore import QAbstractListModel, QModelIndex, QSize, Qt, Signal, Slot
+from PySide6.QtCore import QAbstractListModel, QModelIndex, QSize, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QFont
 from PySide6.QtWidgets import (
     QApplication,
@@ -83,6 +83,7 @@ class SubtitleFeedModel(QAbstractListModel):
     entries_changed = Signal(object)
     MAX_FINAL_ENTRIES = SubtitlePresentationState.MAX_FINAL_ENTRIES
     MAX_ENTRIES = MAX_FINAL_ENTRIES + 1
+    EXPIRY_POLL_MS = 100
     SpeakerRole = Qt.ItemDataRole.UserRole + 1
     UtteranceRole = Qt.ItemDataRole.UserRole + 2
     SequenceRole = Qt.ItemDataRole.UserRole + 3
@@ -92,6 +93,10 @@ class SubtitleFeedModel(QAbstractListModel):
         super().__init__(parent)
         self._entries: list[SubtitleFeedEntry] = []
         self._presentation = SubtitlePresentationState()
+        self._expiry_timer = QTimer(self)
+        self._expiry_timer.setInterval(self.EXPIRY_POLL_MS)
+        self._expiry_timer.timeout.connect(self.expire_final_entries)
+        self._expiry_timer.start()
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:  # noqa: N802
         return 0 if parent.isValid() else len(self._entries)
@@ -124,12 +129,20 @@ class SubtitleFeedModel(QAbstractListModel):
     def upsert_event(self, event: dict[str, Any]) -> bool:
         if not self._presentation.apply(event):
             return False
+        self._refresh_snapshot()
+        self.entry_upserted.emit(len(self._entries) - 1, True)
+        return True
+
+    @Slot()
+    def expire_final_entries(self) -> None:
+        if self._presentation.expire():
+            self._refresh_snapshot()
+
+    def _refresh_snapshot(self) -> None:
         self.beginResetModel()
         self._entries = list(self._presentation.entries)
         self.endResetModel()
         self.entries_changed.emit(tuple(self._entries))
-        self.entry_upserted.emit(len(self._entries) - 1, True)
-        return True
 
     def entry_at(self, row: int) -> SubtitleFeedEntry:
         return self._entries[row]
@@ -414,11 +427,14 @@ class MainWindow(QMainWindow):
             self.status_label.setText("서버와 오디오 장치 확인 중…")
         elif state == "stopping":
             self.stop_button.setEnabled(False)
+            self.subtitle_model.clear()
+            self._hide_and_clear_overlay()
         elif state == "idle" and not self.status_label.text().startswith("오류:"):
             self.status_label.setStyleSheet("color: #334155;")
 
     @Slot(bool, str)
     def _run_finished(self, success: bool, message: str) -> None:
+        self.subtitle_model.clear()
         self._hide_and_clear_overlay()
         if success:
             self.status_label.setStyleSheet("color: #334155;")

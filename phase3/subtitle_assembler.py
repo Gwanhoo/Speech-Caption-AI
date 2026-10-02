@@ -267,9 +267,11 @@ class SubtitleAssembler:
         self._finalized_session = ""
         self.confirmed_prefix_length = 0
 
-    def reset_utterance(self) -> None:
+    def reset_utterance(self, *, final_text: str | None = None) -> None:
         """Start a new utterance without discarding finalized session history."""
-        self._finalized_session = self.assembled
+        self._finalized_session = (self.assembled if final_text is None else
+                                   append_preserving_text(self._finalized_session, final_text))
+        self.assembled = self._finalized_session
         self.confirmed_prefix_length = 0
         self.previous = ""
         self.utterance_hypothesis = ""
@@ -595,6 +597,7 @@ class SpeakerSubtitleState:
         speaker: int,
         minimum_characters: int = 6,
         finalize_silence_ms: int = DEFAULT_FINALIZE_SILENCE_MS,
+        require_final_support: bool = False,
     ) -> None:
         if minimum_characters < 2:
             raise ValueError("minimum_characters must be at least 2")
@@ -603,6 +606,10 @@ class SpeakerSubtitleState:
         self.speaker = speaker
         self.minimum_characters = minimum_characters
         self.finalize_silence_seconds = finalize_silence_ms / 1000
+        # Live VAD callers supply acoustic evidence. Text-only replay callers
+        # retain their existing contract; production enables this explicitly.
+        self.require_final_support = require_final_support
+        self._source_supported_text = ""
         self.final_segments: list[str] = []
         self.stable_text = ""
         self.tentative_text = ""
@@ -632,6 +639,8 @@ class SpeakerSubtitleState:
         stream_time_seconds: float,
         *,
         confirmed_prefix_length: int | None = None,
+        source_supported: bool = False,
+        source_text: str | None = None,
     ) -> list[SubtitleStateEvent]:
         if window <= self.last_window:
             raise ValueError(
@@ -728,6 +737,17 @@ class SpeakerSubtitleState:
                 else "awaiting_independent_support"
             )
         self.partial_text = self._display_text()
+        # Acoustic evidence belongs to this raw window, not to unobserved
+        # prefixes the assembler copied from older hypotheses.
+        retained_length = normalized_common_prefix_length(self.partial_text, self._source_supported_text)
+        self._source_supported_text, _ = split_hypothesis_at_normalized_prefix(
+            self.partial_text, retained_length)
+        if source_supported:
+            normalized = normalize_for_matching(self.partial_text)
+            observed = normalize_for_matching(hypothesis if source_text is None else source_text)
+            known_prefix = max(retained_length, len(normalize_for_matching(self.stable_text)))
+            if observed and normalized.endswith(observed) and len(normalized) - len(observed) <= known_prefix:
+                self._source_supported_text = self.partial_text
         self.previous_raw = hypothesis
         self.last_update_time = stream_time_seconds
         return [
@@ -764,15 +784,21 @@ class SpeakerSubtitleState:
         if not self.partial_text:
             raise ValueError("Cannot finalize an empty subtitle partial")
         tentative_before = self.tentative_text
-        text = self.partial_text
+        before = self.partial_text
+        text = before
+        if self.require_final_support:
+            # Silence and pipeline_end add no evidence. Keep only a prefix
+            # supported by actual windows or the retained acoustic observation.
+            text = max((self.stable_text, self._source_supported_text),
+                       key=lambda value: len(normalize_for_matching(value)))
         event = SubtitleStateEvent(
             window=window,
             speaker=self.speaker,
             utterance_id=self.utterance_id,
             status="final",
-            action="finalize",
+            action="finalize" if text else "discard",
             raw_text="",
-            before=text,
+            before=before,
             text=text,
             previous_raw=self.previous_raw,
             match_type="none",
@@ -785,9 +811,12 @@ class SpeakerSubtitleState:
             stable_text=self.stable_text,
             tentative_text=tentative_before,
             history_size=len(self.hypothesis_history),
-            stability_action="tentative_retained_at_final",
+            stability_action=("tentative_retained_at_final" if text == before
+                              else "tentative_discarded_at_final"),
         )
-        self.final_segments.append(text)
+        if text:
+            self.final_segments.append(text)
+        self._source_supported_text = ""
         self.stable_text = ""
         self.tentative_text = ""
         self.tentative_supported_cut = 0

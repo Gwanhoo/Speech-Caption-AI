@@ -11,6 +11,7 @@ from unittest.mock import Mock, patch
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from phase5.gui_app import MainWindow
+from phase5.subtitle_presentation import SubtitlePresentationState
 from phase5.live_caption_controller import (
     EnvironmentInfo,
     LiveCaptionConfig,
@@ -19,6 +20,7 @@ from phase5.live_caption_controller import (
     Phase4PipelineBackend,
 )
 from PySide6.QtWidgets import QApplication, QLabel
+from PySide6.QtCore import Qt
 from typing_extensions import Self as TypingExtensionsSelf
 
 
@@ -101,6 +103,64 @@ class GuiTests(unittest.TestCase):
             visible_labels = [label.text() for label in window.findChildren(QLabel)]
             self.assertFalse(any("Speaker" in text for text in visible_labels))
         finally:
+            window.close()
+
+    def test_idle_timer_expiry_updates_control_and_overlay_snapshot(self):
+        window = MainWindow()
+        now = [10.0]
+        window.subtitle_model._presentation = SubtitlePresentationState(clock=lambda: now[0])
+        overlay = window._ensure_overlay()
+        snapshots = []
+        window.subtitle_model.entries_changed.connect(snapshots.append)
+        try:
+            window.apply_subtitle_event(self.event("speaker_0", 1, 1, "확정", "final"))
+            window.apply_subtitle_event(self.event("speaker_1", 1, 2, "진행"))
+            self.assertTrue(window.subtitle_model._expiry_timer.isActive())
+            now[0] = 14.0
+            # Exercise the connected timer callback, without a new event/sleep.
+            window.subtitle_model._expiry_timer.timeout.emit()
+            self.assertEqual(self.feed_texts(window), ["진행"])
+            self.assertEqual(overlay.entries, window.subtitle_model.entries)
+            self.assertEqual(snapshots[-1], overlay.entries)
+            window.apply_subtitle_event(self.event("speaker_1", 1, 3, "완료", "final"))
+            now[0] = 18.0
+            window.subtitle_model._expiry_timer.timeout.emit()
+            self.assertEqual(window.subtitle_model.entries, ())
+            self.assertEqual(overlay.entries, ())
+            self.assertTrue(all(not label.text() for label in overlay._labels))
+        finally:
+            window.close()
+
+    def test_stop_rejects_queued_old_worker_events_even_after_restart(self):
+        backend = BlockingBackend()
+        controller = LiveCaptionController(backend=backend)
+        window = MainWindow(controller)
+        try:
+            window.start_captioning()
+            self.pump_until(lambda: self.feed_texts(window) == ["테스트 자막"])
+            old_worker = controller._worker
+            window.apply_subtitle_event(self.event("speaker_1", 1, 2, "이전 확정", "final"))
+            # Queue the signal in Qt BEFORE stop, then deliver it AFTER clear.
+            from PySide6.QtCore import QMetaObject, Q_ARG
+            QMetaObject.invokeMethod(old_worker, "subtitle_event", Qt.ConnectionType.QueuedConnection,
+                                     Q_ARG("QVariantMap", self.event("speaker_0", 1, 9, "늦은 결과")))
+            controller.stop()  # Also exercise stopping without the button wrapper.
+            self.assertEqual(window.subtitle_model.entries, ())
+            self.assertEqual(window.overlay.entries, ())
+            self.pump_until(lambda: controller.state == "idle")
+            self.assertEqual(window.subtitle_model.entries, ())
+            window.start_captioning()
+            self.pump_until(lambda: self.feed_texts(window) == ["테스트 자막"])
+            # A separate obsolete worker simulates an old session delivery.
+            obsolete = LiveCaptionWorker(LiveCaptionConfig(), backend=backend)
+            obsolete.subtitle_event.connect(controller._forward_subtitle, Qt.ConnectionType.QueuedConnection)
+            obsolete.subtitle_event.emit(self.event("speaker_0", 1, 99, "이전 세션"))
+            self.app.processEvents()
+            self.assertEqual(self.feed_texts(window), ["테스트 자막"])
+        finally:
+            if controller.state != "idle":
+                window.stop_captioning()
+                self.pump_until(lambda: controller.state == "idle")
             window.close()
 
     def test_pyside_python310_self_compatibility_is_primed(self) -> None:

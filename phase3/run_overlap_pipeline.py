@@ -515,6 +515,7 @@ def main(
             speaker=speaker,
             minimum_characters=args.assembler_min_characters,
             finalize_silence_ms=args.subtitle_finalize_silence_ms,
+            require_final_support=args.vad,
         )
         for speaker in (0, 1)
     ]
@@ -523,6 +524,8 @@ def main(
         event: SubtitleStateEvent,
         stt_inference_ended: float | None = None,
     ) -> dict[str, Any]:
+        if runtime_hooks is not None and runtime_hooks.stop_event.is_set():
+            return {}
         state_event = event.to_dict()
         subtitle_state_events.append(state_event)
         state = subtitle_states[event.speaker]
@@ -1699,6 +1702,9 @@ def main(
                                     speech_detected=speech_detected,
                                     stream_time_seconds=item.source.stream_end_seconds,
                                     confirmed_prefix_length=window_assembly_events[speaker_index]["confirmed_prefix_length"],
+                                    source_supported=(subtitle_vads[speaker_index].get("source_supported", False)
+                                                      if args.vad else False),
+                                    source_text=transcripts[speaker_index],
                                 )
                                 for state_event in state_events:
                                     window_subtitle_state_events.append(state_event.to_dict())
@@ -1708,7 +1714,7 @@ def main(
                                     )
                                     subtitle_created_times.append(time.perf_counter())
                                     if state_event.status == "final":
-                                        assemblers[speaker_index].reset_utterance()
+                                        assemblers[speaker_index].reset_utterance(final_text=state_event.text)
                             previous_subtitle_window = item.source.index
                             previous_subtitle_audio = item.speakers
                             previous_subtitle_vads = subtitle_vads
@@ -1924,6 +1930,7 @@ def main(
                 )
                 if final_event is not None:
                     publish_subtitle_state_event(final_event)
+                    assemblers[state.speaker].reset_utterance(final_text=final_event.text)
         if websocket_server is not None:
             websocket_server.flush()
             time.sleep(0.1)

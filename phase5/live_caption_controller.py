@@ -221,7 +221,8 @@ class LiveCaptionWorker(QObject):
             self.finished.emit(False, message)
 
     def _publish_subtitle(self, event: dict[str, Any]) -> None:
-        self.subtitle_event.emit(dict(event))
+        if not self.stop_event.is_set():
+            self.subtitle_event.emit(dict(event))
 
     def _publish_metric(self, metric: dict[str, Any]) -> None:
         latency = metric.get("post_capture_latency_seconds")
@@ -265,7 +266,7 @@ class LiveCaptionController(QObject):
         worker.server_state.connect(self.server_state)
         worker.device_state.connect(self.device_state)
         worker.status.connect(self.status)
-        worker.subtitle_event.connect(self.subtitle_event)
+        worker.subtitle_event.connect(self._forward_subtitle)
         worker.latency_updated.connect(self.latency_updated)
         worker.error.connect(self.error)
         worker.device_state.connect(self._mark_running)
@@ -286,6 +287,13 @@ class LiveCaptionController(QObject):
         self.status.emit("중지 요청됨 — 현재 작업을 마치고 안전하게 종료 중…")
         self._worker.request_stop()
         return True
+
+    @Slot(dict)
+    def _forward_subtitle(self, event: dict[str, Any]) -> None:
+        # This slot runs on the GUI thread. A worker-side stop check alone
+        # cannot invalidate Qt signals already queued before STOP/restart.
+        if self._state in {"starting", "running"} and self.sender() is self._worker:
+            self.subtitle_event.emit(event)
 
     @Slot(str)
     def _mark_running(self, _device_name: str) -> None:

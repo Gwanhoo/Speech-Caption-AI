@@ -6,7 +6,11 @@ only chooses which already-structured events are visible to the reader.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+import time
+from typing import Any, Callable
+
+
+FINAL_LIFETIME_SECONDS = 4.0
 
 
 @dataclass(frozen=True)
@@ -30,7 +34,9 @@ class SubtitlePresentationState:
     MAX_ROWS = 3
     MAX_SEEN_EVENT_IDS = 128
 
-    def __init__(self) -> None:
+    def __init__(self, *, clock: Callable[[], float] = time.monotonic) -> None:
+        self._clock = clock
+        self._final_deadlines: dict[tuple[str, int], float] = {}
         self._final_entries: list[SubtitleFeedEntry] = []
         self._partials: dict[str, SubtitleFeedEntry] = {}
         self._finalized_utterances: set[tuple[str, int]] = set()
@@ -47,6 +53,7 @@ class SubtitlePresentationState:
         return tuple(finals[-available:] + partials) if available else tuple(partials)
 
     def clear(self) -> None:
+        self._final_deadlines.clear()
         self._final_entries.clear()
         self._partials.clear()
         self._finalized_utterances.clear()
@@ -54,6 +61,19 @@ class SubtitlePresentationState:
         self._seen_event_ids.clear()
         self._seen_event_order.clear()
         self._latest_sequence.clear()
+
+    def expire(self, now: float | None = None) -> bool:
+        """Expire only FINALs using local monotonic arrival time, not wire time."""
+        now = self._clock() if now is None else now
+        expired = {key for key, deadline in self._final_deadlines.items() if now >= deadline}
+        if not expired:
+            return False
+        self._final_entries = [entry for entry in self._final_entries
+                               if (entry.speaker_id, entry.utterance_id) not in expired]
+        for key in expired:
+            del self._final_deadlines[key]
+        # Keep sequence/finalization tombstones: expiry must not permit replay.
+        return True
 
     def apply(self, event: dict[str, Any]) -> bool:
         entry = self._entry_from_event(event)
@@ -87,10 +107,14 @@ class SubtitlePresentationState:
                 del self._partials[entry.speaker_id]
             self._finalized_utterances.add(key)
             self._finalized_utterance_order.append(key)
-            self._final_entries.append(entry)
+            if event.get("action") != "discard":
+                self._final_entries.append(entry)
+                self._final_deadlines[key] = self._clock() + FINAL_LIFETIME_SECONDS
             self._final_entries.sort(key=lambda value: value.sequence)
             overflow = len(self._final_entries) - self.MAX_FINAL_ENTRIES
             if overflow > 0:
+                for stale in self._final_entries[:overflow]:
+                    self._final_deadlines.pop((stale.speaker_id, stale.utterance_id), None)
                 del self._final_entries[:overflow]
 
         self._remember_event(event_id)
@@ -126,7 +150,7 @@ class SubtitlePresentationState:
             or sequence < 0
             or status not in {"partial", "final"}
             or not isinstance(text, str)
-            or not text.strip()
+            or (not text.strip() and not (status == "final" and event.get("action") == "discard"))
         ):
             return None
         return SubtitleFeedEntry(
