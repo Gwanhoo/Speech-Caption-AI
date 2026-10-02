@@ -10,7 +10,8 @@ import soundfile as sf
 
 from speaker_tracking import (
     DEFAULT_SILENCE_RMS, DEFAULT_SOURCE_CONFIDENCE, HIGH_SOURCE_CORRELATION,
-    safe_absolute_correlation,
+    MAX_UNSUPPORTED_INPUT_CORRELATION, safe_absolute_correlation,
+    source_input_evidence, unsupported_source,
 )
 from subtitle_assembler import append_preserving_text
 
@@ -606,48 +607,6 @@ def resolve_subtitle_fragments(
     return texts, vads, evidence
 
 
-def _speech_local_source_evidence(
-    mixture: np.ndarray, owner: np.ndarray, candidate: np.ndarray,
-) -> dict[str, Any] | None:
-    """Compare input support after removing shared audio, independent of level.
-
-    A quiet real source may have little full-window mixture correlation. Its
-    component orthogonal to the owner can still explain the mixture residual.
-    This is evidence about separated signals, not speaker recognition.
-    """
-    values = [np.asarray(audio, dtype=np.float64) for audio in (mixture, owner, candidate)]
-    if any(value.ndim != 1 or value.size < 3 or not np.isfinite(value).all() for value in values):
-        return None
-    if len({value.shape for value in values}) != 1:
-        return None
-    values = [value - value.mean() for value in values]
-    norms = [float(np.linalg.norm(value)) for value in values]
-    if any(norm == 0 for norm in norms):
-        return None
-    source, primary, secondary = [value / norm for value, norm in zip(values, norms)]
-    input_residual = source - np.dot(source, primary) * primary
-    candidate_residual = secondary - np.dot(secondary, primary) * primary
-    input_energy = float(np.dot(input_residual, input_residual))
-    candidate_energy = float(np.dot(candidate_residual, candidate_residual))
-    # Only a numerical degeneracy guard, not a minimum speaker volume. Normalized
-    # residual correlation below remains usable for a very quiet second source.
-    independent = (
-        safe_absolute_correlation(
-            input_residual / np.sqrt(input_energy),
-            candidate_residual / np.sqrt(candidate_energy),
-        ) if min(input_energy, candidate_energy) > 1e-14 else 0.0
-    )
-    return {
-        "pair_correlation": safe_absolute_correlation(primary, secondary),
-        "owner_input_correlation": safe_absolute_correlation(source, primary),
-        "candidate_input_correlation": safe_absolute_correlation(source, secondary),
-        "independent_input_correlation": independent,
-        "input_residual_energy_fraction": input_energy,
-        "candidate_residual_energy_fraction": candidate_energy,
-    }
-
-
-
 def weak_speech_evidence(mixture: np.ndarray, vad: dict[str, Any]) -> dict[str, Any]:
     """Reject a new hypothesis only with joint weak VAD and input evidence.
 
@@ -696,6 +655,9 @@ def admit_subtitle_streams(
     tracker confirmation are never promotion evidence. No candidate text enters
     the assembler, so suppressed fragments cannot later leak into FINAL/flush.
     Missing/ambiguous acoustics fail open; existing utterances stay untouched.
+    Temporal consensus is not an admission test: a genuine short utterance may
+    have only one observation. Block acoustically unsupported starts here,
+    before PARTIAL publication, so silence/flush cannot retain them as FINAL.
     """
     texts = list(transcripts)
     vads = [dict(vad) for vad in vad_results]
@@ -735,6 +697,23 @@ def admit_subtitle_streams(
             vads[candidate]["speech_detected"] = False
             vads[candidate]["timestamps"] = []
             continue
+        # VAD on a normalized separated artifact can be positive even when
+        # the owner VAD/STT is missing or its timestamps do not contain it.
+        # Inspect ALL candidate speech intervals before those metadata gates.
+        # A single independently supported interval protects a short response.
+        local = [
+            source_input_evidence(
+                mixture[start:end], speakers[owner][start:end], speakers[candidate][start:end],
+            ) for start, end in intervals[candidate]
+        ]
+        evidence["speech_local_evidence"] = local
+        if (normalize_lexical_text(transcripts[candidate]) and local
+                and all(unsupported_source(row) for row in local)):
+            evidence.update(suppressed=True, reason="unsupported_source_on_speech_intervals")
+            texts[candidate] = ""
+            vads[candidate]["speech_detected"] = False
+            vads[candidate]["timestamps"] = []
+            continue
         # Apply the existing nonlexical rule symmetrically, including bootstrap
         # before either logical stream has acquired a PARTIAL.
         if not normalize_lexical_text(transcripts[candidate]):
@@ -755,12 +734,6 @@ def admit_subtitle_streams(
                 and not speaker_assignment.get("low_energy_tail", False)
             )
             if contained and (active_hypotheses[owner] or owner_only):
-                local = [
-                    _speech_local_source_evidence(
-                        mixture[start:end], speakers[owner][start:end], speakers[candidate][start:end],
-                    ) for start, end in intervals[candidate]
-                ]
-                evidence["speech_local_evidence"] = local
                 evidence["reason"] = "ambiguous_acoustics" if all(row is not None for row in local) else "invalid_speech_audio"
                 if all(row is not None for row in local):
                     # Any independently input-supported interval protects the
@@ -768,22 +741,15 @@ def admit_subtitle_streams(
                     if any(row["independent_input_correlation"] is not None and
                            row["independent_input_correlation"] >= DEFAULT_SOURCE_CONFIDENCE for row in local):
                         evidence["reason"] = "independent_input_support"
-                    # Reuse the conservative 0.95/0.20 input dominance pattern
-                    # recorded by validity diagnostics, now on speech intervals.
+                    # Duplicate leakage still needs the timing/owner gates;
+                    # absence of independent input support alone is not enough.
                     elif all(row["independent_input_correlation"] is not None and
-                             row["independent_input_correlation"] <= 0.20 for row in local):
+                             row["independent_input_correlation"] <= MAX_UNSUPPORTED_INPUT_CORRELATION for row in local):
                         duplicate = all(row["pair_correlation"] is not None and
                                         row["pair_correlation"] >= HIGH_SOURCE_CORRELATION for row in local)
-                        unsupported = owner_only and all(
-                            row["owner_input_correlation"] is not None and row["owner_input_correlation"] >= 0.95
-                            and row["candidate_input_correlation"] is not None and row["candidate_input_correlation"] <= 0.20
-                            for row in local
-                        )
-                        if duplicate or unsupported:
-                            evidence.update(suppressed=True, reason=(
-                                "duplicated_speech_without_independent_support" if duplicate
-                                else "unsupported_residual_during_primary_speech"
-                            ))
+                        if duplicate:
+                            evidence.update(suppressed=True,
+                                            reason="duplicated_speech_without_independent_support")
         elif not intervals[candidate] or not intervals[owner]:
             evidence["reason"] = "missing_speech_intervals"
         if evidence["suppressed"]:

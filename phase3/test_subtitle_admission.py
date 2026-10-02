@@ -222,11 +222,20 @@ class SubtitleAdmissionTests(unittest.TestCase):
             {"vads": [vad((0, SIZE)), dict(vad((0, SR)), timestamps=[{"start": -1, "end": SR}])]},
             {"secondary": np.full(SIZE, np.nan)},
             {"active": ["실제 본문", "실제 두 번째 화자"]},
-            {"assignment": {"raw_to_logical_mapping": {"0": 0, "1": 1}, "active_raw_slots": [0, 1]}},
         ):
             texts, _, evidence = self.admit(**overrides)
             self.assertFalse(evidence["applied"])
             self.assertEqual(texts[1], "렁쇼")
+
+    def test_tracker_activity_does_not_override_speech_local_source_evidence(self):
+        assignment = {"raw_to_logical_mapping": {"0": 0, "1": 1}, "active_raw_slots": [0, 1]}
+        # Full-window tracking activity is not missing/ambiguous acoustic
+        # evidence. Keep the independently supported counterexample as well.
+        for genuine in (False, True):
+            texts, _, evidence = self.admit(assignment=assignment,
+                mixture=self.primary + .005 * self.secondary if genuine else self.primary)
+            self.assertEqual(evidence["applied"], not genuine)
+            self.assertEqual(texts[1], "렁쇼" if genuine else "")
 
     def test_independent_interval_protects_whole_utterance_and_next_valid_speech_starts_cleanly(self):
         mix = self.primary.copy()

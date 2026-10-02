@@ -262,6 +262,92 @@ class PipelineTests(TestCase):
                 self.assertEqual(evidence["subtitle_admission"]["applied"], not genuine)
                 self.assertEqual(evidence["raw_transcripts"]["speaker_0"], "감사합니다.")
 
+    def test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes(self):
+        for duration_ms, owner_ms, start_ms in ((508, 1718, 1400), (1144, 3000, 1000), (764, 0, 1200)):
+            with self.subTest(duration_ms=duration_ms):
+                def response(audio, index):
+                    result = payload("r", index, len(audio))
+                    noise = np.random.default_rng(1002).normal(0, .1, len(audio)).astype(np.float32)
+                    waves = [audio, noise] if index == 0 else [audio * 0, audio * 0]
+                    texts = ["본문을 설명합니다" if owner_ms else "", "별도의 짧은 발화"] if index == 0 else ["", ""]
+                    spans = ([[(0, owner_ms * 16)] if owner_ms else [],
+                              [(start_ms * 16, (start_ms + duration_ms) * 16)]]
+                             if index == 0 else [[], []])
+                    for i, slot in enumerate(result["speakers"]):
+                        slot["waveform"]["data"] = base64.b64encode(waves[i].astype("<f4").tobytes()).decode()
+                        slot["raw_transcript"] = texts[i]
+                        duration = sum(end - start for start, end in spans[i])
+                        slot["vad"].update({
+                            "speech_detected": bool(spans[i]), "speech_duration_ms": duration / 16,
+                            "speech_ratio": duration / len(audio),
+                            "timestamps": [{"start": start, "end": end} for start, end in spans[i]],
+                        })
+                    return result
+                code, result = self.run_pipeline(True, response_factory=response)
+                self.assertEqual(code, 0 if owner_ms else 1)
+                self.assertEqual(result["errors"], [])
+                self.assertFalse(any(e["speaker"] == "speaker_1" for e in result["subtitle_events"]))
+                self.assertFalse(any(e["speaker"] == 1 for e in result["subtitle_state_events"]))
+                first = result["windows"][0]
+                self.assertTrue(first["vad"][1]["speech_detected"])
+                evidence = first["secondary_leakage_diagnostic"]["subtitle_admission"]["streams"][1]
+                self.assertEqual(evidence["reason"], "unsupported_source_on_speech_intervals")
+                self.assertFalse(evidence["weak_speech_evidence"]["suppressed"])
+
+    def test_overlap_artifact_and_next_raw_permutation_keep_one_stream_in_workers(self):
+        def response(audio, index):
+            result = payload("r", index, len(audio))
+            rng = np.random.default_rng(1002 + index)
+            residual = rng.normal(0, .1, len(audio)).astype(np.float32)
+            residual *= np.sqrt(np.mean(audio ** 2) / np.mean(residual ** 2))
+            dominant = audio.copy()
+            texts, spans = ["연속 설명을 시작합니다", ""], [[(0, len(audio))], []]
+            if index == 2:
+                dominant[:16000] = .02 * (audio[:16000] + 1.5 * residual[:16000])
+                residual[:16000] = 3 * audio[:16000]
+                # Same RMS on both outputs, as in ClearVoice; RMS is not a vote.
+                for wave in (dominant, residual):
+                    wave *= np.sqrt(np.mean(audio ** 2) / np.mean(wave ** 2))
+                texts = ["설명을 시작합니다 이어서 진행합니다", "별도 후보입니다"]
+                spans = [[(0, 2486 * 16)], [(16000, 16000 + 894 * 16)]]
+            elif index == 3:
+                texts = ["이어서 진행합니다 마지막 내용입니다", ""]
+            elif index == 4:
+                dominant = residual = audio * 0
+                texts, spans = ["", ""], [[], []]
+            waves = [dominant, residual]
+            if index == 3:
+                waves.reverse()
+                texts.reverse()
+                spans.reverse()
+            for i, slot in enumerate(result["speakers"]):
+                slot["waveform"]["data"] = base64.b64encode(waves[i].astype("<f4").tobytes()).decode()
+                slot["raw_transcript"] = texts[i]
+                duration = sum(end - start for start, end in spans[i])
+                slot["vad"].update({
+                    "speech_detected": bool(spans[i]), "speech_duration_ms": duration / 16,
+                    "speech_ratio": duration / len(audio),
+                    "timestamps": [{"start": start, "end": end} for start, end in spans[i]],
+                })
+            return result
+        code, result = self.run_pipeline(True, response_factory=response, duration=11)
+        self.assertEqual(code, 0)
+        self.assertEqual(result["errors"], [])
+        rows = result["windows"]
+        self.assertEqual(rows[1]["speaker_assignment"]["assignment_method"], "single_active_hold")
+        fifth = rows[2]["speaker_assignment"]
+        self.assertGreater(fifth["swap_score"], fifth["identity_score"] + .12)
+        self.assertEqual(fifth["assignment_method"], "single_source_continuity")
+        self.assertEqual(fifth["raw_to_logical_mapping"], {"0": 0, "1": 1})
+        self.assertEqual(rows[3]["speaker_assignment"]["raw_to_logical_mapping"], {"0": 1, "1": 0})
+        events = result["subtitle_events"]
+        self.assertEqual({e["speaker"] for e in events}, {"speaker_0"})
+        self.assertEqual({e["utterance_id"] for e in events}, {1})
+        self.assertTrue(all(e["websocket_accepted"] for e in events))
+        self.assertEqual(events[-1]["status"], "final")
+        self.assertIn("마지막 내용입니다", events[-1]["text"])
+        self.assertNotIn("별도 후보입니다", events[-1]["text"])
+
     def test_structured_runtime_hooks_receive_subtitles_and_metrics(self):
         subtitle_events = []
         metrics = []

@@ -1398,7 +1398,12 @@ def main(
                             f"separated_queue={separated_queue.qsize()}/{separated_queue_maxsize}, "
                             f"pair_corr={pair_correlation:.3f}, mapping={mapping}, "
                             f"tracking={assignment.diagnostic['assignment_method']} "
-                            f"raw_to_logical={assignment.diagnostic['raw_to_logical_mapping']}",
+                            f"raw_to_logical={assignment.diagnostic['raw_to_logical_mapping']} "
+                            f"identity_score={assignment.diagnostic['identity_score']} "
+                            f"swap_score={assignment.diagnostic['swap_score']} "
+                            f"raw_input_similarity={assignment.diagnostic['raw_input_similarity']} "
+                            f"overlap_matrix={assignment.diagnostic['overlap_similarity_matrix']} "
+                            f"source_continuity={assignment.diagnostic['single_source_continuity']}",
                             flush=True,
                         )
                     finally:
@@ -1605,11 +1610,12 @@ def main(
                             )
                             secondary_leakage["subtitle_admission"] = admission
                             for decision in admission["streams"]:
-                                if decision["suppressed"]:
+                                if not decision["existing_partial"] and decision["reason"] != "inactive":
                                     print(
                                         f"[SUBTITLE ADMISSION] window={item.source.index:03d} "
-                                        f"speaker={decision['speaker']} suppressed "
-                                        f"reason={decision['reason']}",
+                                        f"speaker={decision['speaker']} suppressed={decision['suppressed']} "
+                                        f"reason={decision['reason']} "
+                                        f"source_evidence={decision['speech_local_evidence']}",
                                         flush=True,
                                     )
                         subtitle_created_times: list[float] = []

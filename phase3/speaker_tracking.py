@@ -20,6 +20,10 @@ DEFAULT_CONTINUITY_SCORE = 0.45
 DEFAULT_SCORE_MARGIN = 0.12
 DEFAULT_LOW_ENERGY_TAIL_RATIO = 0.25
 HIGH_SOURCE_CORRELATION = 0.85
+# Existing admission/validity dominance bounds, shared with tracking. These
+# describe contradictory source evidence, not speech duration or loudness.
+MIN_DOMINANT_INPUT_CORRELATION = 0.95
+MAX_UNSUPPORTED_INPUT_CORRELATION = 0.20
 
 
 def _finite_rms(audio: np.ndarray) -> float | None:
@@ -52,6 +56,60 @@ def safe_absolute_correlation(left: np.ndarray, right: np.ndarray) -> float | No
         return None
     value = abs(float(np.dot(left_centered, right_centered)) / denominator)
     return min(1.0, value) if math.isfinite(value) else None
+
+
+def source_input_evidence(
+    mixture: np.ndarray, owner: np.ndarray, candidate: np.ndarray,
+) -> dict[str, Any] | None:
+    """Compare input support after removing shared audio, independent of level.
+
+    A quiet real source may have little full-window mixture correlation. Its
+    component orthogonal to the owner can still explain the mixture residual.
+    This is evidence about separated signals, not speaker recognition.
+    """
+    values = [np.asarray(audio, dtype=np.float64) for audio in (mixture, owner, candidate)]
+    if any(value.ndim != 1 or value.size < 3 or not np.isfinite(value).all() for value in values):
+        return None
+    if len({value.shape for value in values}) != 1:
+        return None
+    values = [value - value.mean() for value in values]
+    norms = [float(np.linalg.norm(value)) for value in values]
+    if any(norm == 0 for norm in norms):
+        return None
+    source, primary, secondary = [value / norm for value, norm in zip(values, norms)]
+    input_residual = source - np.dot(source, primary) * primary
+    candidate_residual = secondary - np.dot(secondary, primary) * primary
+    input_energy = float(np.dot(input_residual, input_residual))
+    candidate_energy = float(np.dot(candidate_residual, candidate_residual))
+    # Numerical degeneracy only, not a minimum speaker volume. This continues
+    # to protect very quiet independent sources after per-output normalization.
+    independent = (
+        safe_absolute_correlation(
+            input_residual / np.sqrt(input_energy),
+            candidate_residual / np.sqrt(candidate_energy),
+        ) if min(input_energy, candidate_energy) > 1e-14 else 0.0
+    )
+    return {
+        "pair_correlation": safe_absolute_correlation(primary, secondary),
+        "owner_input_correlation": safe_absolute_correlation(source, primary),
+        "candidate_input_correlation": safe_absolute_correlation(source, secondary),
+        "independent_input_correlation": independent,
+        "input_residual_energy_fraction": input_energy,
+        "candidate_residual_energy_fraction": candidate_energy,
+    }
+
+
+def unsupported_source(evidence: dict[str, Any] | None) -> bool:
+    """Require positive owner evidence AND negative candidate/residual evidence."""
+    return bool(
+        evidence is not None
+        and evidence["owner_input_correlation"] is not None
+        and evidence["owner_input_correlation"] >= MIN_DOMINANT_INPUT_CORRELATION
+        and evidence["candidate_input_correlation"] is not None
+        and evidence["candidate_input_correlation"] <= MAX_UNSUPPORTED_INPUT_CORRELATION
+        and evidence["independent_input_correlation"] is not None
+        and evidence["independent_input_correlation"] <= MAX_UNSUPPORTED_INPUT_CORRELATION
+    )
 
 
 @dataclass(frozen=True)
@@ -240,6 +298,44 @@ class PersistentSpeakerTracker:
                 else:
                     method = "uncertain_hold"
 
+        # A separator can preserve the old speech best in a slot which becomes
+        # artifact in the NEW part of the window. Full-window input correlation
+        # still qualifies that slot to win the overlap vote. When BOTH heads
+        # follow the sole previous source, use independently checked new audio
+        # to keep its logical identity on the actual continuation. Do not hold
+        # raw indices: the continuing source itself may have changed raw slot.
+        previous_active = [i for i, value in enumerate(self._previous_logical_confidence)
+                           if value >= self.source_confidence]
+        continuity_evidence: dict[str, Any] = {
+            "previous_active_logical": previous_active,
+            "overlap_selected_mapping": list(mapping),
+            "new_region_source_evidence": {},
+            "selected_raw": None,
+            "applied": False,
+        }
+        continuation_raw = None
+        if (consecutive and not is_silence and not low_energy_tail
+                and len(previous_active) == 1):
+            owner = previous_active[0]
+            if all(value is not None and value >= self.continuity_score
+                   for value in matrix[owner]):
+                for raw_slot in active_raw_slots:
+                    evidence = source_input_evidence(
+                        mixture_values[self.overlap_samples:],
+                        raw[raw_slot][self.overlap_samples:],
+                        raw[1 - raw_slot][self.overlap_samples:],
+                    )
+                    continuity_evidence["new_region_source_evidence"][str(raw_slot)] = evidence
+                    if unsupported_source(evidence):
+                        continuation_raw = raw_slot
+                        selected = self.IDENTITY if raw_slot == owner else self.SWAP
+                        continuity_evidence["selected_raw"] = raw_slot
+                        continuity_evidence["applied"] = selected != mapping
+                        if selected != mapping:
+                            mapping = selected
+                            method = "single_source_continuity"
+                        break
+
         # A correlation coefficient ignores absolute level.  At speech end a
         # low-energy device/separator tail can therefore look continuous enough
         # to swap identities even though it is not usable speech.  Only veto a
@@ -270,6 +366,13 @@ class PersistentSpeakerTracker:
                 and max(logical_confidence) >= self.source_confidence):
             excluded_reference = min((0, 1), key=lambda speaker: logical_confidence[speaker])
             logical_confidence[excluded_reference] = 0.0
+
+        # The old speech in the competing head must not establish a second
+        # identity for the next window; its tail is the unsupported new audio.
+        excluded_residual_reference = None
+        if continuation_raw is not None:
+            excluded_residual_reference = mapping[1 - continuation_raw]
+            logical_confidence[excluded_residual_reference] = 0.0
 
         self._mapping = mapping
         self._previous_window = window
@@ -313,6 +416,8 @@ class PersistentSpeakerTracker:
             "active_raw_slots": active_raw_slots,
             "tail_source_correlation": tail_correlation,
             "excluded_duplicate_tail_reference": excluded_reference,
+            "single_source_continuity": continuity_evidence,
+            "excluded_residual_tail_reference": excluded_residual_reference,
             "next_reference_confidence": list(logical_confidence),
             "confirmed_logical_speakers": sorted(self._confirmed_logical_speakers),
             "input_rms": input_rms,
