@@ -118,13 +118,35 @@ class PipelineTests(TestCase):
         return code, result
 
     def test_remote_workers(self):
-        code, result = self.run_pipeline(True)
+        delivered = []
+        code, result = self.run_pipeline(
+            True, runtime_hooks=pipeline.LivePipelineHooks(on_subtitle=delivered.append))
         self.assertEqual(code, 0)
         self.assertEqual(result["stt_window_success"], 2)
         self.assertTrue(result["subtitle_events"])
         self.assertEqual(result["errors"], [])
         self.assertGreater(result["websocket"]["published"], 0)
         self.assertEqual(result["websocket"]["dropped_oldest"], 0)
+        self.assertEqual(delivered, result["subtitle_events"])
+        self.assertEqual(result["websocket"]["published"], len(delivered))
+        logged_admissions = [json.loads(line[line.index("{"):])
+                             for line in self.last_stdout.splitlines()
+                             if line.startswith("[SUBTITLE ADMISSION]")]
+        decisions = [decision for row in result["windows"]
+                     for decision in row["secondary_leakage_diagnostic"]["subtitle_admission"]["streams"]
+                     if decision["reason"] != "inactive"]
+        self.assertEqual(logged_admissions, decisions)
+        self.assertTrue(any(row["existing_partial"] for row in logged_admissions))
+        for decision in decisions:
+            self.assertTrue(decision["source_support_checks"])
+            self.assertIn("input_speech_rms", decision["weak_speech_evidence"])
+        logged_updates = [json.loads(line[line.index("{"):])
+                          for line in self.last_stdout.splitlines()
+                          if line.startswith("[SUBTITLE SUPPORT]")]
+        partials = [event for event in result["subtitle_state_events"] if event["status"] == "partial"]
+        self.assertEqual(logged_updates, [event["support_update"] for event in partials])
+        self.assertTrue(all(update["reason"] == "current_source_covers_unretained_text"
+                            for update in logged_updates))
 
     def test_fragment_routing_permutation_and_revision_in_real_workers(self):
         """Exercise actual worker wiring/remote parsing with synthetic VAD/STT."""

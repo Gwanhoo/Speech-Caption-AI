@@ -614,7 +614,7 @@ def weak_speech_evidence(mixture: np.ndarray, vad: dict[str, Any]) -> dict[str, 
     A short/quiet but localized speech burst passes without a second observation.
     Missing evidence fails open; this is not a general noise/speech classifier.
     """
-    evidence: dict[str, Any] = {"suppressed": False}
+    evidence: dict[str, Any] = {"suppressed": False, "available": False}
     intervals = speech_intervals(vad, len(mixture))
     duration = _finite_float(vad.get("speech_duration_ms"))
     ratio = _finite_float(vad.get("speech_ratio"))
@@ -633,6 +633,11 @@ def weak_speech_evidence(mixture: np.ndarray, vad: dict[str, Any]) -> dict[str, 
     # agree. Duration, volume, or observation count alone never rejects speech.
     weak_vad = 0 < duration <= 500 and 0 < ratio <= 0.20
     no_burst = speech_rms <= 1.5 * max(background_rms, ENERGY_EPSILON)
+    evidence.update(
+        available=True, weak_vad=weak_vad, no_localized_burst=no_burst,
+        rms_within_noise_bound=speech_rms <= DEFAULT_SILENCE_RMS,
+        peak_within_noise_bound=speech_peak <= 5 * DEFAULT_SILENCE_RMS,
+    )
     evidence["suppressed"] = bool(
         weak_vad and speech_rms <= DEFAULT_SILENCE_RMS
         and speech_peak <= 5 * DEFAULT_SILENCE_RMS and no_burst
@@ -695,21 +700,34 @@ def admit_subtitle_streams(
         # Positive support is separate from fail-open PARTIAL admission. Reuse
         # the tracker/admission source confidence, including quiet independent
         # components. A missing/zero owner can still leave direct input support.
-        supported = any(
-            (row["candidate_input_correlation"] or 0) >= DEFAULT_SOURCE_CONFIDENCE
-            or (row["independent_input_correlation"] or 0) >= DEFAULT_SOURCE_CONFIDENCE
-            if row is not None else
-            (safe_absolute_correlation(mixture[start:end], speakers[candidate][start:end]) or 0)
-            >= DEFAULT_SOURCE_CONFIDENCE
-            for (start, end), row in zip(intervals[candidate], local)
-        )
+        # Record the existing OR decision, including the direct-correlation
+        # fallback that otherwise appears only as a null local evidence row.
+        support_checks = []
+        for (start, end), row in zip(intervals[candidate], local):
+            direct = (row["candidate_input_correlation"] if row is not None else
+                      safe_absolute_correlation(mixture[start:end], speakers[candidate][start:end]))
+            independent = row["independent_input_correlation"] if row is not None else None
+            support_checks.append({
+                "interval": [start, end],
+                "direct_correlation": direct,
+                "independent_correlation": independent,
+                "direct_pass": (direct or 0) >= DEFAULT_SOURCE_CONFIDENCE,
+                "independent_pass": (independent or 0) >= DEFAULT_SOURCE_CONFIDENCE,
+                "used_direct_fallback": row is None,
+            })
+        supported = any(row["direct_pass"] or row["independent_pass"] for row in support_checks)
+        evidence["source_support_checks"] = support_checks
+        evidence["source_support_threshold"] = DEFAULT_SOURCE_CONFIDENCE
         evidence["source_supported"] = supported
         vads[candidate]["source_supported"] = supported
+        # Diagnostic on every active window; existing-utterance admission still
+        # bypasses this rejection, exactly as before.
+        weak_speech = weak_speech_evidence(mixture, vad_results[candidate])
+        evidence["weak_speech_evidence"] = weak_speech
+        evidence["weak_speech_check_applied"] = not bool(active_hypotheses[candidate])
         if active_hypotheses[candidate]:
             evidence["reason"] = "existing_utterance"
             continue
-        weak_speech = weak_speech_evidence(mixture, vad_results[candidate])
-        evidence["weak_speech_evidence"] = weak_speech
         if weak_speech["suppressed"]:
             evidence.update(suppressed=True, reason="weak_vad_and_unlocalized_low_energy_input")
             texts[candidate] = ""

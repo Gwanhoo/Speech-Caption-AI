@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import time
 import unicodedata
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from difflib import SequenceMatcher
 
 
@@ -451,6 +451,7 @@ class SubtitleStateEvent:
     source_supported_text: str
     source_supported: bool
     require_final_support: bool
+    support_update: dict[str, object] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
@@ -755,6 +756,11 @@ class SpeakerSubtitleState:
         retained_length = normalized_common_prefix_length(self.partial_text, self._source_supported_text)
         self._source_supported_text, _ = split_hypothesis_at_normalized_prefix(
             self.partial_text, retained_length)
+        support_update: dict[str, object] = {
+            "reason": "no_current_source_support",
+            "source_text": hypothesis if source_text is None else source_text,
+            "retained_prefix_length": retained_length,
+        }
         if source_supported:
             normalized = normalize_for_matching(self.partial_text)
             observed = normalize_for_matching(hypothesis if source_text is None else source_text)
@@ -762,8 +768,20 @@ class SpeakerSubtitleState:
             # because the current raw window supports a later suffix. Only a
             # prefix that was already acoustically supported may bridge them.
             known_prefix = retained_length
+            suffix_matches = bool(observed and normalized.endswith(observed))
+            unobserved_prefix_length = len(normalized) - len(observed)
+            support_update.update(
+                observed_suffix_matches=suffix_matches,
+                unobserved_prefix_length=unobserved_prefix_length,
+                unsupported_gap_length=(max(0, unobserved_prefix_length - known_prefix)
+                                        if suffix_matches else None),
+                reason=("empty_source_text" if not observed else
+                        "source_not_hypothesis_suffix" if not suffix_matches else
+                        "unsupported_prefix_gap"),
+            )
             if observed and normalized.endswith(observed) and len(normalized) - len(observed) <= known_prefix:
                 self._source_supported_text = self.partial_text
+                support_update["reason"] = "current_source_covers_unretained_text"
         self.previous_raw = hypothesis
         self.last_update_time = stream_time_seconds
         return [
@@ -792,6 +810,7 @@ class SpeakerSubtitleState:
                 source_supported_text=self._source_supported_text,
                 source_supported=source_supported,
                 require_final_support=self.require_final_support,
+                support_update=support_update,
             )
         ]
 
@@ -837,6 +856,7 @@ class SpeakerSubtitleState:
             source_supported_text=self._source_supported_text,
             source_supported=False,
             require_final_support=self.require_final_support,
+            support_update={"reason": "finalize_without_new_evidence"},
         )
         if text:
             self.final_segments.append(text)

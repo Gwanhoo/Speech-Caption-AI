@@ -1650,12 +1650,10 @@ def main(
                             )
                             secondary_leakage["subtitle_admission"] = admission
                             for decision in admission["streams"]:
-                                if not decision["existing_partial"] and decision["reason"] != "inactive":
+                                if decision["reason"] != "inactive":
                                     print(
                                         f"[SUBTITLE ADMISSION] window={item.source.index:03d} "
-                                        f"speaker={decision['speaker']} suppressed={decision['suppressed']} "
-                                        f"reason={decision['reason']} "
-                                        f"source_evidence={decision['speech_local_evidence']}",
+                                        + json.dumps(decision, ensure_ascii=False),
                                         flush=True,
                                     )
                         subtitle_created_times: list[float] = []
@@ -1745,6 +1743,12 @@ def main(
                                 )
                                 for state_event in state_events:
                                     window_subtitle_state_events.append(state_event.to_dict())
+                                    print(
+                                        f"[SUBTITLE SUPPORT] window={state_event.window:03d} "
+                                        f"speaker={state_event.speaker} utterance={state_event.utterance_id} "
+                                        + json.dumps(state_event.support_update, ensure_ascii=False),
+                                        flush=True,
+                                    )
                                     published_event = publish_subtitle_state_event(
                                         state_event,
                                         stt_inference_ended=stt_inference_ended,
