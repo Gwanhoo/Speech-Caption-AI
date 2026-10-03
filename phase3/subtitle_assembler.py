@@ -5,6 +5,7 @@ import time
 import unicodedata
 from dataclasses import asdict, dataclass, field
 from difflib import SequenceMatcher
+from enum import Enum
 
 
 IGNORED_PATTERN = re.compile(r"[^0-9A-Za-z가-힣]+")
@@ -14,6 +15,12 @@ FUZZY_SIMILARITY_THRESHOLD = 0.88
 MINIMUM_RELAXED_BOUNDARY_CHARACTERS = 3
 DEFAULT_FINALIZE_SILENCE_MS = 2000
 CONSENSUS_HISTORY_SIZE = 3
+
+
+class CandidateProvenance(str, Enum):
+    NONE = "NONE"
+    TENTATIVE = "TENTATIVE"
+    VALIDATED = "VALIDATED"
 
 
 def normalize_for_matching(text: str) -> str:
@@ -452,6 +459,8 @@ class SubtitleStateEvent:
     source_supported: bool
     require_final_support: bool
     support_update: dict[str, object] = field(default_factory=dict)
+    candidate_provenance: str = "NONE"
+    candidate_transition: str = "keep"
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
@@ -615,6 +624,13 @@ class SpeakerSubtitleState:
         # retain their existing contract; production enables this explicitly.
         self.require_final_support = require_final_support
         self._source_supported_text = ""
+        self._candidate_provenance = CandidateProvenance.NONE
+        self._candidate_window: int | None = None
+        self._candidate_independent_support = False
+        self._candidate_owner_conflict = False
+        # Independently evidenced text withheld for confirmation, NOT generic
+        # unsupported text. This private buffer is never publication text.
+        self._candidate_supported_text = ""
         self.final_segments: list[str] = []
         self.stable_text = ""
         self.tentative_text = ""
@@ -632,6 +648,20 @@ class SpeakerSubtitleState:
         self.hypothesis_history.append(raw)
         if len(self.hypothesis_history) > CONSENSUS_HISTORY_SIZE:
             del self.hypothesis_history[0]
+
+    @property
+    def candidate_context(self) -> dict[str, object]:
+        """Admission receives a snapshot; subtitle state alone owns its lifetime."""
+        return {
+            "provenance": self._candidate_provenance.value,
+            "window": self._candidate_window,
+            "independent_support": self._candidate_independent_support,
+            "owner_contained_conflict": self._candidate_owner_conflict,
+            "pending_text_supported": bool(
+                self._candidate_supported_text
+                and normalize_for_matching(self._candidate_supported_text) == normalize_for_matching(self.partial_text)
+            ),
+        }
 
     def _display_text(self) -> str:
         return append_preserving_text(self.stable_text, self.tentative_text)
@@ -655,6 +685,7 @@ class SpeakerSubtitleState:
         confirmed_prefix_length: int | None = None,
         source_supported: bool = False,
         source_text: str | None = None,
+        candidate_transition: dict[str, object] | None = None,
     ) -> list[SubtitleStateEvent]:
         if window <= self.last_window:
             raise ValueError(
@@ -663,6 +694,10 @@ class SpeakerSubtitleState:
             )
         self.last_window = window
         hypothesis = hypothesis.strip()
+        transition = candidate_transition or {}
+        candidate_action = transition.get("action", "keep")
+        if candidate_action == "discard" and self._candidate_provenance == CandidateProvenance.TENTATIVE:
+            return [self.finalize(window, stream_time_seconds, "secondary_candidate_rejected")]
 
         if not speech_detected:
             self.previous_raw = ""
@@ -751,6 +786,19 @@ class SpeakerSubtitleState:
                 else "awaiting_independent_support"
             )
         self.partial_text = self._display_text()
+        # Only an explicit adjacent-window acoustic confirmation can release a
+        # deferred candidate. Both observations must be independently supported,
+        # and the ENTIRE previous hypothesis must be in the withheld buffer.
+        # Generic unsupported prefixes/gaps never qualify for this transition.
+        candidate_confirmed = bool(
+            candidate_action == "validate"
+            and self._candidate_provenance == CandidateProvenance.TENTATIVE
+            and self._candidate_window == window - 1
+            and self._candidate_independent_support
+            and transition.get("independent_support")
+            and source_supported and source_text and before
+            and normalize_for_matching(self._candidate_supported_text) == normalize_for_matching(before)
+        )
         # Acoustic evidence belongs to this raw window, not to unobserved
         # prefixes the assembler copied from older hypotheses.
         retained_length = normalized_common_prefix_length(self.partial_text, self._source_supported_text)
@@ -782,6 +830,29 @@ class SpeakerSubtitleState:
             if observed and normalized.endswith(observed) and len(normalized) - len(observed) <= known_prefix:
                 self._source_supported_text = self.partial_text
                 support_update["reason"] = "current_source_covers_unretained_text"
+        if candidate_confirmed:
+            # The assembler may revise the seam, so raw source_text need not be
+            # a literal suffix. The two complete contributing observations were
+            # independently evidenced; this exception lasts only this transition.
+            self._source_supported_text = self.partial_text
+            support_update["coverage_reason_before_confirmation"] = support_update["reason"]
+            support_update["reason"] = "secondary_candidate_confirmed"
+        if candidate_action == "hold":
+            self._candidate_provenance = CandidateProvenance.TENTATIVE
+            observed = normalize_for_matching(source_text or "")
+            # Do not remember copied or unsupported prefixes as pending evidence.
+            self._candidate_supported_text = (
+                self.partial_text if transition.get("independent_support")
+                and observed and observed == normalize_for_matching(self.partial_text) else ""
+            )
+        elif self._source_supported_text:
+            self._candidate_provenance = CandidateProvenance.VALIDATED
+            self._candidate_supported_text = ""
+        self._candidate_window = window
+        self._candidate_independent_support = bool(transition.get("independent_support"))
+        self._candidate_owner_conflict = bool(transition.get("owner_contained_conflict"))
+        support_update.update(candidate_provenance=self._candidate_provenance.value,
+                              candidate_transition=candidate_action)
         self.previous_raw = hypothesis
         self.last_update_time = stream_time_seconds
         return [
@@ -811,6 +882,8 @@ class SpeakerSubtitleState:
                 source_supported=source_supported,
                 require_final_support=self.require_final_support,
                 support_update=support_update,
+                candidate_provenance=self._candidate_provenance.value,
+                candidate_transition=str(candidate_action),
             )
         ]
 
@@ -857,10 +930,17 @@ class SpeakerSubtitleState:
             source_supported=False,
             require_final_support=self.require_final_support,
             support_update={"reason": "finalize_without_new_evidence"},
+            candidate_provenance=self._candidate_provenance.value,
+            candidate_transition="reset",
         )
         if text:
             self.final_segments.append(text)
         self._source_supported_text = ""
+        self._candidate_provenance = CandidateProvenance.NONE
+        self._candidate_window = None
+        self._candidate_independent_support = False
+        self._candidate_owner_conflict = False
+        self._candidate_supported_text = ""
         self.stable_text = ""
         self.tentative_text = ""
         self.tentative_supported_cut = 0

@@ -710,12 +710,15 @@ def admit_subtitle_streams(
     vad_results: list[dict[str, Any]],
     active_hypotheses: list[str],
     speaker_assignment: dict[str, Any],
+    candidate_contexts: list[dict[str, Any]] | None = None,
+    window: int | None = None,
 ) -> tuple[list[str], list[dict[str, Any]], dict[str, Any]]:
     """Reject evidenced residuals before a new logical utterance can start.
 
-    Evaluate each window afresh: persistence, lexical stability, and historical
-    tracker confirmation are never promotion evidence. No candidate text enters
-    the assembler, so suppressed fragments cannot later leak into FINAL/flush.
+    Fresh acoustics drive decisions; text persistence and tracker confirmation
+    are never validation evidence. Subtitle state owns candidate provenance and
+    receives explicit hold/validate/discard decisions. Held text may be assembled
+    internally, but remains unpublished until acoustic confirmation.
     Missing/ambiguous acoustics fail open. Rejected continuations leave the
     previously admitted utterance prefix untouched.
     Temporal consensus is not an admission test: a genuine short utterance may
@@ -734,6 +737,9 @@ def admit_subtitle_streams(
     intervals = [speech_intervals(vad, len(mixture)) for vad in vad_results]
     for candidate in (0, 1):
         owner = 1 - candidate
+        context = candidate_contexts[candidate] if candidate_contexts else {}
+        provenance = context.get("provenance", "NONE")
+        consecutive = window is not None and context.get("window") == window - 1
         evidence: dict[str, Any] = {
             "speaker": candidate, "owner": owner, "suppressed": False,
             "reason": "insufficient_evidence", "existing_partial": bool(active_hypotheses[candidate]),
@@ -744,6 +750,11 @@ def admit_subtitle_streams(
             "speech_intervals": intervals[candidate],
             "owner_speech_intervals": intervals[owner],
             "speech_local_evidence": [],
+            "candidate_provenance": provenance,
+            "candidate_transition": "keep",
+            "previous_candidate_window": context.get("window"),
+            "candidate_confirmation_consecutive": consecutive,
+            "source_support_deferred": False,
         }
         decisions.append(evidence)
         if not transcripts[candidate].strip() or not vad_results[candidate].get("speech_detected"):
@@ -765,7 +776,11 @@ def admit_subtitle_streams(
             and not speaker_assignment.get("input_silence", False)
             and not speaker_assignment.get("low_energy_tail", False)
         )
-        owner_established = bool(active_hypotheses[owner]) or owner_only
+        owner_established = owner_only or bool(
+            active_hypotheses[owner] and (
+                not candidate_contexts or candidate_contexts[owner].get("provenance") != "TENTATIVE"
+            )
+        )
         candidate_duration = _finite_float(
             vad_results[candidate].get("speech_duration_ms")
         )
@@ -811,8 +826,7 @@ def admit_subtitle_streams(
             # The residual fraction alone is insufficient: the latest live
             # leakage left 2.3--3.9% residual energy.  Record the broader
             # geometric conflict without moving that calibrated 1% boundary.
-            # It is acted on only with temporal containment and, for an
-            # existing candidate, exact cross-stream transcript overlap.
+            # A new contained candidate is held regardless of lexical overlap.
             owner_candidate_conflict = bool(
                 owner_established
                 and owner_dominates
@@ -909,6 +923,48 @@ def admit_subtitle_streams(
             and all(row["owner_candidate_conflict"] for row in support_checks)
         )
         evidence["owner_candidate_conflict"] = owner_conflict
+        independent_observation = bool(normalize_lexical_text(transcripts[candidate])) and any(
+            row["independent_pass"] and not row["owner_candidate_conflict"]
+            for row in support_checks
+        )
+        leakage_like = bool(contained and owner_conflict)
+        evidence["candidate_independent_support"] = independent_observation
+
+        def candidate_decision(action: str, reason: str) -> None:
+            evidence.update(candidate_transition=action, reason=reason)
+            vads[candidate]["candidate_transition"] = {
+                "action": action, "independent_support": independent_observation,
+                "owner_contained_conflict": leakage_like,
+            }
+            if action in {"hold", "discard"}:
+                evidence["source_support_deferred"] = supported if action == "hold" else False
+                evidence["source_supported"] = False
+                vads[candidate]["source_supported"] = False
+            if action == "discard":
+                evidence["suppressed"] = True
+                texts[candidate] = ""
+                vads[candidate]["speech_detected"] = False
+                vads[candidate]["timestamps"] = []
+
+        # A partial can be merely withheld text. Re-evaluate it before the
+        # existing-utterance fast path, even when both STT strings differ.
+        if provenance == "TENTATIVE":
+            if (consecutive and leakage_like and context.get("owner_contained_conflict")) or (
+                local and all(unsupported_source(row) for row in local)
+            ):
+                candidate_decision("discard", "secondary_candidate_repeated_leakage")
+            elif (consecutive and independent_observation and context.get("independent_support")
+                  and context.get("pending_text_supported")):
+                candidate_decision("validate", "secondary_candidate_confirmed")
+            else:
+                candidate_decision("hold", "secondary_candidate_awaiting_confirmation")
+                # An interrupted/contradictory history cannot be validated by a
+                # later supported suffix. Start a fresh withheld observation;
+                # the pipeline discards the old unvalidated utterance first.
+                if independent_observation:
+                    evidence["candidate_restart"] = True
+                    vads[candidate]["candidate_transition"]["restart"] = True
+            continue
 
         if (
             not active_hypotheses[candidate]
@@ -949,15 +1005,8 @@ def admit_subtitle_streams(
             not active_hypotheses[candidate]
             and contained
             and owner_conflict
-            and lexical_overlap["duplicate_structure"]
         ):
-            # Keep the first owner-like observation as an internal tentative.
-            # A distinct transcript is admitted immediately; silence or
-            # repeated owner text cannot make this candidate user-visible.
-            evidence["source_support_deferred"] = supported
-            evidence["source_supported"] = False
-            evidence["reason"] = "contained_owner_dominant_awaiting_confirmation"
-            vads[candidate]["source_supported"] = False
+            candidate_decision("hold", "contained_owner_dominant_awaiting_confirmation")
             continue
         if active_hypotheses[candidate]:
             evidence["reason"] = "existing_utterance"
@@ -982,17 +1031,18 @@ def admit_subtitle_streams(
             and intervals[candidate] and intervals[owner]
         ):
             evidence["reason"] = "insufficient_owner_evidence" if contained else "speech_outside_owner"
-            if not contained and owner_established:
+            short_independent_reply = bool(
+                independent_observation and candidate_duration is not None
+                and candidate_duration <= WEAK_SPEECH_MAX_DURATION_MS
+            )
+            if not contained and owner_established and not short_independent_reply:
                 # A first observation outside an established owner's VAD can be
                 # a separator tail just as easily as a new speaker.  Keep its
                 # text as an internal tentative, but require the next overlap
                 # window to provide fresh acoustic support before publication.
                 # Existing candidate utterances took the continuation path
                 # above, so this adds no global delay.
-                evidence["source_support_deferred"] = supported
-                evidence["source_supported"] = False
-                vads[candidate]["source_supported"] = False
-                evidence["reason"] = "speech_outside_owner_awaiting_confirmation"
+                candidate_decision("hold", "speech_outside_owner_awaiting_confirmation")
             if contained and (active_hypotheses[owner] or owner_only):
                 evidence["reason"] = "ambiguous_acoustics" if all(row is not None for row in local) else "invalid_speech_audio"
                 if all(row is not None for row in local):

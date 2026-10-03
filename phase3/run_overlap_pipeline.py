@@ -571,6 +571,8 @@ def main(
             f'stable_text="{truncate_assembler_text(event.stable_text)}" '
             f'source_supported_text="{truncate_assembler_text(event.source_supported_text)}" '
             f"source_supported={event.source_supported} "
+            f"candidate_provenance={event.candidate_provenance} "
+            f"candidate_transition={event.candidate_transition} "
             f"require_final_support={event.require_final_support} "
             f"needs_retraction={needs_retraction} will_publish={will_publish} "
             f"reason={publication_reason}",
@@ -1647,6 +1649,8 @@ def main(
                                 vad_results=subtitle_vads,
                                 active_hypotheses=[state.partial_text for state in subtitle_states],
                                 speaker_assignment=item.speaker_assignment,
+                                candidate_contexts=[state.candidate_context for state in subtitle_states],
+                                window=item.source.index,
                             )
                             secondary_leakage["subtitle_admission"] = admission
                             for decision in admission["streams"]:
@@ -1662,6 +1666,16 @@ def main(
                         window_subtitle_state_events: list[dict[str, Any]] = []
                         if args.assemble:
                             for speaker_index, transcript in enumerate(transcripts):
+                                transition = (subtitle_vads[speaker_index].get("candidate_transition", {})
+                                              if args.vad else {})
+                                if transition.get("restart"):
+                                    discarded = subtitle_states[speaker_index].finalize(
+                                        item.source.index, item.source.stream_end_seconds,
+                                        "secondary_candidate_restart",
+                                    )
+                                    window_subtitle_state_events.append(discarded.to_dict())
+                                    publish_subtitle_state_event(discarded)
+                                    assemblers[speaker_index].reset_utterance(final_text=discarded.text)
                                 overlap_evidence: dict[str, Any] = {}
                                 if (
                                     previous_subtitle_window == item.source.index - 1
@@ -1740,6 +1754,8 @@ def main(
                                     source_supported=(subtitle_vads[speaker_index].get("source_supported", False)
                                                       if args.vad else False),
                                     source_text=transcripts[speaker_index],
+                                    candidate_transition=(subtitle_vads[speaker_index].get("candidate_transition")
+                                                          if args.vad else None),
                                 )
                                 for state_event in state_events:
                                     window_subtitle_state_events.append(state_event.to_dict())

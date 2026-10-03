@@ -35,6 +35,208 @@ class GhostSubtitleRegressions(unittest.TestCase):
         self.owner = rng.normal(0, 0.05, WINDOW_SAMPLES).astype(np.float32)
         self.other = rng.normal(0, 0.05, WINDOW_SAMPLES).astype(np.float32)
 
+    def lifecycle_window(self, assembler, state, window, text, evidence, *, outside=False):
+        # Supplied acoustic measurements, not a claim that random audio is speech.
+        primary = {
+            "owner_input_correlation": .60, "candidate_input_correlation": .98,
+            "independent_input_correlation": .95, "input_residual_energy_fraction": .64,
+            "candidate_residual_energy_fraction": .98, "pair_correlation": .30,
+        }
+        with patch("secondary_leakage_diagnostics.source_input_evidence",
+                   side_effect=[primary, evidence]):
+            texts, vads, diagnostic = admit_subtitle_streams(
+                mixture=self.owner + self.other, speakers=(self.owner, self.other),
+                transcripts=["우크라이나 외무장관은 대통령실에서 회담했습니다", text],
+                vad_results=[vad(1200 if outside else 2900),
+                             vad(2514, start_ms=486) if outside else vad(1800)],
+                active_hypotheses=["primary 진행 중", state.partial_text],
+                speaker_assignment={"raw_to_logical_mapping": {"0": 0, "1": 1},
+                                    "active_raw_slots": [0]},
+                candidate_contexts=[{}, state.candidate_context], window=window,
+            )
+        if vads[1].get("candidate_transition", {}).get("restart"):
+            discarded = state.finalize(window, 3 + 2 * window, "secondary_candidate_restart")
+            self.assertEqual(discarded.publication_text, "")
+            assembler.reset_utterance(final_text=discarded.text)
+        assembly = assembler.process(window, texts[1])
+        events = state.process(
+            window, assembly.utterance_hypothesis, vads[1]["speech_detected"], 3 + 2 * window,
+            confirmed_prefix_length=assembly.confirmed_prefix_length,
+            source_supported=vads[1].get("source_supported", False), source_text=texts[1],
+            candidate_transition=vads[1].get("candidate_transition"),
+        )
+        for event in events:
+            if event.status == "final":
+                assembler.reset_utterance(final_text=event.text)
+        return diagnostic["streams"][1], assembly, events
+
+    def test_latest_distinct_text_leakage_is_held_then_discarded(self):
+        # Rounded measurements supplied for the latest Live window 003.
+        evidence = {
+            "owner_input_correlation": .9874, "candidate_input_correlation": .9144,
+            "independent_input_correlation": .9002,
+            "input_residual_energy_fraction": .02498,
+            "candidate_residual_energy_fraction": .27718,
+            "pair_correlation": .85,  # Synthetic; absent from the supplied Live excerpt.
+        }
+        assembler, state = SubtitleAssembler(1), SpeakerSubtitleState(1, require_final_support=True)
+        decision, _, events = self.lifecycle_window(
+            assembler, state, 3, "청약 통장의 예치금을 살펴보겠습니다", evidence)
+        self.assertTrue(decision["owner_candidate_conflict"])
+        self.assertTrue(decision["speech_contained_in_owner"])
+        self.assertFalse(decision["cross_stream_lexical_overlap"]["duplicate_structure"])
+        self.assertEqual(events[0].publication_text, "")
+        self.assertEqual(events[0].source_supported_text, "")
+        self.assertEqual(state.candidate_context["provenance"], "TENTATIVE")
+        decision, _, events = self.lifecycle_window(
+            assembler, state, 4, "대출 이자를 함께 계산해 보았습니다", evidence)
+        self.assertTrue(decision["existing_partial"])
+        self.assertEqual(events[0].action, "discard")
+        self.assertEqual(events[0].publication_text, "")
+        self.assertEqual(state.candidate_context["provenance"], "NONE")
+        self.assertEqual(assembler.utterance_hypothesis, "")
+        self.assertEqual(state.process(5, "", False, 13), [])
+        self.assertIsNone(state.flush(5, 13))
+
+    def test_latest_independent_secondary_promotes_changing_overlap_text(self):
+        evidence = {
+            "owner_input_correlation": .60, "candidate_input_correlation": .80,
+            "independent_input_correlation": .999,
+            "input_residual_energy_fraction": .64,
+            "candidate_residual_energy_fraction": .90, "pair_correlation": .20,
+        }  # Only independent correlation and VAD below are from the Live excerpt.
+        assembler, state = SubtitleAssembler(1), SpeakerSubtitleState(1, require_final_support=True)
+        decision, _, first = self.lifecycle_window(
+            assembler, state, 0, "이천삼십 세대의 청약 통장 예치금은", evidence, outside=True)
+        self.assertEqual(decision["reason"], "speech_outside_owner_awaiting_confirmation")
+        self.assertTrue(decision["source_support_deferred"])
+        self.assertEqual(first[0].publication_text, "")
+        decision, assembly, second = self.lifecycle_window(
+            assembler, state, 1, "청약 통장 예치금은 십만 원입니다", evidence, outside=True)
+        self.assertTrue(decision["source_supported"])
+        self.assertNotEqual(assembly.utterance_hypothesis, assembly.raw)
+        self.assertTrue(second[0].publication_text)
+        self.assertEqual(second[0].publication_text, assembly.utterance_hypothesis)
+        self.assertEqual(state.candidate_context["provenance"], "VALIDATED")
+        final = state.process(2, "", False, 7)[0]
+        self.assertEqual(final.action, "finalize")
+        self.assertEqual(final.publication_text, second[0].publication_text)
+        self.assertEqual(state.candidate_context["provenance"], "NONE")
+
+    def test_candidate_after_window_gap_restarts_without_publishing_old_text(self):
+        evidence = {
+            "owner_input_correlation": .60, "candidate_input_correlation": .80,
+            "independent_input_correlation": .99, "input_residual_energy_fraction": .64,
+            "candidate_residual_energy_fraction": .90, "pair_correlation": .20,
+        }
+        assembler, state = SubtitleAssembler(1), SpeakerSubtitleState(1, require_final_support=True)
+        self.lifecycle_window(assembler, state, 0, "이전 창에서 보류한 문장", evidence, outside=True)
+        decision, _, held = self.lifecycle_window(
+            assembler, state, 2, "새 발화의 대출 이자는", evidence, outside=True)
+        self.assertTrue(decision["candidate_restart"])
+        self.assertEqual(held[0].publication_text, "")
+        self.assertEqual(held[0].utterance_id, 2)
+        _, _, confirmed = self.lifecycle_window(
+            assembler, state, 3, "대출 이자는 낮아졌습니다", evidence, outside=True)
+        self.assertTrue(confirmed[0].publication_text)
+        self.assertNotIn("이전 창", confirmed[0].publication_text)
+        self.assertIn("새 발화", confirmed[0].publication_text)
+        self.assertEqual(state.flush(3, 9).publication_text, confirmed[0].publication_text)
+
+    def test_candidate_with_unbacked_prefix_requires_fresh_confirmation(self):
+        independent = {
+            "owner_input_correlation": .60, "candidate_input_correlation": .80,
+            "independent_input_correlation": .99, "input_residual_energy_fraction": .64,
+            "candidate_residual_energy_fraction": .90, "pair_correlation": .20,
+        }
+        ambiguous = dict(independent, candidate_input_correlation=.10, independent_input_correlation=.28)
+        assembler, state = SubtitleAssembler(1), SpeakerSubtitleState(1, require_final_support=True)
+        self.lifecycle_window(assembler, state, 0, "미지원 첫 관측", ambiguous, outside=True)
+        decision, _, held = self.lifecycle_window(
+            assembler, state, 1, "청약 통장 예치금은", independent, outside=True)
+        self.assertTrue(decision["candidate_restart"])
+        self.assertEqual(held[0].publication_text, "")
+        _, _, confirmed = self.lifecycle_window(
+            assembler, state, 2, "청약 통장 예치금은 십만 원입니다", independent, outside=True)
+        self.assertEqual(confirmed[0].publication_text, "청약 통장 예치금은 십만 원입니다")
+        self.assertNotIn("미지원", assembler.assembled)
+
+    def test_short_independent_reply_outside_owner_publishes_and_finalizes(self):
+        state = SpeakerSubtitleState(1, require_final_support=True)
+        texts, vads, diagnostic = admit_subtitle_streams(
+            mixture=self.owner + self.other, speakers=(self.owner, self.other),
+            transcripts=["계속되는 주요 소식", "네"],
+            vad_results=[vad(1200), vad(320, start_ms=2000)],
+            active_hypotheses=["primary 진행 중", ""], speaker_assignment={},
+            candidate_contexts=[{}, state.candidate_context], window=0,
+        )
+        self.assertFalse(diagnostic["streams"][1]["speech_contained_in_owner"])
+        self.assertTrue(vads[1]["source_supported"])
+        partial = state.process(
+            0, texts[1], True, 3, source_supported=vads[1]["source_supported"],
+            source_text=texts[1], candidate_transition=vads[1].get("candidate_transition"),
+        )[0]
+        self.assertEqual(partial.publication_text, "네")
+        self.assertEqual(state.process(1, "", False, 5)[0].publication_text, "네")
+
+    def test_candidate_confirmation_does_not_authorize_later_unsupported_suffix(self):
+        evidence = {
+            "owner_input_correlation": .60, "candidate_input_correlation": .80,
+            "independent_input_correlation": .99, "input_residual_energy_fraction": .64,
+            "candidate_residual_energy_fraction": .90, "pair_correlation": .20,
+        }
+        assembler, state = SubtitleAssembler(1), SpeakerSubtitleState(1, require_final_support=True)
+        self.lifecycle_window(assembler, state, 0, "청약 통장 예치금은", evidence, outside=True)
+        _, _, events = self.lifecycle_window(
+            assembler, state, 1, "청약 통장 예치금은 십만 원입니다", evidence, outside=True)
+        supported = events[0].publication_text
+        state.process(2, supported + " 미지원 구간", True, 7,
+                      source_supported=False, source_text="미지원 구간")
+        later = state.process(3, supported + " 미지원 구간 새 발화", True, 9,
+                              source_supported=True, source_text="새 발화")[0]
+        self.assertEqual(later.support_update["reason"], "unsupported_prefix_gap")
+        self.assertEqual(later.publication_text, supported)
+        self.assertEqual(state.process(4, "", False, 11)[0].publication_text, supported)
+
+    def test_tentative_confirmation_cannot_launder_copied_unsupported_prefix(self):
+        state = SpeakerSubtitleState(1, require_final_support=True)
+        state.process(0, "미지원 prefix", True, 3, source_supported=False)
+        state.process(1, "미지원 prefix 실제 관측", True, 5, source_supported=False,
+                      source_text="실제 관측",
+                      candidate_transition={"action": "hold", "independent_support": True})
+        self.assertFalse(state.candidate_context["pending_text_supported"])
+        candidate = state.process(2, "미지원 prefix 실제 관측 새 내용", True, 7,
+                                  source_supported=True, source_text="새 내용",
+                                  candidate_transition={"action": "validate", "independent_support": True})[0]
+        self.assertEqual(candidate.publication_text, "")
+        self.assertEqual(candidate.support_update["reason"], "unsupported_prefix_gap")
+        self.assertEqual(state.flush(2, 7).action, "discard")
+
+    def test_explicit_confirmation_handles_revised_seam_without_global_suffix_bypass(self):
+        # A synthetic assembled seam, not an assertion about which SUPPORT
+        # reason occurred in the unavailable two-news Live log.
+        for deferred in (False, True):
+            with self.subTest(explicit_deferred_observation=deferred):
+                state = SpeakerSubtitleState(1, require_final_support=True)
+                state.process(
+                    0, "청약 통장", True, 3, source_supported=False, source_text="청약 통장",
+                    candidate_transition={"action": "hold", "independent_support": True}
+                    if deferred else None,
+                )
+                event = state.process(
+                    1, "청약 통장 예치금은 십만 원", True, 5,
+                    source_supported=True, source_text="통장의 예치금은 십만 원",
+                    candidate_transition={"action": "validate", "independent_support": True},
+                )[0]
+                if deferred:
+                    self.assertEqual(event.publication_text, "청약 통장 예치금은 십만 원")
+                    self.assertEqual(event.support_update["reason"], "secondary_candidate_confirmed")
+                    self.assertEqual(event.support_update["coverage_reason_before_confirmation"],
+                                     "source_not_hypothesis_suffix")
+                else:
+                    self.assertEqual(event.publication_text, "")
+                    self.assertEqual(event.support_update["reason"], "source_not_hypothesis_suffix")
+
     def test_1_single_speaker_secondary_leakage_does_not_start_or_publish(self) -> None:
         # The first four values are from the live ghost window.  Candidate
         # residual energy and pair correlation are the conservative geometry
@@ -294,7 +496,9 @@ class GhostSubtitleRegressions(unittest.TestCase):
             )[0]
             self.assertEqual(event.publication_text, texts[speaker])
 
-    def test_risky_contained_but_distinct_second_speaker_publishes_immediately(self) -> None:
+    def test_risky_contained_distinct_text_also_requires_confirmation(self) -> None:
+        # Preserve the d2efaad evidence: distinct STT is no longer proof of
+        # independence when the very same owner-conflict geometry is present.
         risky_but_supported = {
             "owner_input_correlation": 0.9802366582512774,
             "candidate_input_correlation": 0.8121339488672095,
@@ -328,8 +532,9 @@ class GhostSubtitleRegressions(unittest.TestCase):
                 },
             )
         decision = diagnostic["streams"][1]
-        self.assertEqual(decision["reason"], "independent_input_support")
-        self.assertTrue(decision["source_supported"])
+        self.assertEqual(decision["reason"], "contained_owner_dominant_awaiting_confirmation")
+        self.assertTrue(decision["source_support_deferred"])
+        self.assertFalse(decision["source_supported"])
         self.assertFalse(
             decision["cross_stream_lexical_overlap"]["duplicate_structure"]
         )
@@ -341,7 +546,8 @@ class GhostSubtitleRegressions(unittest.TestCase):
             source_supported=effective_vads[1]["source_supported"],
             source_text=texts[1],
         )[0]
-        self.assertEqual(event.publication_text, "서로 다른 두 번째 화자")
+        self.assertEqual(event.publication_text, "")
+        self.assertEqual(event.source_supported_text, "")
 
     def test_1c_outside_owner_candidate_publishes_on_next_supported_window(self) -> None:
         evidence = {
