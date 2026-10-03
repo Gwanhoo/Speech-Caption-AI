@@ -1,8 +1,313 @@
-# Speech-Caption-AI 프로젝트 개발 현황
+# Speech-Caption-AI 인수인계 및 현재 상태
 
-조사 기준: 2026-09-27
+조사 기준: 2026-10-03. 코드 기준은 `main`의 `d2efaad`
+(`fix: suppress single-speaker secondary leakage`)다.
 
-이 문서는 README의 계획이 아니라 현재 저장소에 존재하는 소스 코드, 회귀 테스트, 저장된 JSON/WAV 결과를 기준으로 작성했다. 실제 GPU/WASAPI/Live 실행은 이번 조사에서 수행하지 않았다.
+이 상단 섹션이 현재 인수인계 기준이다. 현재 소스, deterministic 회귀 테스트,
+최근 git history, 기존 Markdown을 대조해 작성했다. 실제 Windows WASAPI/RunPod GPU
+Live 실행은 이번 조사에서 수행하지 않았다. 최신 단일화자·두 화자 Live 관찰은
+사용자가 제공한 실제 실행 로그의 사실이며, 코드 테스트 통과와 구분한다.
+
+## 프로젝트 목적과 아키텍처
+
+이 프로젝트의 목적은 단순 A/B 화자 표시가 아니다. Windows 시스템 오디오를 받아
+음성을 분리·정제하고, 중복을 줄인 읽기 쉬운 한국어 실시간 자막을 PySide6 feed와
+transparent overlay에 제공하는 것이다.
+
+```text
+Windows system audio (YouTube / Discord / game)
+  -> WASAPI loopback, 48 kHz capture
+  -> 16 kHz mono, 3 s window / 2 s stride / 1 s overlap
+  -> HTTP to RunPod GPU
+  -> ClearVoice MossFormer2_SS_16K (two raw separation slots)
+  -> Silero VAD and faster-whisper on the server
+  -> Windows logical-speaker tracking and subtitle admission
+  -> SubtitleAssembler / SpeakerSubtitleState
+  -> PARTIAL / FINAL structured event -> local WebSocket
+  -> PySide6 chronological feed and transparent overlay
+```
+
+Remote mode is the intended Windows production path. The GPU server has no
+logical speaker identity or subtitle state. It returns two raw separated
+waveforms with VAD/STT; the Windows client owns timeline, tracking, subtitle
+admission, assembly, publication, and UI delivery.
+
+## 주요 파일과 실행 경계
+
+| 영역 | 주요 파일 | 현재 역할 |
+|---|---|---|
+| Live orchestration | `phase3/run_overlap_pipeline.py` | WASAPI, queues, remote/local mode, tracking, state events, WebSocket publication |
+| Recovery | `phase3/separation_recovery.py` | finite-input, silence gate, AMP/FP32 recovery |
+| Tracking | `phase3/speaker_tracking.py` | raw slot -> logical speaker continuity |
+| Admission | `phase3/secondary_leakage_diagnostics.py` | source evidence, leakage diagnostics/routing/admission, weak-tail handling |
+| Subtitle state | `phase3/subtitle_assembler.py` | overlap de-duplication, stable/tentative, source-supported PARTIAL/FINAL |
+| GPU server | `phase4/gpu_processing_server.py` | persistent MossFormer2, Silero VAD, faster-whisper |
+| Remote contract | `phase4/remote_gpu_protocol.py`, `remote_gpu_client.py` | HTTP WAV request/response validation |
+| WebSocket | `phase4/subtitle_websocket.py` | bounded local event broadcaster |
+| Windows UI | `phase5/gui_app.py`, `live_caption_controller.py`, `subtitle_presentation.py`, `subtitle_overlay.py` | RunPod/WASAPI preflight, Qt worker/controller, feed/overlay |
+
+The raw-slot/logical-speaker boundary is deliberate and must remain on the
+Windows client. The server's `raw_slot` value is not a speaker ID.
+
+### Runtime entry points
+
+- Desktop app: `python -m phase5.gui_app`
+- Headless Windows pipeline: `python phase3/run_overlap_pipeline.py --live ...`
+- RunPod server: `python phase4/gpu_processing_server.py --host 0.0.0.0 --port 8787`
+- Real server validation: `python phase4/validate_remote_gpu.py --server-url http://HOST:8787`
+- Browser MVP: open `phase4/web/index.html` after local WebSocket starts.
+
+## Environment and launch
+
+`requirements.txt` targets a RunPod PyTorch image and intentionally omits
+PyTorch. Install CUDA-compatible PyTorch first on the GPU server, then the
+project requirements. The only application environment variable found in
+current source is `GPU_SERVER_URL`; the GUI uses it as its server URL default.
+Set it for each deployment rather than relying on the code fallback URL.
+
+RunPod/Linux:
+
+```bash
+python -m pip install -r requirements.txt
+python phase4/gpu_processing_server.py --host 0.0.0.0 --port 8787
+```
+
+Windows GUI:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+$env:GPU_SERVER_URL = "https://YOUR-RUNPOD-8787.proxy.runpod.net"
+.\.venv\Scripts\python.exe -m phase5.gui_app
+```
+
+Windows remote CLI run:
+
+```powershell
+.\.venv\Scripts\python.exe phase3\run_overlap_pipeline.py `
+  --live --duration 60 --processing-mode remote `
+  --remote-server-url "$env:GPU_SERVER_URL" `
+  --assemble --websocket --save-wav --latency-diagnostics `
+  --json-output phase3\output\remote_live_60s.json
+```
+
+The server default is faster-whisper `small`; `--whisper-model` also accepts
+`base`, `medium`, `large-v3-turbo`, and `large-v3`. This is not authorization
+to change models in the next task. Remote mode forces server-side VAD and
+faster-whisper. There is no server authentication, TLS termination, retry, or
+local inference fallback; failed windows are logged/skipped while later windows
+continue.
+
+## Implemented subtitle lifecycle
+
+The actual downstream order is:
+
+```text
+server VAD/STT -> PersistentSpeakerTracker -> resolve_subtitle_fragments()
+  -> admit_subtitle_streams() -> SubtitleAssembler.process()
+  -> SpeakerSubtitleState.process() -> publish_subtitle_state_event()
+  -> WebSocket/runtime hook -> Qt presentation
+```
+
+`SubtitleAssembler` handles overlap/revision seams. `SpeakerSubtitleState`
+holds a complete per-logical-speaker hypothesis, stable/tentative consensus, and
+`_source_supported_text`. In production `require_final_support=True`,
+`publication_text` comes from `_source_supported_text`, not merely from
+`stable_text`. The publisher sends only nonempty publication text, or a
+retraction for an already published utterance. The Qt presentation layer only
+renders structured events; it does not create a secondary stream itself.
+
+On silence, a validated utterance may FINAL using retained
+`source_supported_text`; an unsupported tentative becomes an internal `discard`
+with empty publication text. This distinction is intentional and must survive
+the next lifecycle change.
+
+`d2efaad` added owner/candidate acoustic diagnostics, an internal hold for some
+owner-like secondary candidates, structural cross-stream overlap checks, and
+`existing_partial_weak_unlocalized_tail`. These changes have deterministic
+coverage, but do not prove the latest Live behavior is correct.
+
+## Current core blocker: secondary candidate lifecycle
+
+Two opposite Live failures remain and should be treated as one provenance/state
+machine issue, not as a Whisper, MossFormer, or threshold-only task.
+
+### A. Single speaker: false secondary is admitted and published
+
+One news recording was played once; there was no second speaker. In window 003,
+the secondary nevertheless reached a visible subtitle row:
+
+```text
+reason=independent_input_support
+source_supported=true
+will_publish=true
+owner_input_correlation ~= 0.9874
+candidate_input_correlation ~= 0.9144
+independent_input_correlation ~= 0.9002
+input_residual_energy_fraction ~= 0.02498
+candidate_residual_energy_fraction ~= 0.27718
+owner_candidate_conflict=true
+speech_contained_in_owner=true
+```
+
+Primary and secondary represented the same original speech but were transcribed
+as different strings. Exact lexical equality therefore cannot be a mandatory
+first-window leakage test. The following window kept the false secondary through
+`existing_partial`. The weak tail itself was successfully classified later as
+`existing_partial_weak_unlocalized_tail`, but that does not repair the earlier
+false admission.
+
+### B. Real two speakers: genuine secondary never promotes
+
+Two different news sources played concurrently produced long, semantically
+distinct streams: one Ukraine/North-Korean-POW/Korea/presidential-office news,
+the other 2030/housing-subscription/deposit/loan-interest news. Separation and
+server STT were therefore useful in this test.
+
+The genuine secondary first showed:
+
+```text
+reason=speech_outside_owner_awaiting_confirmation
+source_support_deferred=true
+VAD ratio ~= 0.838
+speech duration ~= 2514 ms
+independent_input_correlation ~= 0.999
+speech_contained_in_owner=false
+owner_candidate_conflict=false
+```
+
+Later windows kept producing independent STT and `source_supported=true`, yet
+state/publication remained `publication_text=""`, `will_publish=false`,
+`reason=awaiting_source_support`. Silence finally produced
+`discarded_unsupported_tentative`.
+
+### Required next state transition
+
+`existing_partial` must not itself mean that a secondary candidate is validated.
+The next code change must introduce the smallest explicit provenance distinction:
+
+```text
+NEW SECONDARY -> TENTATIVE -> re-evaluate on the next overlap window
+
+single-speaker leakage:
+  TENTATIVE -> repeated owner/leakage evidence -> DISCARD
+  -> never source_supported_text -> no WebSocket PARTIAL/FINAL
+
+independent second speaker:
+  TENTATIVE -> sustained independent acoustic evidence -> CONFIRMED/VALIDATED
+  -> source_supported_text -> normal PARTIAL/FINAL publication
+```
+
+Do not solve this with phrase blacklists, blanket secondary blocking, a
+correlation threshold nudge, first-window lexical equality, MossFormer redesign,
+or a Whisper model change. Preserve short legitimate second-speaker replies.
+
+## Next work order and acceptance criteria
+
+1. Add explicit secondary tentative-versus-validated provenance and deterministic
+   regressions using the latest single-speaker and two-news evidence.
+2. Run the Live acceptance matrix below; only then freeze admission/separation.
+3. Compare STT models on fixed original/separated WAVs: faster-whisper `small`
+   baseline versus `large-v3-turbo` and suitable Korean candidates, using CER/WER,
+   numbers, proper nouns, phonetic confusions, latency, and VRAM.
+4. Stabilize presentation/overlay, package Windows EXE, freeze the demo, prepare
+   the graduation presentation.
+
+| Scenario | Required result |
+|---|---|
+| Same single news, at least three runs | visible primary; no false secondary row, WebSocket publish, or silence FINAL ghost |
+| Current two-news overlap | both streams visible; genuine tentative promotes after sustained evidence |
+| Confirmation latency | roughly one stride, about 2 seconds; never permanent `awaiting_source_support` |
+| Short true reply | not permanently treated as leakage |
+| Weak tail | retain `existing_partial_weak_unlocalized_tail` behavior |
+| Silence | discard unconfirmed tentative; preserve FINAL for validated/published text; no new ghost |
+
+## Diagnostics required for the next Live run
+
+Keep the complete JSON and console logs for matching windows. Correlation fields
+may be nested in `speech_local_evidence` and `source_support_checks`.
+
+| Log family | Required fields |
+|---|---|
+| `SUBTITLE ADMISSION` | `reason`, `suppressed`, `existing_partial`, `source_supported`, `source_support_deferred`, `owner_candidate_conflict`, owner/candidate/independent correlations, both residual fractions, `speech_contained_in_owner`, `cross_stream_lexical_overlap`, `weak_speech_check_applied`, `weak_existing_tail_suppressed` |
+| `SUBTITLE SUPPORT` | `source_text`, `retained_prefix_length`, `observed_suffix_matches`, `unobserved_prefix_length`, `unsupported_gap_length`, `reason` |
+| `CONSENSUS` | `stable`, `tentative`, `action`, `history` |
+| `SUBTITLE PUBLICATION` | `source_supported`, `source_supported_text`, `publication_text`, `will_publish`, `reason`, `needs_retraction` |
+| Published event | `sequence`, logical `speaker`, `utterance_id`, `status`, `action` |
+
+For false secondary, confirm no secondary WebSocket sequence exists. For genuine
+secondary, find the exact promotion window where `source_supported_text` becomes
+nonempty and the following PARTIAL publishes. A valid primary FINAL may have
+`source_supported=false` in the silence window while retaining nonempty
+`source_supported_text`; that is expected.
+
+## Tests and current status
+
+The following command was executed for this handoff:
+
+```bash
+PYTHONPATH=/tmp/speech-caption-pytest-only:phase3:phase4:phase5:. \
+python -m pytest -q . \
+  --ignore=phase1/diagnostic/wasapi_test.py \
+  --ignore=phase3/run_secondary_validity_live_test.py \
+  --ignore=phase3/test_overlap_diagnostic_schema.py \
+  --ignore=phase3/test_secondary_validity_live_test.py \
+  --ignore=phase5/test_gui_app.py \
+  --ignore=phase5/test_ui_shell.py
+```
+
+Result: **126 passed, 3 xfailed, 95 subtests passed**.
+
+The three xfails in `phase3/test_source_support_diagnostics.py` remain visible:
+unresolved gap hiding later support, noise above the existing bound, and a
+projection artifact publication case. They are not successes. Excluded files
+need local audio/PySide6 runtime support, so this result is not Windows capture,
+RunPod endpoint, or GUI-rendering validation.
+
+Important tests:
+
+| Area | Files |
+|---|---|
+| Admission/lifecycle | `phase3/test_ghost_subtitle_regressions.py`, `test_subtitle_admission.py`, `test_source_support_diagnostics.py`, `test_subtitle_finalization_evidence.py`, `test_subtitle_consensus.py` |
+| Assembly/state | `test_subtitle_assembler.py`, `test_subtitle_assembler_state_integration.py`, `test_subtitle_state.py`, `test_live_caption_continuity.py` |
+| Tracking/recovery | `test_speaker_tracking.py`, `test_secondary_leakage_diagnostics.py`, `test_separation_recovery.py`, `test_pre_separation_silence_gate.py` |
+| Remote/WebSocket | `phase4/test_gpu_processing_server.py`, `test_remote_gpu_client.py`, `test_remote_overlap_pipeline.py`, `test_websocket_mvp.py` |
+| Qt presentation | `phase5/test_subtitle_presentation.py`, `test_gui_app.py`, `test_ui_shell.py` |
+
+## Technical debt and guardrails
+
+- Deterministic fixtures do not yet model the newest Live lexical-divergence
+  leakage case or the true-two-speaker promotion failure.
+- Current source support retains text prefixes but has no explicit persisted
+  secondary `tentative` / `validated` provenance model.
+- STT accuracy lacks a human-verified Korean reference corpus.
+- Long uninterrupted speech, music/game effects, short replies, WASAPI channel
+  choice, poor network conditions, long-run recovery, deployment auth/TLS, and
+  Windows GUI rendering remain incompletely proven.
+
+Do not redesign these completed parts: the client/server boundary; 48 kHz ->
+16 kHz conversion; 3 s/2 s overlap cadence; server MossFormer2 -> VAD -> STT
+ordering; Windows logical-speaker tracking; assembler seam handling;
+source-supported FINAL safety; weak-tail suppression; or silence finalization
+for validated subtitles. Do not remove diagnostic fields or `d2efaad` fixtures.
+
+## Reading older documents
+
+`phase4/REMOTE_GPU.md` remains the protocol/launch reference. `phase3/
+LIVE_SOURCE_SUPPORT_DIAGNOSIS.md` explains earlier diagnostics and `d2efaad`
+fixtures but predates the newest Live observations above. `ACCURACY_AUDIT.md`
+is useful historical model/latency evidence, not a replacement for the pending
+fixed-WAV comparison. `README.md` still says in one historical section that VAD
+and speaker tracking are unimplemented; current code implements Silero VAD and
+`PersistentSpeakerTracker`. No `REMAINING_WORK_GUIDE.md` exists in this checkout.
+
+## Historical snapshot: superseded 2026-09-27 document
+
+The remainder is retained only as project history. It contains stale claims,
+including a SenseVoice/browser-centered status. Do not use it for current
+implementation decisions; use the sections above and current `main` code.
+
+<details>
+<summary>Superseded 2026-09-27 snapshot (historical reference only)</summary>
 
 ## 1. 프로젝트 최종 목표
 
@@ -347,3 +652,4 @@ WASAPI loopback 48 kHz
 7. 다음 작업: 같은 Live 구간의 original vs speaker_0 vs speaker_1을 동일 SenseVoice로 비교해 오인식 발생 단계를 특정한다.
 8. 절대 임의로 건드리지 말 부분: `run_overlap_pipeline.py`의 3초/2초 queue 구조, `separation_recovery.py`의 AMP/FP32 recovery와 silence gate, subtitle consensus, WebSocket queue. 원인 진단 전 모델/window/VAD threshold/consensus/WebSocket을 대규모로 변경하지 않는다.
 
+</details>
