@@ -194,6 +194,60 @@ class PipelineTests(TestCase):
         self.assertTrue(rows[1]["vad"][1]["speech_detected"])
         self.assertEqual(rows[2]["speaker_assignment"]["raw_to_logical_mapping"], {"0": 1, "1": 0})
 
+    def test_supported_overlap_revises_wrong_primary_partial_in_real_workers(self):
+        def response(audio, index):
+            result = payload("r", index, len(audio))
+            if index == 0:
+                text, spans = "제 손은 그냥과와 높아지는", [(32000, 48000)]
+                primary = audio
+            elif index == 1:
+                text = "분양가와 높아지는 청약문턱에 지친 2030세대가"
+                spans, primary = [(0, 48000)], audio
+            else:
+                text, spans, primary = "", [], np.zeros_like(audio)
+            waves = (primary, np.zeros_like(audio))
+            for slot, wave, slot_text, slot_spans in zip(
+                result["speakers"], waves, (text, ""), (spans, []),
+            ):
+                slot["waveform"]["data"] = base64.b64encode(
+                    wave.astype("<f4").tobytes()
+                ).decode()
+                slot["raw_transcript"] = slot_text
+                duration = sum(end - start for start, end in slot_spans)
+                slot["vad"].update({
+                    "speech_detected": bool(slot_spans),
+                    "speech_duration_ms": duration / 16,
+                    "speech_ratio": duration / len(audio),
+                    "timestamps": [
+                        {"start": start, "end": end} for start, end in slot_spans
+                    ],
+                })
+            return result
+
+        delivered = []
+        code, result = self.run_pipeline(
+            True, response_factory=response, duration=7,
+            runtime_hooks=pipeline.LivePipelineHooks(on_subtitle=delivered.append),
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(result["errors"], [])
+        primary = [event for event in delivered if event["speaker"] == "speaker_0"]
+        self.assertEqual([event["status"] for event in primary], ["partial", "partial", "final"])
+        self.assertEqual(primary[0]["text"], "제 손은 그냥과와 높아지는")
+        self.assertEqual(
+            primary[1]["text"],
+            "분양가와 높아지는 청약문턱에 지친 2030세대가",
+        )
+        self.assertEqual(primary[2]["text"], primary[1]["text"])
+        self.assertNotIn("제 손은", primary[2]["text"])
+        rows = result["windows"]
+        overlap = rows[1]["assembly_events"][0]["audio_overlap_evidence"]
+        self.assertTrue(overlap["shared_speech"])
+        self.assertTrue(overlap["supported_tail_revision"])
+        self.assertEqual(rows[1]["assembly_events"][0]["match_type"],
+                         "supported_tail_replace")
+        self.assertEqual(result["websocket"]["published"], len(delivered))
+
     def test_new_stream_admission_in_real_workers_with_permutation(self):
         for kind in ("residual", "short_quiet_speaker", "simultaneous_speakers"):
             with self.subTest(kind=kind):

@@ -49,6 +49,107 @@ RECONCILIATION_CASES = [
 
 
 class ReconciliationTests(TestCase):
+    def test_wrong_initial_partial_is_revised_with_supported_overlap(self):
+        assembler = SubtitleAssembler(0)
+        state = SpeakerSubtitleState(0, require_final_support=True)
+        first = assembler.process(0, "제 손은 그냥과와 높아지는")
+        first_state = state.process(
+            0, first.utterance_hypothesis, True, 3,
+            confirmed_prefix_length=first.confirmed_prefix_length,
+            source_supported=True, source_text=first.raw,
+        )[0]
+        self.assertEqual(first_state.publication_text, first.raw)
+
+        second = assembler.process(
+            1, "분양가와 높아지는 청약문턱에 지친 2030세대가",
+            shared_speech=True, supported_tail_revision=True,
+        )
+        second_state = state.process(
+            1, second.utterance_hypothesis, True, 5,
+            confirmed_prefix_length=second.confirmed_prefix_length,
+            source_supported=True, source_text=second.raw,
+        )[0]
+        self.assertEqual(second.match_type, "supported_tail_replace")
+        self.assertEqual(
+            second.utterance_hypothesis,
+            "분양가와 높아지는 청약문턱에 지친 2030세대가",
+        )
+        self.assertNotIn("제 손은", second_state.publication_text)
+        self.assertEqual(second_state.publication_text, second.utterance_hypothesis)
+        final = state.process(2, "", False, 7)[0]
+        self.assertNotIn("제 손은", final.publication_text)
+
+    def test_supported_overlap_keeps_normal_continuation(self):
+        assembler = SubtitleAssembler(0)
+        assembler.process(0, "치솟는 분양가와")
+        event = assembler.process(
+            1, "분양가와 높아지는 청약 문턱에",
+            shared_speech=True, supported_tail_revision=True,
+        )
+        self.assertEqual(event.utterance_hypothesis, "치솟는 분양가와 높아지는 청약 문턱에")
+        self.assertNotEqual(event.match_type, "supported_tail_replace")
+
+    def test_tail_revision_preserves_confirmed_prefix(self):
+        assembler = SubtitleAssembler(0)
+        assembler.process(0, "확인된 앞부분")
+        established = assembler.process(
+            1, "확인된 앞부분 제 손은 그냥과와 높아지는"
+        )
+        self.assertGreater(established.confirmed_prefix_length, 0)
+        revised = assembler.process(
+            2, "분양가와 높아지는 청약문턱에 지친 세대가",
+            shared_speech=True, supported_tail_revision=True,
+        )
+        self.assertEqual(revised.match_type, "supported_tail_replace")
+        self.assertEqual(
+            revised.utterance_hypothesis,
+            "확인된 앞부분 분양가와 높아지는 청약문턱에 지친 세대가",
+        )
+        self.assertNotIn("제 손은", revised.utterance_hypothesis)
+
+    def test_lexical_anchor_without_acoustic_overlap_does_not_rewrite(self):
+        assembler = SubtitleAssembler(0)
+        assembler.process(0, "제 손은 그냥과와 높아지는")
+        event = assembler.process(
+            1, "분양가와 높아지는 청약문턱에 지친 2030세대가",
+            shared_speech=None, supported_tail_revision=False,
+        )
+        self.assertEqual(event.match_type, "none")
+        self.assertTrue(event.utterance_hypothesis.startswith("제 손은"))
+
+    def test_supported_overlap_does_not_replace_unrelated_new_sentence(self):
+        assembler = SubtitleAssembler(0)
+        assembler.process(0, "청약 시장의 변화가 이어지고 있습니다.")
+        event = assembler.process(
+            1, "한편 오늘 서울의 날씨는 맑겠습니다.",
+            shared_speech=True, supported_tail_revision=True,
+        )
+        self.assertEqual(
+            event.utterance_hypothesis,
+            "청약 시장의 변화가 이어지고 있습니다. 한편 오늘 서울의 날씨는 맑겠습니다.",
+        )
+        self.assertEqual(event.match_type, "none")
+
+    def test_supported_overlap_never_rewrites_finalized_session(self):
+        assembler = SubtitleAssembler(0)
+        state = SpeakerSubtitleState(0, require_final_support=True)
+        first = assembler.process(0, "확정된 첫 문장입니다.")
+        state.process(0, first.utterance_hypothesis, True, 3,
+                      source_supported=True, source_text=first.raw)
+        final = state.process(1, "", False, 5)[0]
+        assembler.reset_utterance(final_text=final.text)
+
+        next_event = assembler.process(
+            2, "완전히 새로운 두 번째 문장입니다.",
+            shared_speech=True, supported_tail_revision=True,
+        )
+        self.assertEqual(final.text, "확정된 첫 문장입니다.")
+        self.assertEqual(next_event.utterance_hypothesis, "완전히 새로운 두 번째 문장입니다.")
+        self.assertEqual(
+            next_event.session_text,
+            "확정된 첫 문장입니다. 완전히 새로운 두 번째 문장입니다.",
+        )
+
     def test_expected_text_fixtures(self):
         for fragments, expected in RECONCILIATION_CASES:
             with self.subTest(fragments=fragments):

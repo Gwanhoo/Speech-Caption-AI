@@ -221,6 +221,46 @@ def anchored_prefix_revision(previous: str, current: str) -> tuple[int, int, flo
     return len(old_seam), new_tokens[1].end(), SequenceMatcher(None, old_seam, new_seam).ratio()
 
 
+def supported_overlap_tail_anchor(
+    previous: str,
+    current: str,
+    minimum_characters: int,
+) -> tuple[int, int, float] | None:
+    """Locate a bounded previous-tail/current-head anchor for acoustic revision.
+
+    This only identifies lexical correspondence. The caller must separately
+    prove that adjacent VAD intervals cover the same overlap audio. A five-char
+    minimum avoids treating common short endings as enough evidence to rewrite
+    a partial, while still covering Korean phrase revisions such as
+    ``그냥과와 높아지는`` -> ``분양가와 높아지는``.
+    """
+    left = normalize_for_matching(previous)
+    right, right_positions = normalize_with_positions(current)
+    if not left or not right:
+        return None
+    minimum_anchor = max(5, minimum_characters - 1)
+    allowed_left_tail = max(1, round(len(left) * 0.15))
+    allowed_right_head = max(3, round(len(right) * 0.20))
+    best: tuple[int, int, float] | None = None
+    best_rank = (0, 0.0)
+    for block in SequenceMatcher(None, left, right, autojunk=False).get_matching_blocks():
+        if block.size < minimum_anchor:
+            continue
+        left_tail = len(left) - block.a - block.size
+        if left_tail > allowed_left_tail or block.b > allowed_right_head:
+            continue
+        compared_span = (len(left) - block.a) + block.b + block.size
+        similarity = 2 * block.size / compared_span
+        rank = (block.size, similarity)
+        if rank <= best_rank:
+            continue
+        start = right_positions[block.b]
+        end = right_positions[block.b + block.size - 1] + 1
+        best = start, end, similarity
+        best_rank = rank
+    return best
+
+
 def append_preserving_text(assembled: str, new_text: str) -> str:
     if not assembled:
         return new_text.strip()
@@ -350,6 +390,7 @@ class SubtitleAssembler:
         correction = corrected_suffix_prefix(previous, raw) if previous and raw else None
         if correction is None and previous and raw and supported_tail_revision:
             correction = anchored_prefix_revision(previous, raw)
+        tail_revision = None
         if correction and match_type in {"none", "fuzzy"}:
             old_length, new_cut, similarity = correction
             old_suffix = normalize_for_matching(previous)[-old_length:]
@@ -367,8 +408,31 @@ class SubtitleAssembler:
                 correction = None
         else:
             correction = None
+        if correction is None and match_type == "none" and previous and raw and supported_tail_revision:
+            tail_revision = supported_overlap_tail_anchor(
+                previous, raw, self.minimum_characters
+            )
+            normalized_previous = normalize_for_matching(previous)
+            normalized_active, positions = normalize_with_positions(self.utterance_hypothesis)
+            if not (
+                tail_revision
+                and normalized_active.endswith(normalized_previous)
+            ):
+                tail_revision = None
+            else:
+                protected_length = min(self.confirmed_prefix_length, len(normalized_active))
+                protected_cut = (
+                    positions[protected_length - 1] + 1 if protected_length else 0
+                )
+                protected_prefix = self.utterance_hypothesis[:protected_cut].rstrip()
+                self.utterance_hypothesis = append_preserving_text(protected_prefix, raw)
+                anchor_start, anchor_end, similarity = tail_revision
+                match_type = "supported_tail_replace"
+                overlap = raw[anchor_start:anchor_end].strip()
+                normalized_overlap_length = len(normalize_for_matching(overlap))
+                new_text = raw
         new_text = LEADING_SEPARATOR_PATTERN.sub("", new_text).strip()
-        if correction is None:
+        if correction is None and tail_revision is None:
             # Rebuild exact seams from the current display text. Appending a
             # fragment beginning inside an eojeol would create "아침 에".
             normalized_active, positions = normalize_with_positions(self.utterance_hypothesis)
@@ -384,7 +448,7 @@ class SubtitleAssembler:
                 self.utterance_hypothesis = append_preserving_text(
                     self.utterance_hypothesis, new_text
                 )
-        if correction is not None:
+        if correction is not None or tail_revision is not None:
             self.confirmed_prefix_length = min(
                 self.confirmed_prefix_length,
                 normalized_common_prefix_length(before_hypothesis, self.utterance_hypothesis),
