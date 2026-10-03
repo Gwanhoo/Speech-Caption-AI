@@ -1,8 +1,39 @@
-# Live source support 진단 (기준 d2c891d)
+# Live source support 진단 (기준 d2c891d, 후속 수정 2026-10-03)
 
-이번 변경은 진단과 재현 테스트다. CASE B/C의 실제 acoustic 값과 후속 raw
-fragment가 제공되지 않았으므로 정책/threshold 또는 publication gate를 변경하지
-않았다. 합성 재현은 실제 Windows/RunPod Live 재현을 대신하지 않는다.
+최초 작성 시점에는 CASE B/C의 실제 acoustic 값과 후속 raw fragment가 없어 진단만
+추가했다. 이후 확인된 live 값(owner correlation 0.995933, candidate correlation
+0.518343, residual correlation 0.857164, input residual energy 0.008117)을 근거로
+아래의 후속 admission/publication 보호를 구현했다. 합성 회귀는 실제
+Windows/RunPod Live 재현을 대신하지 않는다.
+
+## 2026-10-03 후속 수정
+
+- 후속 Live window 003/004에서는 input residual이 각각 3.9136%, 2.3288%라서 기존
+  1% residual gate를 통과했다. 두 창 모두 owner correlation이 0.98 이상이고,
+  candidate가 owner VAD 안에 포함되며, candidate residual이 input residual보다 컸다.
+  window 004의 secondary raw는 primary raw의 정확한 부분 문자열이었다. 따라서 1%
+  경계를 올리지 않고, 이 결합 증거를 `owner_candidate_conflict`로 기록한다. 이 조건의
+  새 stream 중 primary와 정확한 lexical 구조까지 겹치는 후보는 한 창 동안 내부
+  tentative로 보류한다. 다음 창에도 같은 acoustic conflict와
+  temporal containment가 있고 두 stream raw 사이에 정확한 포함 또는 짧은 boundary
+  overlap이 있으면 current secondary fragment만 leakage로 억제한다. 서로 다른 다음
+  transcript나 owner dominance가 해소된 실제 두 번째 화자는 기존 source-support 경로로
+  승격된다.
+- 확립된 owner가 입력을 지배하고 input residual energy가 1% 미만인 동시에 candidate가
+  direct/residual correlation을 모두 통과하며 candidate residual이 input residual보다
+  큰 모순 패턴은 새 source로 시작하지 않는다. 이 gate는 기존 weak-speech 경계인
+  500ms를 넘는 후보에만 적용한다. 1% 경계는 실제 ghost의 0.8117%를 포함하는 검증
+  가능한 경계다. 짧은 응답과 조용하지만 순수한 독립 source는 기존 경로로 통과한다.
+- 확립된 owner의 VAD 구간 밖에서 처음 나타난 source는 한 overlap window 동안 내부
+  tentative로 보류한다. 다음 창의 새 acoustic support가 있으면 공개하고, 바로 silence가
+  오면 publication 없이 discard한다.
+- weak speech 검사를 existing partial에도 적용한다. 특히 476ms/ratio 0.159처럼 기존
+  weak-VAD 경계에 들고 원본 입력의 speech RMS가 background보다 증가하지 않는 tail은
+  절대 RMS가 0.001보다 크더라도 current suffix만 억제한다. 억제된 tail text는
+  assembler에 들어가지 않으며 이미 source-supported인 prefix는 정상 FINAL로 유지한다.
+- production의 `SpeakerSubtitleState`는 `require_final_support=True`이므로 textual
+  consensus만으로는 publication되지 않는다. unsupported tentative의 silence
+  finalization은 빈 discard event로 끝나 외부 publisher에 전달되지 않는다.
 
 ## 실제 경로
 
@@ -80,11 +111,11 @@ candidate intervals가 owner 안에 포함되며, owner가 established 또는 tr
 | candidate_residual_energy_fraction | 0.9999000 |
 
 입력에 r이 없는데도 owner의 분리 오차 때문에 잔차 상관이 높아지는 반례다.
-그러나 아주 작은 실제 source도 낮은 입력 잔차 에너지와 높은 잔차 상관을 만들 수
-있다. 기존 quiet-secondary 테스트에는 상대 진폭 0.001인 실제 성분도 포함된다.
-따라서 residual energy 하한 추가는 현재 증거로 정당화되지 않는다. 실제 MossFormer2
-출력이 이 반례였는지, 배경음 성분이었는지, 다른 오차인지 Live 수치/오디오 없이
-확정할 수 없다. VAD 양성은 STT 실행의 선행 조건이며 화자 독립성의 증명이 아니다.
+아주 작은 실제 source도 낮은 입력 잔차 에너지와 높은 잔차 상관을 만들 수 있으므로
+residual energy만으로 차단하지 않는다. 후속 gate는 실제 ghost에서 함께 관측된 높은
+direct correlation과 높은 residual correlation, normalized candidate residual의 크기,
+그리고 이미 확립된 owner를 모두 요구한다. 상대 진폭 0.001/0.005인 기존 quiet-source
+회귀도 계속 통과한다. VAD 양성은 STT 실행의 선행 조건이며 화자 독립성의 증명이 아니다.
 
 ## source_supported_text 고정
 
@@ -110,7 +141,9 @@ GUI 프로세스를 완전히 종료하고 업데이트한 client 코드로 다�
 
 - `[SUBTITLE ADMISSION]`: 모든 활성 window를 JSON 한 줄로 출력. 기존 partial도 포함.
   `speech_intervals`, `owner_speech_intervals`, `speech_local_evidence`의 위 6개 값,
-  `source_support_checks`의 direct/independent pass 및 fallback, `source_supported`,
+  `source_support_checks`의 direct/independent pass, `owner_candidate_conflict` 및 fallback,
+  `cross_stream_lexical_overlap`, `speech_contained_in_owner`, `source_support_deferred`,
+  `source_supported`,
   `weak_speech_evidence`의 원본 speech/background RMS/peak와 각 predicate,
   `weak_speech_check_applied`, `existing_partial`, `suppressed`, `reason`을 확인한다.
 - `[SUBTITLE SUPPORT]`: `source_text`, `retained_prefix_length`,
@@ -129,13 +162,16 @@ RunPod server 코드 변경이 필요 없다. 스칼라만으로 입력 원인�
 
 ## 테스트 해석
 
-`test_source_support_diagnostics.py`는 기존 정상/차단 경로 9개와 미해결 계약 3개를
+`test_source_support_diagnostics.py`는 기존 정상/차단 경로와 미해결 계약을
 검증한다. 노이즈 false positive, projection artifact false positive, unsupported
 gap 뒤 genuine text 가림은 `expectedFailure`다. 이 3개는 해결되거나 통과한 테스트가
-아니다. worker integration은 진단 로그와 저장 JSON 일치, 기존 utterance의 로그,
-WebSocket publication 수와 runtime hook 일치를 확인한다.
+아니다. `test_ghost_subtitle_regressions.py`는 이번 window 003/004 live 수치,
+outside-owner first observation, 476ms existing-partial tail, silence discard/finalize, sustained silence,
+정상 overlap deduplication을 별도로 고정한다. worker integration은 진단 로그와 저장
+JSON 일치, 기존 utterance의 로그, WebSocket publication 수와 runtime hook 일치를
+확인한다.
 
-검증 결과 (Linux, 이번 진단 변경):
+아래 표는 최초 진단 변경 당시의 역사적 검증 결과다. 최신 결과는 작업 보고를 따른다.
 
 | 범위 | passed | failed | skipped | errors | expected failures |
 |---|---:|---:|---:|---:|---:|

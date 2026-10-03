@@ -216,16 +216,27 @@ class SubtitleAdmissionTests(unittest.TestCase):
         self.assertFalse(evidence["applied"])
         self.assertEqual(evidence["reason"], "vad_unavailable")
 
-    def test_missing_or_invalid_evidence_and_existing_partial_fail_open(self):
+    def test_missing_or_invalid_evidence_fail_open(self):
         for overrides in (
             {"vads": [vad((0, SIZE)), dict(vad((0, SR)), timestamps=[])]},
             {"vads": [vad((0, SIZE)), dict(vad((0, SR)), timestamps=[{"start": -1, "end": SR}])]},
             {"secondary": np.full(SIZE, np.nan)},
-            {"active": ["실제 본문", "실제 두 번째 화자"]},
         ):
             texts, _, evidence = self.admit(**overrides)
             self.assertFalse(evidence["applied"])
             self.assertEqual(texts[1], "렁쇼")
+
+    def test_existing_partial_does_not_bypass_weak_unlocalized_tail_check(self):
+        texts, _, evidence = self.admit(
+            active=["실제 본문", "실제 두 번째 화자"]
+        )
+        decision = evidence["streams"][1]
+        self.assertTrue(evidence["applied"])
+        self.assertEqual(texts[1], "")
+        self.assertTrue(decision["existing_partial"])
+        self.assertTrue(decision["weak_speech_check_applied"])
+        self.assertTrue(decision["weak_existing_tail_suppressed"])
+        self.assertEqual(decision["reason"], "existing_partial_weak_unlocalized_tail")
 
     def test_tracker_activity_does_not_override_speech_local_source_evidence(self):
         assignment = {"raw_to_logical_mapping": {"0": 0, "1": 1}, "active_raw_slots": [0, 1]}

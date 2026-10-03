@@ -114,7 +114,7 @@ class ServerLatencyDiagnosticsTests(TestCase):
         try:
             with patch.object(server, "detect_speech_activity", return_value=vad), patch.object(
                 server, "query_gpu_memory"
-            ) as query:
+            ) as query, patch.object(server, "transcribe_base") as transcribe:
                 result = service.process(
                     "request-off", np.zeros(1600, dtype=np.float32), 0.1
                 )
@@ -127,6 +127,11 @@ class ServerLatencyDiagnosticsTests(TestCase):
         finally:
             service.close()
         query.assert_not_called()
+        transcribe.assert_not_called()
+        self.assertTrue(result["pre_separation_silence"])
+        self.assertTrue(
+            all(slot["raw_transcript"] == "" for slot in result["speakers"])
+        )
         self.assertEqual(result["gpu_memory"]["device_used_mib"], 700)
         self.assertFalse(
             diagnostic_result["timing"]["gpu_memory_query_performed"]

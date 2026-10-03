@@ -10,7 +10,8 @@ import soundfile as sf
 
 from speaker_tracking import (
     DEFAULT_SILENCE_RMS, DEFAULT_SOURCE_CONFIDENCE, HIGH_SOURCE_CORRELATION,
-    MAX_UNSUPPORTED_INPUT_CORRELATION, safe_absolute_correlation,
+    MAX_UNSUPPORTED_INPUT_CORRELATION, MIN_DOMINANT_INPUT_CORRELATION,
+    safe_absolute_correlation,
     source_input_evidence, unsupported_source,
 )
 from subtitle_assembler import append_preserving_text
@@ -38,6 +39,16 @@ TEMPORAL_CONTINUITY_CONFIG = {
     "strong_secondary_min_consecutive_windows": 3,
     "strong_secondary_min_vad_ratio": 0.75,
 }
+# A correlation direction is not useful source evidence when an established
+# owner already explains virtually all of the input.  The live ghost fixture
+# left 0.008117 of normalized input energy after owner projection while still
+# producing 0.857164 residual correlation.  Keep a round, auditable 1% energy
+# boundary above that observation.  This gate is only applied when tracking or
+# an active hypothesis has already identified the other stream as the owner;
+# isolated quiet speech and unowned first speech therefore keep the fail-open
+# path.
+MIN_INDEPENDENT_INPUT_ENERGY_FRACTION = 0.01
+WEAK_SPEECH_MAX_DURATION_MS = 500
 
 
 def _finite_float(value: Any) -> float | None:
@@ -118,6 +129,52 @@ def text_similarity(text_0: str, text_1: str) -> dict[str, float | None]:
 def normalize_lexical_text(text: str) -> str:
     """Normalize text for diagnostic comparison without changing STT output."""
     return _NORMALIZE_PATTERN.sub("", text or "").lower()
+
+
+def cross_stream_lexical_overlap(owner_text: str, candidate_text: str) -> dict[str, Any]:
+    """Describe exact structural overlap between simultaneous stream transcripts.
+
+    This is only a corroborating leakage signal.  It never suppresses a stream
+    without owner-dominant acoustic evidence and temporal containment.
+    """
+    owner = normalize_lexical_text(owner_text)
+    candidate = normalize_lexical_text(candidate_text)
+    minimum = int(TEMPORAL_CONTINUITY_CONFIG["fuzzy_overlap_min_characters"])
+    bounded_length = int(
+        SECONDARY_ARTIFACT_CONFIG["secondary_fragment_max_normalized_characters"]
+    )
+    prefix = 0
+    for left, right in zip(owner, candidate):
+        if left != right:
+            break
+        prefix += 1
+    suffix = 0
+    for left, right in zip(reversed(owner), reversed(candidate)):
+        if left != right:
+            break
+        suffix += 1
+    candidate_contained = bool(
+        len(candidate) >= minimum and candidate in owner
+    )
+    owner_contained = bool(len(owner) >= minimum and owner in candidate)
+    bounded_boundary_overlap = bool(
+        candidate
+        and len(candidate) <= bounded_length
+        and max(prefix, suffix) >= minimum
+    )
+    return {
+        "available": bool(owner and candidate),
+        "owner_normalized_characters": len(owner),
+        "candidate_normalized_characters": len(candidate),
+        "common_prefix_characters": prefix,
+        "common_suffix_characters": suffix,
+        "candidate_contained_in_owner_text": candidate_contained,
+        "owner_contained_in_candidate_text": owner_contained,
+        "bounded_boundary_overlap": bounded_boundary_overlap,
+        "duplicate_structure": bool(
+            candidate_contained or owner_contained or bounded_boundary_overlap
+        ),
+    }
 
 
 def _crest_factor(rms: Any, peak: Any) -> float | None:
@@ -631,7 +688,7 @@ def weak_speech_evidence(mixture: np.ndarray, vad: dict[str, Any]) -> dict[str, 
         return evidence
     # Bounded low-level noise, sparse VAD, AND no localized energy increase must
     # agree. Duration, volume, or observation count alone never rejects speech.
-    weak_vad = 0 < duration <= 500 and 0 < ratio <= 0.20
+    weak_vad = 0 < duration <= WEAK_SPEECH_MAX_DURATION_MS and 0 < ratio <= 0.20
     no_burst = speech_rms <= 1.5 * max(background_rms, ENERGY_EPSILON)
     evidence.update(
         available=True, weak_vad=weak_vad, no_localized_burst=no_burst,
@@ -659,7 +716,8 @@ def admit_subtitle_streams(
     Evaluate each window afresh: persistence, lexical stability, and historical
     tracker confirmation are never promotion evidence. No candidate text enters
     the assembler, so suppressed fragments cannot later leak into FINAL/flush.
-    Missing/ambiguous acoustics fail open; existing utterances stay untouched.
+    Missing/ambiguous acoustics fail open. Rejected continuations leave the
+    previously admitted utterance prefix untouched.
     Temporal consensus is not an admission test: a genuine short utterance may
     have only one observation. Block acoustically unsupported starts here,
     before PARTIAL publication, so silence/flush cannot retain them as FINAL.
@@ -702,37 +760,207 @@ def admit_subtitle_streams(
         # components. A missing/zero owner can still leave direct input support.
         # Record the existing OR decision, including the direct-correlation
         # fallback that otherwise appears only as a null local evidence row.
+        owner_only = (
+            active_logical == {owner}
+            and not speaker_assignment.get("input_silence", False)
+            and not speaker_assignment.get("low_energy_tail", False)
+        )
+        owner_established = bool(active_hypotheses[owner]) or owner_only
+        candidate_duration = _finite_float(
+            vad_results[candidate].get("speech_duration_ms")
+        )
         support_checks = []
         for (start, end), row in zip(intervals[candidate], local):
             direct = (row["candidate_input_correlation"] if row is not None else
                       safe_absolute_correlation(mixture[start:end], speakers[candidate][start:end]))
             independent = row["independent_input_correlation"] if row is not None else None
+            owner_correlation = row.get("owner_input_correlation") if row is not None else None
+            residual_energy = row.get("input_residual_energy_fraction") if row is not None else None
+            candidate_residual_energy = (
+                row.get("candidate_residual_energy_fraction") if row is not None else None
+            )
+            owner_dominates = bool(
+                owner_correlation is not None
+                and owner_correlation >= MIN_DOMINANT_INPUT_CORRELATION
+            )
+            residual_energy_pass = bool(
+                residual_energy is None
+                or residual_energy >= MIN_INDEPENDENT_INPUT_ENERGY_FRACTION
+            )
+            raw_direct_pass = (direct or 0) >= DEFAULT_SOURCE_CONFIDENCE
+            raw_independent_pass = (independent or 0) >= DEFAULT_SOURCE_CONFIDENCE
+            # The live false source passed both correlation routes even though
+            # the owner left <1% input energy.  A genuinely quiet separated
+            # source instead has weak direct correlation and is protected by
+            # the independent route.  Also avoid blocking a candidate that is
+            # merely a polarity-inverted copy of the mixture: its residual
+            # energy is the same as the input residual, not a normalized large
+            # component projected onto a tiny owner error.
+            blocked_by_owner_residual = bool(
+                owner_established
+                and owner_dominates
+                and candidate_duration is not None
+                and candidate_duration > WEAK_SPEECH_MAX_DURATION_MS
+                and not residual_energy_pass
+                and raw_direct_pass
+                and raw_independent_pass
+                and candidate_residual_energy is not None
+                and residual_energy is not None
+                and candidate_residual_energy > residual_energy
+            )
+            # The residual fraction alone is insufficient: the latest live
+            # leakage left 2.3--3.9% residual energy.  Record the broader
+            # geometric conflict without moving that calibrated 1% boundary.
+            # It is acted on only with temporal containment and, for an
+            # existing candidate, exact cross-stream transcript overlap.
+            owner_candidate_conflict = bool(
+                owner_established
+                and owner_dominates
+                and candidate_duration is not None
+                and candidate_duration > WEAK_SPEECH_MAX_DURATION_MS
+                and raw_direct_pass
+                and raw_independent_pass
+                and candidate_residual_energy is not None
+                and residual_energy is not None
+                and candidate_residual_energy > residual_energy
+            )
             support_checks.append({
                 "interval": [start, end],
                 "direct_correlation": direct,
                 "independent_correlation": independent,
-                "direct_pass": (direct or 0) >= DEFAULT_SOURCE_CONFIDENCE,
-                "independent_pass": (independent or 0) >= DEFAULT_SOURCE_CONFIDENCE,
+                "owner_input_correlation": owner_correlation,
+                "input_residual_energy_fraction": residual_energy,
+                "candidate_residual_energy_fraction": candidate_residual_energy,
+                "owner_established": owner_established,
+                "owner_dominates": owner_dominates,
+                "residual_gate_duration_pass": bool(
+                    candidate_duration is not None
+                    and candidate_duration > WEAK_SPEECH_MAX_DURATION_MS
+                ),
+                "residual_energy_pass": residual_energy_pass,
+                "blocked_by_owner_residual": blocked_by_owner_residual,
+                "owner_candidate_conflict": owner_candidate_conflict,
+                "raw_direct_pass": raw_direct_pass,
+                "raw_independent_pass": raw_independent_pass,
+                "direct_pass": (
+                    raw_direct_pass and not blocked_by_owner_residual
+                ),
+                "independent_pass": (
+                    raw_independent_pass and not blocked_by_owner_residual
+                ),
                 "used_direct_fallback": row is None,
             })
         supported = any(row["direct_pass"] or row["independent_pass"] for row in support_checks)
         evidence["source_support_checks"] = support_checks
         evidence["source_support_threshold"] = DEFAULT_SOURCE_CONFIDENCE
+        evidence["minimum_independent_input_energy_fraction"] = (
+            MIN_INDEPENDENT_INPUT_ENERGY_FRACTION
+        )
         evidence["source_supported"] = supported
         vads[candidate]["source_supported"] = supported
-        # Diagnostic on every active window; existing-utterance admission still
-        # bypasses this rejection, exactly as before.
+        # Apply the same joint weak-VAD/input test to starts and continuations.
+        # A continuation keeps its previously supported prefix in subtitle state;
+        # only the unsupported current fragment is removed here.
         weak_speech = weak_speech_evidence(mixture, vad_results[candidate])
         evidence["weak_speech_evidence"] = weak_speech
-        evidence["weak_speech_check_applied"] = not bool(active_hypotheses[candidate])
-        if active_hypotheses[candidate]:
-            evidence["reason"] = "existing_utterance"
-            continue
-        if weak_speech["suppressed"]:
-            evidence.update(suppressed=True, reason="weak_vad_and_unlocalized_low_energy_input")
+        evidence["weak_speech_check_applied"] = True
+        weak_existing_tail = bool(
+            active_hypotheses[candidate]
+            and weak_speech.get("available")
+            and weak_speech.get("weak_vad")
+            and weak_speech.get("no_localized_burst")
+        )
+        evidence["weak_existing_tail_suppressed"] = weak_existing_tail
+        if weak_speech["suppressed"] or weak_existing_tail:
+            reason = (
+                "existing_partial_weak_unlocalized_tail"
+                if weak_existing_tail
+                else "weak_vad_and_unlocalized_low_energy_input"
+            )
+            evidence.update(
+                suppressed=True,
+                source_supported=False,
+                reason=reason,
+            )
+            vads[candidate]["source_supported"] = False
             texts[candidate] = ""
             vads[candidate]["speech_detected"] = False
             vads[candidate]["timestamps"] = []
+            continue
+
+        contained: bool | None = None
+        if (
+            transcripts[owner].strip()
+            and vad_results[owner].get("speech_detected")
+            and intervals[candidate]
+            and intervals[owner]
+        ):
+            contained = all(
+                any(left <= start and end <= right for left, right in intervals[owner])
+                for start, end in intervals[candidate]
+            )
+        evidence["speech_contained_in_owner"] = contained
+        lexical_overlap = cross_stream_lexical_overlap(
+            transcripts[owner], transcripts[candidate]
+        )
+        evidence["cross_stream_lexical_overlap"] = lexical_overlap
+        owner_conflict = bool(
+            support_checks
+            and all(row["owner_candidate_conflict"] for row in support_checks)
+        )
+        evidence["owner_candidate_conflict"] = owner_conflict
+
+        if (
+            not active_hypotheses[candidate]
+            and normalize_lexical_text(transcripts[candidate])
+            and support_checks
+            and all(row["blocked_by_owner_residual"] for row in support_checks)
+        ):
+            evidence.update(
+                suppressed=True,
+                source_supported=False,
+                reason="owner_explains_input_with_insufficient_residual_energy",
+            )
+            vads[candidate]["source_supported"] = False
+            texts[candidate] = ""
+            vads[candidate]["speech_detected"] = False
+            vads[candidate]["timestamps"] = []
+            continue
+        if (
+            active_hypotheses[candidate]
+            and contained
+            and owner_conflict
+            and lexical_overlap["duplicate_structure"]
+        ):
+            evidence.update(
+                suppressed=True,
+                source_supported=False,
+                reason="contained_cross_stream_leakage",
+                tentative_retained=True,
+            )
+            vads[candidate]["source_supported"] = False
+            texts[candidate] = ""
+            # Preserve the raw VAD activity so subtitle state keeps the already
+            # withheld tentative alive until a real silence/weak-tail decision.
+            # Only this window's duplicate text is removed; it can neither
+            # extend source_supported_text nor become user-visible.
+            continue
+        if (
+            not active_hypotheses[candidate]
+            and contained
+            and owner_conflict
+            and lexical_overlap["duplicate_structure"]
+        ):
+            # Keep the first owner-like observation as an internal tentative.
+            # A distinct transcript is admitted immediately; silence or
+            # repeated owner text cannot make this candidate user-visible.
+            evidence["source_support_deferred"] = supported
+            evidence["source_supported"] = False
+            evidence["reason"] = "contained_owner_dominant_awaiting_confirmation"
+            vads[candidate]["source_supported"] = False
+            continue
+        if active_hypotheses[candidate]:
+            evidence["reason"] = "existing_utterance"
             continue
         # VAD on a normalized separated artifact can be positive even when
         # the owner VAD/STT is missing or its timestamps do not contain it.
@@ -753,17 +981,18 @@ def admit_subtitle_streams(
             transcripts[owner].strip() and vad_results[owner].get("speech_detected")
             and intervals[candidate] and intervals[owner]
         ):
-            contained = all(
-                any(left <= start and end <= right for left, right in intervals[owner])
-                for start, end in intervals[candidate]
-            )
-            evidence["speech_contained_in_owner"] = contained
             evidence["reason"] = "insufficient_owner_evidence" if contained else "speech_outside_owner"
-            owner_only = (
-                active_logical == {owner}
-                and not speaker_assignment.get("input_silence", False)
-                and not speaker_assignment.get("low_energy_tail", False)
-            )
+            if not contained and owner_established:
+                # A first observation outside an established owner's VAD can be
+                # a separator tail just as easily as a new speaker.  Keep its
+                # text as an internal tentative, but require the next overlap
+                # window to provide fresh acoustic support before publication.
+                # Existing candidate utterances took the continuation path
+                # above, so this adds no global delay.
+                evidence["source_support_deferred"] = supported
+                evidence["source_supported"] = False
+                vads[candidate]["source_supported"] = False
+                evidence["reason"] = "speech_outside_owner_awaiting_confirmation"
             if contained and (active_hypotheses[owner] or owner_only):
                 evidence["reason"] = "ambiguous_acoustics" if all(row is not None for row in local) else "invalid_speech_audio"
                 if all(row is not None for row in local):
@@ -784,6 +1013,8 @@ def admit_subtitle_streams(
         elif not intervals[candidate] or not intervals[owner]:
             evidence["reason"] = "missing_speech_intervals"
         if evidence["suppressed"]:
+            evidence["source_supported"] = False
+            vads[candidate]["source_supported"] = False
             texts[candidate] = ""
             vads[candidate]["speech_detected"] = False
             vads[candidate]["timestamps"] = []
