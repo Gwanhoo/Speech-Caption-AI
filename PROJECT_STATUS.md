@@ -636,20 +636,4 @@ WASAPI loopback 48 kHz
 | Frontend | 동작하지만 개선 필요 | 로컬 HTML/JS MVP, 제품 UI/배포 미완성 |
 | Overall | 동작하지만 개선 필요 | 전체 파이프라인은 연결되고 안정성 PASS이나 STT/분리 품질 진단이 남음 |
 
-# NEXT SESSION HANDOFF
-
-1. 프로젝트 목적: Windows 시스템 오디오에서 두 화자의 음성을 분리해 화자별 한국어 실시간 자막을 제공하는 시스템.
-2. Architecture: WASAPI loopback 48 kHz -> 첫 채널 16 kHz mono -> 3초 window/2초 stride -> bounded queues -> MossFormer2 CUDA AMP -> FP32 fallback/silence gate -> speaker_0/1 -> Silero VAD -> SenseVoiceSmall -> assembler -> stable/tentative consensus -> PARTIAL/FINAL -> WebSocket -> `phase4/web`.
-3. 현재 실행 명령:
-
-```powershell
-.\.venv\Scripts\python.exe .\phase3\run_overlap_pipeline.py --live --duration 60 --stt-backend sensevoice --vad --assemble --websocket --json-output .\phase3\output\live_consensus_60s_silence_gate.json
-```
-
-4. 마지막 성공 테스트: `phase3/output/live_consensus_60s_silence_gate.json`; 60초, capture/separation/STT 29/29, drop 0, error 0, gate 3회, AMP non-finite 0, peak 2996 MiB.
-5. 해결된 문제: CUDA 측정 변동의 주요 실험 조건 정리, AMP FP16, bounded queue, VAD skip, AMP FP32 fallback, silence input 안정성, overlap 중복 제거, subtitle state/consensus, WebSocket MVP.
-6. 미해결 문제: SenseVoice 오인식, speaker_1 false VAD/분리 artifact, WASAPI channel selection 품질, reference 없는 subtitle 품질 정량평가, 장기 실행/제품 UI 검증.
-7. 다음 작업: 같은 Live 구간의 original vs speaker_0 vs speaker_1을 동일 SenseVoice로 비교해 오인식 발생 단계를 특정한다.
-8. 절대 임의로 건드리지 말 부분: `run_overlap_pipeline.py`의 3초/2초 queue 구조, `separation_recovery.py`의 AMP/FP32 recovery와 silence gate, subtitle consensus, WebSocket queue. 원인 진단 전 모델/window/VAD threshold/consensus/WebSocket을 대규모로 변경하지 않는다.
-
 </details>
