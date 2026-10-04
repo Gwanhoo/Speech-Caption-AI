@@ -36,7 +36,7 @@ class PipelineTests(TestCase):
     def run_pipeline(self, remote, fail_first=False, failure=None, fail_all=False,
                      latency_diagnostics=False, runtime_hooks=None,
                      response_factory=None, duration=5, websocket=True, capture_factory=None,
-                     reference_paths=None):
+                     reference_paths=None, speaker_mode="overlap"):
         speaker = Mock(name="speaker")
         players = []
         def open_player(**kwargs):
@@ -79,6 +79,7 @@ class PipelineTests(TestCase):
         with tempfile.TemporaryDirectory() as directory, ExitStack() as stack:
             output = Path(directory) / "result.json"
             argv = ["run_overlap_pipeline", "--duration", str(duration), "--assemble", "--json-output", str(output)]
+            argv += ["--speaker-mode", speaker_mode]
             if reference_paths is None:
                 argv += ["--live"]
             else:
@@ -226,6 +227,68 @@ class PipelineTests(TestCase):
         self.assertEqual(logged_updates, [event["support_update"] for event in partials])
         self.assertTrue(all(update["reason"] == "current_source_covers_unretained_text"
                             for update in logged_updates))
+
+    def test_single_mode_routes_only_mapped_primary_with_raw_hallucinations(self):
+        hallucinations = ["어서 오세요", "An arbitrary English hallucination"]
+
+        def response(audio, index):
+            result = payload("r", index, len(audio))
+            primary = np.asarray(audio, dtype=np.float32)
+            artifact = (
+                .5 * primary
+                + np.random.default_rng(9000 + index).normal(0, .05, len(audio))
+            ).astype(np.float32)
+            slots = [artifact, primary] if index == 0 else [primary, artifact]
+            texts = [hallucinations[index], "정상 주 음성 자막입니다"] if index == 0 else [
+                "정상 주 음성 자막입니다", hallucinations[index]
+            ]
+            for raw_slot, (slot, wave, text) in enumerate(
+                zip(result["speakers"], slots, texts)
+            ):
+                slot["waveform"]["data"] = base64.b64encode(
+                    wave.astype("<f4").tobytes()
+                ).decode()
+                slot["raw_transcript"] = text
+                speech_samples = len(audio) if wave is primary else min(1600, len(audio))
+                slot["vad"].update(
+                    speech_detected=True,
+                    speech_duration_ms=speech_samples / 16,
+                    speech_ratio=speech_samples / len(audio),
+                    timestamps=[{"start": 0, "end": speech_samples}],
+                )
+            return result
+
+        delivered = []
+        code, result = self.run_pipeline(
+            True,
+            response_factory=response,
+            runtime_hooks=pipeline.LivePipelineHooks(on_subtitle=delivered.append),
+            speaker_mode="single",
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(result["speaker_mode"], "single")
+        self.assertEqual(result["windows"][0]["raw_to_logical_mapping"], {"0": 0, "1": 1})
+        self.assertTrue(delivered)
+        self.assertTrue(all(event["speaker"] == "speaker_1" for event in delivered))
+        self.assertIn("정상 주 음성 자막입니다", delivered[-1]["text"])
+        published_by_window = {}
+        for event in delivered:
+            published_by_window.setdefault(event["window_index"], set()).add(event["speaker"])
+        self.assertTrue(all(len(speakers) <= 1 for speakers in published_by_window.values()))
+        for index, row in enumerate(result["windows"]):
+            self.assertEqual(row["speaker_mode"], "single")
+            self.assertEqual(row["single_mode_primary"], 1)
+            self.assertEqual(len(row["assembly_events"]), 1)
+            streams = row["single_mode"]["streams"]
+            self.assertEqual(streams[1]["assembler_transcript"], "정상 주 음성 자막입니다")
+            self.assertFalse(streams[1]["suppressed"])
+            self.assertEqual(streams[0]["raw_transcript"], hallucinations[index])
+            self.assertEqual(streams[0]["assembler_transcript"], "")
+            self.assertTrue(streams[0]["suppressed"])
+            self.assertEqual(streams[0]["reason"], "non_primary_stream")
+            self.assertFalse(streams[0]["assembler_forwarded"])
+            self.assertFalse(streams[0]["subtitle_state_forwarded"])
+            self.assertFalse(streams[0]["published"])
 
     def test_source_artifact_admission_reaches_real_publishers_without_ghosts(self):
         # Real parsing/tracking/admission/state/WebSocket/hooks; supplied remote

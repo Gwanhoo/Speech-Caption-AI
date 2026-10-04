@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Compare faster-whisper models on identical, persisted separation outputs."""
+"""Compare faster-whisper models without changing the production pipeline."""
 
 import argparse
 import gc
@@ -34,6 +34,23 @@ DEFAULT_SEPARATED_DIR = DEFAULT_OUTPUT.parent / "separated"
 CHECKPOINT_ROOT = ROOT / "checkpoints" / "faster-whisper"
 MIB = 1024 * 1024
 TRANSCRIBE_OPTIONS: dict[str, Any] = {**LIVE_WHISPER_OPTIONS, "initial_prompt": None}
+WINDOW_SECONDS = 3.0
+STRIDE_SECONDS = 2.0
+SINGLE_SPEAKER_REFERENCE = """오늘 서울 도심에서는 아침부터 많은 시민들이 출근길에 나섰습니다.
+오전에는 비교적 맑은 날씨가 이어졌지만, 오후부터는 일부 지역에 구름이 많아질 것으로 예상됩니다.
+시민들은 대중교통을 이용하거나 도로 상황을 확인하며 이동하고 있습니다.
+네, 현재까지 큰 교통 혼잡은 발생하지 않았습니다.
+한편 전문가들은 갑작스러운 기온 변화에 대비해 건강 관리에 주의할 것을 당부했습니다.
+그럼요, 외출하기 전에 날씨를 확인하는 것도 좋은 방법입니다.
+오늘 준비한 소식은 여기까지입니다.
+시청해 주셔서 감사합니다."""
+KEY_EXPRESSIONS = (
+    "구름이",
+    "도로 상황을",
+    "현재까지 큰 교통 혼잡",
+    "전문가들은",
+    "기온 변화",
+)
 
 
 def finite_or_none(value: Any) -> float | None:
@@ -61,6 +78,68 @@ def read_audio(path: Path) -> tuple[np.ndarray, float]:
     if not len(audio) or not np.isfinite(audio).all():
         raise ValueError(f"WAV must contain finite audio samples: {path}")
     return np.ascontiguousarray(audio), len(audio) / SAMPLE_RATE
+
+
+def window_audio(audio: np.ndarray) -> list[tuple[int, float, float, np.ndarray]]:
+    """Split only into complete production-sized 3s/2s windows."""
+    window_samples = int(WINDOW_SECONDS * SAMPLE_RATE)
+    stride_samples = int(STRIDE_SECONDS * SAMPLE_RATE)
+    windows = []
+    for index, start_sample in enumerate(range(0, len(audio) - window_samples + 1, stride_samples)):
+        end_sample = start_sample + window_samples
+        windows.append(
+            (
+                index,
+                start_sample / SAMPLE_RATE,
+                end_sample / SAMPLE_RATE,
+                np.ascontiguousarray(audio[start_sample:end_sample]),
+            )
+        )
+    return windows
+
+
+def normalize_for_cer(text: str) -> str:
+    return re.sub(r"[^0-9A-Za-z가-힣]+", "", text).lower()
+
+
+def edit_distance(left: list[str] | str, right: list[str] | str) -> int:
+    previous = list(range(len(right) + 1))
+    for left_item in left:
+        current = [previous[0] + 1]
+        for right_index, right_item in enumerate(right, 1):
+            current.append(
+                min(
+                    current[-1] + 1,
+                    previous[right_index] + 1,
+                    previous[right_index - 1] + (left_item != right_item),
+                )
+            )
+        previous = current
+    return previous[-1]
+
+
+def score_transcript(reference: str, hypothesis: str) -> dict[str, Any]:
+    normalized_reference = normalize_for_cer(reference)
+    normalized_hypothesis = normalize_for_cer(hypothesis)
+    character_edits = edit_distance(normalized_reference, normalized_hypothesis)
+    reference_words = re.findall(r"[0-9A-Za-z가-힣]+", reference.lower())
+    hypothesis_words = re.findall(r"[0-9A-Za-z가-힣]+", hypothesis.lower())
+    word_edits = edit_distance(reference_words, hypothesis_words)
+    return {
+        "normalization": "remove non-alphanumeric/non-Hangul characters; lowercase Latin",
+        "normalized_reference": normalized_reference,
+        "normalized_hypothesis": normalized_hypothesis,
+        "character_edits": character_edits,
+        "reference_characters": len(normalized_reference),
+        "cer": character_edits / len(normalized_reference) if normalized_reference else None,
+        "word_edits": word_edits,
+        "reference_words": len(reference_words),
+        "wer": word_edits / len(reference_words) if reference_words else None,
+    }
+
+
+def percentile_95(values: list[float]) -> float | None:
+    return float(np.percentile(values, 95)) if values else None
 
 
 def audio_record(path: Path, audio: np.ndarray) -> dict[str, Any]:
@@ -402,6 +481,142 @@ def run_model(
     return result
 
 
+def expression_comparison(
+    windows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Keep the requested Korean phrase evidence without altering transcripts."""
+    result = []
+    for expression in KEY_EXPRESSIONS:
+        result.append(
+            {
+                "reference_expression": expression,
+                "matching_window_indexes": [
+                    item["window_index"]
+                    for item in windows
+                    if expression in item["raw_transcript"]
+                ],
+                "window_transcripts": [
+                    {
+                        "window_index": item["window_index"],
+                        "start_seconds": item["start_seconds"],
+                        "end_seconds": item["end_seconds"],
+                        "raw_transcript": item["raw_transcript"],
+                    }
+                    for item in windows
+                ],
+            }
+        )
+    return result
+
+
+def run_direct_window_model(
+    model_name: str,
+    windows: list[tuple[int, float, float, np.ndarray]],
+    reference: str,
+    *,
+    warm_up: bool,
+) -> dict[str, Any]:
+    """Benchmark direct original-audio STT; no separation, VAD, or assembly."""
+    source = model_source(model_name)
+    result: dict[str, Any] = {
+        "model_name": model_name,
+        "model_source": source,
+        "status": "error",
+        "device": "cuda",
+        "compute_type": "float16",
+        "transcribe_options": dict(TRANSCRIBE_OPTIONS),
+        "input_path": None,
+        "evaluation": "direct_original_audio_complete_3s_windows_only",
+        "memory_before_load": query_gpu_memory(),
+    }
+    model: WhisperModel | None = None
+    monitor = MemoryMonitor()
+    monitor.start()
+    started = time.perf_counter()
+    try:
+        if not torch.cuda.is_available():
+            raise RuntimeError("CUDA is required for this benchmark")
+        torch.cuda.empty_cache()
+        torch.cuda.reset_peak_memory_stats()
+        load_sample = len(monitor.samples)
+        load_started = time.perf_counter()
+        print(f"[{model_name}] loading CUDA FP16 model for direct windows...", flush=True)
+        model = WhisperModel(
+            source,
+            device="cuda",
+            compute_type="float16",
+            download_root=str(CHECKPOINT_ROOT),
+        )
+        result["actual_device"] = str(model.model.device)
+        result["actual_compute_type"] = str(model.model.compute_type)
+        result["model_load_seconds"] = time.perf_counter() - load_started
+        result["memory_after_load"] = monitor.sample()
+        result["memory_peak_during_load"] = monitor.peak_since(load_sample)
+
+        if warm_up:
+            warm_started = time.perf_counter()
+            list(model.transcribe(np.zeros(int(WINDOW_SECONDS * SAMPLE_RATE), dtype=np.float32), **TRANSCRIBE_OPTIONS)[0])
+            result["warm_up_seconds"] = time.perf_counter() - warm_started
+        else:
+            result["warm_up_seconds"] = None
+
+        records = []
+        for index, start_seconds, end_seconds, audio in windows:
+            memory_sample = len(monitor.samples)
+            monitor.sample()
+            transcribed = transcribe_audio(model, audio, WINDOW_SECONDS)
+            transcribed.update(
+                {
+                    "window_index": index,
+                    "start_seconds": start_seconds,
+                    "end_seconds": end_seconds,
+                    "gpu_memory_after_inference": monitor.sample(),
+                    "gpu_memory_peak_during_inference": monitor.peak_since(memory_sample),
+                }
+            )
+            records.append(transcribed)
+
+        concatenated = "\n".join(item["raw_transcript"] for item in records).strip()
+        latencies = [item["inference_latency_seconds"] for item in records]
+        result.update(
+            {
+                "status": "ok",
+                "windows": records,
+                "concatenated_raw_transcript": concatenated,
+                "latency_seconds": {
+                    "mean": float(np.mean(latencies)) if latencies else None,
+                    "p95": percentile_95(latencies),
+                    "max": max(latencies) if latencies else None,
+                    "count": len(latencies),
+                },
+                "cer": score_transcript(reference, concatenated),
+                "key_expression_comparison": expression_comparison(records),
+                "total_processing_seconds": time.perf_counter() - started,
+                "torch_memory_after_inference": torch_memory(),
+            }
+        )
+    except Exception as exc:
+        result.update(
+            {
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "memory_at_error": query_gpu_memory(),
+                "total_processing_seconds": time.perf_counter() - started,
+            }
+        )
+        print(f"[{model_name}] failed: {type(exc).__name__}: {exc}", flush=True)
+    finally:
+        if model is not None:
+            del model
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        monitor.stop()
+        result["memory_peak_total"] = monitor.peak_since(0)
+        result["memory_after_unload"] = query_gpu_memory()
+    return result
+
+
 def load_fixed_inputs(paths: Iterable[Path]) -> list[tuple[Path, np.ndarray, float]]:
     return [(path, *read_audio(path)) for path in paths]
 
@@ -442,9 +657,14 @@ def side_by_side_comparison(models: list[dict[str, Any]]) -> list[dict[str, Any]
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Compare faster-whisper models on fixed MossFormer2 output WAVs"
+        description="Compare faster-whisper models on fixed audio without changing production"
     )
     source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument(
+        "--direct-wav",
+        type=Path,
+        help="Original mono 16 kHz WAV; evaluates complete production 3s/2s windows only",
+    )
     source.add_argument("--audio", type=Path, help="Mixed mono 16 kHz WAV to separate once")
     source.add_argument(
         "--separated-wav",
@@ -470,6 +690,38 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     benchmark_started = time.perf_counter()
+    if args.direct_wav is not None:
+        audio, duration = read_audio(args.direct_wav)
+        windows = window_audio(audio)
+        if not windows:
+            raise ValueError("Direct WAV must contain at least one complete 3-second window")
+        report: dict[str, Any] = {
+            "schema_version": 2,
+            "benchmark_kind": "direct_original_faster_whisper_model_comparison",
+            "production_pipeline_modified": False,
+            "comparison_policy": (
+                "Each candidate receives the same complete 3-second windows at a 2-second stride. "
+                "MossFormer2, Silero VAD, speaker mode, and SubtitleAssembler are not called."
+            ),
+            "models_requested": list(args.models),
+            "production_transcribe_options": dict(TRANSCRIBE_OPTIONS),
+            "window_seconds": WINDOW_SECONDS,
+            "stride_seconds": STRIDE_SECONDS,
+            "reference_transcript": SINGLE_SPEAKER_REFERENCE,
+            "input": {**audio_record(args.direct_wav, audio), "complete_window_count": len(windows)},
+            "models": [],
+        }
+        for model_name in args.models:
+            model_result = run_direct_window_model(
+                model_name, windows, SINGLE_SPEAKER_REFERENCE, warm_up=not args.no_warmup
+            )
+            model_result["input_path"] = str(args.direct_wav.resolve())
+            report["models"].append(model_result)
+            report["total_benchmark_seconds"] = time.perf_counter() - benchmark_started
+            write_report(args.output, report)
+        print(f"JSON: {args.output}", flush=True)
+        return 0 if all(model["status"] == "ok" for model in report["models"]) else 1
+
     if args.audio is not None:
         paths, preparation = prepare_separated_audio(args.audio, args.separated_dir)
     else:

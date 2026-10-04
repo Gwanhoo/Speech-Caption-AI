@@ -28,6 +28,7 @@ from remote_gpu_client import (  # noqa: E402
     RemoteProtocolError,
     RemoteTimeoutError,
 )
+from speaker_mode import SpeakerMode  # noqa: E402
 
 
 # Keep the deployment address in one place.  The GUI exposes this value for a
@@ -47,6 +48,7 @@ class LiveCaptionConfig:
     websocket_host: str = "127.0.0.1"
     websocket_port: int = 8765
     json_output: Path = DEFAULT_GUI_OUTPUT
+    speaker_mode: SpeakerMode = SpeakerMode.SINGLE
 
 
 @dataclass(frozen=True)
@@ -137,6 +139,8 @@ class Phase4PipelineBackend:
             "--stride-seconds",
             "2",
             "--assemble",
+            "--speaker-mode",
+            config.speaker_mode.value,
             "--json-output",
             str(config.json_output),
         ]

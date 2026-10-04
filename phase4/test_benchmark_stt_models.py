@@ -104,6 +104,24 @@ class TranscriptionRecordTests(TestCase):
 
 
 class FixedAudioTests(TestCase):
+    def test_direct_windows_match_complete_production_3s_2s_schedule(self):
+        audio = np.zeros(30 * benchmark.SAMPLE_RATE, dtype=np.float32)
+        windows = benchmark.window_audio(audio)
+        self.assertEqual(len(windows), 14)
+        self.assertEqual(
+            [(index, start, end) for index, start, end, _ in windows],
+            [(index, index * 2.0, index * 2.0 + 3.0) for index in range(14)],
+        )
+
+    def test_score_transcript_normalizes_hangul_punctuation_and_space(self):
+        score = benchmark.score_transcript("구름이 많습니다.", "구름이   많습니다")
+        self.assertEqual(score["cer"], 0.0)
+        self.assertEqual(score["wer"], 0.0)
+
+    def test_direct_wav_is_a_supported_benchmark_source(self):
+        args = benchmark.parse_args(["--direct-wav", "single.wav"])
+        self.assertEqual(args.direct_wav, Path("single.wav"))
+
     def test_load_fixed_inputs_validates_and_reuses_saved_wav(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "speaker.wav"

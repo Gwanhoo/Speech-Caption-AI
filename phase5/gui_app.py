@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QApplication,
     QAbstractItemView,
     QCheckBox,
+    QComboBox,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -33,6 +34,7 @@ try:
         DEFAULT_REMOTE_SERVER_URL,
         LiveCaptionConfig,
         LiveCaptionController,
+        SpeakerMode,
     )
     from .subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState
     from .subtitle_overlay import OverlayStyle, SubtitleOverlay
@@ -41,6 +43,7 @@ except ImportError:  # Direct execution: python phase5/gui_app.py
         DEFAULT_REMOTE_SERVER_URL,
         LiveCaptionConfig,
         LiveCaptionController,
+        SpeakerMode,
     )
     from subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState  # type: ignore[no-redef]
     from subtitle_overlay import OverlayStyle, SubtitleOverlay  # type: ignore[no-redef]
@@ -242,6 +245,23 @@ class MainWindow(QMainWindow):
         server_row.addStretch(1)
         info_layout.addLayout(server_row)
 
+        mode_row = QHBoxLayout()
+        mode_title = QLabel("처리 모드")
+        mode_title.setObjectName("fieldTitle")
+        mode_title.setFixedWidth(95)
+        self.speaker_mode_combo = QComboBox()
+        self.speaker_mode_combo.setObjectName("speakerMode")
+        self.speaker_mode_combo.addItem("일반 모드", "single")
+        self.speaker_mode_combo.addItem("겹친 음성 모드", "overlap")
+        overlap_item = self.speaker_mode_combo.model().item(1)
+        if overlap_item is not None:
+            overlap_item.setEnabled(False)
+            overlap_item.setToolTip("기능 개발 중입니다.")
+        self.speaker_mode_combo.setToolTip("겹친 음성 모드는 기능 개발 중입니다.")
+        mode_row.addWidget(mode_title)
+        mode_row.addWidget(self.speaker_mode_combo, 1)
+        info_layout.addLayout(mode_row)
+
         url_row = QHBoxLayout()
         url_title = QLabel("서버 URL")
         url_title.setObjectName("fieldTitle")
@@ -352,7 +372,12 @@ class MainWindow(QMainWindow):
             return
         self.subtitle_model.clear()
         self.latency_label.setText("최근 latency: —")
-        if self.controller.start(LiveCaptionConfig(server_url=server_url)):
+        if self.controller.start(
+            LiveCaptionConfig(
+                server_url=server_url,
+                speaker_mode=SpeakerMode(self.speaker_mode_combo.currentData()),
+            )
+        ):
             self._ensure_overlay()
             if self.overlay_visible_checkbox.isChecked() and self.overlay is not None:
                 self.overlay.show()
@@ -422,6 +447,7 @@ class MainWindow(QMainWindow):
         self.start_button.setEnabled(not active)
         self.stop_button.setEnabled(state in {"starting", "running"})
         self.server_url_edit.setEnabled(not active)
+        self.speaker_mode_combo.setEnabled(not active)
         if state == "starting":
             self.status_label.setStyleSheet("color: #1d4ed8;")
             self.status_label.setText("서버와 오디오 장치 확인 중…")

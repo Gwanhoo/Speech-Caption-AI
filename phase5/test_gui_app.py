@@ -27,8 +27,10 @@ from typing_extensions import Self as TypingExtensionsSelf
 class BlockingBackend:
     def __init__(self) -> None:
         self.started = threading.Event()
+        self.config = None
 
     def preflight(self, config: LiveCaptionConfig) -> EnvironmentInfo:
+        self.config = config
         return EnvironmentInfo("테스트 스피커 (WASAPI loopback)", {"status": "ready"})
 
     def run(self, config: LiveCaptionConfig, hooks) -> int:
@@ -100,6 +102,11 @@ class GuiTests(unittest.TestCase):
             self.assertEqual(window.windowTitle(), "AI 실시간 자막")
             self.assertTrue(window.start_button.isEnabled())
             self.assertFalse(window.stop_button.isEnabled())
+            self.assertEqual(window.speaker_mode_combo.currentData(), "single")
+            self.assertEqual(window.speaker_mode_combo.currentText(), "일반 모드")
+            overlap_item = window.speaker_mode_combo.model().item(1)
+            self.assertFalse(overlap_item.isEnabled())
+            self.assertEqual(overlap_item.toolTip(), "기능 개발 중입니다.")
             visible_labels = [label.text() for label in window.findChildren(QLabel)]
             self.assertFalse(any("Speaker" in text for text in visible_labels))
         finally:
@@ -377,6 +384,7 @@ class GuiTests(unittest.TestCase):
         self.assertEqual(argv[argv.index("--window-seconds") + 1], "3")
         self.assertEqual(argv[argv.index("--stride-seconds") + 1], "2")
         self.assertIn("--assemble", argv)
+        self.assertEqual(argv[argv.index("--speaker-mode") + 1], "single")
         self.assertIn("--websocket", argv)
         self.assertIs(main.call_args.kwargs["runtime_hooks"], hooks)
 
