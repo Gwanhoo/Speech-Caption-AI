@@ -1596,6 +1596,7 @@ def main(
                             secondary_leakage, raw_transcripts[1]
                         )
                         secondary_leakage["suppression"] = {
+                            "stage": "legacy_post_stt",
                             "applied": suppression_reason is not None,
                             "reason": suppression_reason,
                         }
@@ -1658,6 +1659,16 @@ def main(
                             )
                             secondary_leakage["subtitle_admission"] = admission
                             for decision in admission["streams"]:
+                                speaker_index = decision["speaker"]
+                                decision.update(
+                                    stage="post_stt_source_admission",
+                                    raw_transcript=raw_transcripts[speaker_index],
+                                    stt_skipped_before_inference=not vad_results[speaker_index]["speech_detected"],
+                                    transcript_rejected_after_inference=bool(
+                                        raw_transcripts[speaker_index].strip() and decision["suppressed"]
+                                    ),
+                                    admitted_transcript=transcripts[speaker_index],
+                                )
                                 if decision["reason"] != "inactive":
                                     print(
                                         f"[SUBTITLE ADMISSION] window={item.source.index:03d} "

@@ -227,6 +227,86 @@ class PipelineTests(TestCase):
         self.assertTrue(all(update["reason"] == "current_source_covers_unretained_text"
                             for update in logged_updates))
 
+    def test_source_artifact_admission_reaches_real_publishers_without_ghosts(self):
+        # Real parsing/tracking/admission/state/WebSocket/hooks; supplied remote
+        # output, VAD and STT. This does not claim to run speech recognition.
+        for amplitude, text in ((None, "고맙습니다"), (None, "내일 기차가 도착합니다"),
+                                (1., "고맙습니다"), (.001, "작지만 실제 두 번째 발화입니다")):
+            with self.subTest(genuine_amplitude=amplitude, text=text):
+                rng = np.random.default_rng(41213)
+                raw_sources = rng.normal(0, .1, (2, 5 * 48000)).astype(np.float32)
+                source_windows = []
+                offset = 0
+                previous = None
+                def capture_sources(placeholder):
+                    nonlocal offset, previous
+                    count = len(placeholder)
+                    raw = raw_sources[:, offset:offset + count]
+                    converted = [pipeline.base._resample(wave, 48000, 16000) for wave in raw]
+                    window = (converted if previous is None else
+                              [np.concatenate((old[-16000:], new))
+                               for old, new in zip(previous, converted)])
+                    source_windows.append(window)
+                    previous = window
+                    offset += count
+                    return (raw[0] + (amplitude or 0) * raw[1])[:, None]
+
+                def response(audio, index):
+                    result = payload("r", index, len(audio))
+                    rng = np.random.default_rng(41213 + index)
+                    primary, other = source_windows[index]
+                    error = rng.normal(0, float(np.std(audio)), len(audio)).astype(np.float32)
+                    if amplitude is None:
+                        waves = [audio + .0094 * error,
+                                 .65 * audio + np.sqrt(1 - .65**2) * other]
+                    else:
+                        # Capture = primary + amplitude * independent secondary.
+                        waves = [primary, other]
+                    texts = ["건강관리에 주의할 것을 당부했습니다", text]
+                    spans = [[(0, len(audio))], [(16000, 16000 + 1052 * 16)]]
+                    if index % 2:
+                        waves.reverse(); texts.reverse(); spans.reverse()
+                    for slot, wave, raw, intervals in zip(result["speakers"], waves, texts, spans):
+                        slot["waveform"]["data"] = base64.b64encode(wave.astype("<f4").tobytes()).decode()
+                        slot["raw_transcript"] = raw
+                        duration = sum(end - start for start, end in intervals)
+                        slot["vad"].update(
+                            speech_detected=True, speech_duration_ms=duration / 16,
+                            speech_ratio=duration / len(audio),
+                            timestamps=[{"start": start, "end": end} for start, end in intervals],
+                        )
+                    return result
+
+                delivered = []
+                code, result = self.run_pipeline(
+                    True, response_factory=response, capture_factory=capture_sources,
+                    runtime_hooks=pipeline.LivePipelineHooks(on_subtitle=delivered.append),
+                )
+                self.assertEqual(code, 0)
+                self.assertEqual(result["errors"], [])
+                self.assertEqual(delivered, result["subtitle_events"])
+                self.assertEqual(result["websocket"]["published"], len(delivered))
+                self.assertTrue(any(e["speaker"] == "speaker_0" for e in delivered))
+                for row in result["windows"]:
+                    diagnostic = row["secondary_leakage_diagnostic"]
+                    self.assertEqual(diagnostic["raw_transcripts"]["speaker_1"], text)
+                    decision = diagnostic["subtitle_admission"]["streams"][1]
+                    self.assertFalse(decision["stt_skipped_before_inference"])
+                    self.assertEqual(decision["raw_transcript"], text)
+                    self.assertEqual(decision["transcript_rejected_after_inference"], amplitude is None)
+                    self.assertEqual(decision["admitted_transcript"], "" if amplitude is None else text)
+                secondary_events = [e for e in delivered if e["speaker"] == "speaker_1"]
+                if amplitude is None:
+                    self.assertEqual(secondary_events, [])
+                    self.assertFalse(any(e["speaker"] == 1 for e in result["subtitle_state_events"]))
+                else:
+                    self.assertTrue(secondary_events)
+                    self.assertEqual(secondary_events[-1]["status"], "final")
+                    # Each window supplied the same STT on distinct speech;
+                    # assembly may retain both occurrences. Admission must
+                    # preserve the supplied text through final publication.
+                    self.assertIn(text, secondary_events[-1]["text"])
+
     def test_fragment_routing_permutation_and_revision_in_real_workers(self):
         """Exercise actual worker wiring/remote parsing with synthetic VAD/STT."""
         def response(audio, index):

@@ -804,6 +804,26 @@ def admit_subtitle_streams(
             )
             raw_direct_pass = (direct or 0) >= DEFAULT_SOURCE_CONFIDENCE
             raw_independent_pass = (independent or 0) >= DEFAULT_SOURCE_CONFIDENCE
+            # Mixture correlation can come entirely from leaked owner speech.
+            # A normalized invented component then passes the direct OR route
+            # despite contradicting the input residual. Require measured
+            # contradiction, not simply absence of positive source evidence.
+            # Quiet genuine sources have strong residual correlation regardless
+            # of their energy; missing/ambiguous evidence remains fail-open.
+            contradicted_by_owner = bool(
+                owner_dominates
+                and raw_direct_pass
+                and independent is not None
+                and independent <= MAX_UNSUPPORTED_INPUT_CORRELATION
+                and direct < owner_correlation
+                and candidate_residual_energy is not None
+                and residual_energy is not None
+                # source_input_evidence uses this numerical floor to mark a
+                # degenerate residual. An output equal to the whole mixture
+                # cannot disprove the other source through residual direction.
+                and residual_energy > 1e-14
+                and candidate_residual_energy > residual_energy
+            )
             # The live false source passed both correlation routes even though
             # the owner left <1% input energy.  A genuinely quiet separated
             # source instead has weak direct correlation and is protected by
@@ -856,8 +876,9 @@ def admit_subtitle_streams(
                 "owner_candidate_conflict": owner_candidate_conflict,
                 "raw_direct_pass": raw_direct_pass,
                 "raw_independent_pass": raw_independent_pass,
+                "contradicted_by_owner": contradicted_by_owner,
                 "direct_pass": (
-                    raw_direct_pass and not blocked_by_owner_residual
+                    raw_direct_pass and not blocked_by_owner_residual and not contradicted_by_owner
                 ),
                 "independent_pass": (
                     raw_independent_pass and not blocked_by_owner_residual
@@ -948,6 +969,17 @@ def admit_subtitle_streams(
 
         # A partial can be merely withheld text. Re-evaluate it before the
         # existing-utterance fast path, even when both STT strings differ.
+        # Reject only when EVERY candidate VAD interval has contradictory
+        # evidence. One independent interval protects a genuine short response.
+        # Neither a prior partial nor repeated text can validate today's audio.
+        if (
+            support_checks
+            and any(row["contradicted_by_owner"] for row in support_checks)
+            and all(check["contradicted_by_owner"] or unsupported_source(row)
+                    for check, row in zip(support_checks, local))
+        ):
+            candidate_decision("discard", "shared_owner_component_without_independent_source")
+            continue
         if provenance == "TENTATIVE":
             if (consecutive and leakage_like and context.get("owner_contained_conflict")) or (
                 local and all(unsupported_source(row) for row in local)
@@ -1008,19 +1040,21 @@ def admit_subtitle_streams(
         ):
             candidate_decision("hold", "contained_owner_dominant_awaiting_confirmation")
             continue
-        if active_hypotheses[candidate]:
-            evidence["reason"] = "existing_utterance"
-            continue
         # VAD on a normalized separated artifact can be positive even when
         # the owner VAD/STT is missing or its timestamps do not contain it.
         # Inspect ALL candidate speech intervals before those metadata gates.
         # A single independently supported interval protects a short response.
         if (normalize_lexical_text(transcripts[candidate]) and local
                 and all(unsupported_source(row) for row in local)):
-            evidence.update(suppressed=True, reason="unsupported_source_on_speech_intervals")
+            evidence.update(suppressed=True, source_supported=False,
+                            reason="unsupported_source_on_speech_intervals")
+            vads[candidate]["source_supported"] = False
             texts[candidate] = ""
             vads[candidate]["speech_detected"] = False
             vads[candidate]["timestamps"] = []
+            continue
+        if active_hypotheses[candidate]:
+            evidence["reason"] = "existing_utterance"
             continue
         # Apply the existing nonlexical rule symmetrically, including bootstrap
         # before either logical stream has acquired a PARTIAL.
