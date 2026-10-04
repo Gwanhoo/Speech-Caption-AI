@@ -697,7 +697,11 @@ def main(
                     raise ValueError(
                         f"Reference WAV must be {SAMPLE_RATE}Hz mono: {override}"
                     )
-                references[name] = np.ascontiguousarray(reference, dtype=np.float32)
+                # Match load_reference(): player.play consumes samples at 48 kHz.
+                references[name] = np.ascontiguousarray(
+                    base._resample(reference, reference_rate, base.CAPTURE_SAMPLE_RATE),
+                    dtype=np.float32,
+                )
         if args.diagnostic_audio:
             DIAGNOSTIC_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
             print(f"Diagnostic WAV directory: {DIAGNOSTIC_OUTPUT_DIR}", flush=True)

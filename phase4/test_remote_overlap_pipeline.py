@@ -35,7 +35,17 @@ finally:
 class PipelineTests(TestCase):
     def run_pipeline(self, remote, fail_first=False, failure=None, fail_all=False,
                      latency_diagnostics=False, runtime_hooks=None,
-                     response_factory=None, duration=5, websocket=True, capture_factory=None):
+                     response_factory=None, duration=5, websocket=True, capture_factory=None,
+                     reference_paths=None):
+        speaker = Mock(name="speaker")
+        players = []
+        def open_player(**kwargs):
+            player = MagicMock()
+            player.__enter__.return_value = player
+            player.currentpadding = 0
+            players.append((kwargs["samplerate"], player))
+            return player
+        speaker.player.side_effect = open_player
         capture = MagicMock()
         capture.__enter__.return_value = capture
         def record(numframes):
@@ -68,18 +78,24 @@ class PipelineTests(TestCase):
             return SeparationRecoveryResult(np.stack([audio, -audio])[:, None, :], finite_audio_stats(audio), .01, 0., False, False, False)
         with tempfile.TemporaryDirectory() as directory, ExitStack() as stack:
             output = Path(directory) / "result.json"
-            argv = ["run_overlap_pipeline", "--live", "--duration", str(duration), "--assemble", "--json-output", str(output)]
+            argv = ["run_overlap_pipeline", "--duration", str(duration), "--assemble", "--json-output", str(output)]
+            if reference_paths is None:
+                argv += ["--live"]
+            else:
+                for name, path in reference_paths.items():
+                    argv += [f"--reference-{name}", str(path)]
             if remote:
                 argv += ["--processing-mode", "remote"]
                 if websocket:
                     argv += ["--websocket", "--ws-port", "0"]
             if latency_diagnostics: argv += ["--latency-diagnostics"]
             stack.enter_context(patch.object(pipeline.sys, "argv", argv))
-            stack.enter_context(patch.object(pipeline.sys, "platform", "win32"))
             stdout_buffer = io.StringIO()
             stdout = Mock(wraps=stdout_buffer); stdout.reconfigure = Mock()
             stack.enter_context(patch.object(pipeline.sys, "stdout", stdout))
-            stack.enter_context(patch.object(pipeline.sc, "default_speaker", return_value=Mock(name="speaker")))
+            # Spoof only the pipeline guard; real WAV I/O must use the host platform.
+            stack.enter_context(patch.object(pipeline, "sys", Mock(wraps=sys, platform="win32")))
+            stack.enter_context(patch.object(pipeline.sc, "default_speaker", return_value=speaker))
             stack.enter_context(patch.object(pipeline.sc, "get_microphone", return_value=loopback))
             stack.enter_context(patch.object(pipeline, "RemoteGPUClient", return_value=client))
             load = stack.enter_context(patch.object(pipeline.base, "load_models", return_value=(Mock(), "cuda:0", Mock(), 1, 1, 1)))
@@ -115,7 +131,70 @@ class PipelineTests(TestCase):
                 self.assertEqual(result["audio_queue_maxsize"], 2)
                 self.assertEqual(result["separated_queue_maxsize"], 2)
         self.last_stdout = stdout_buffer.getvalue()
+        self.last_players = players
+        if reference_paths is None:
+            speaker.player.assert_not_called()
         return code, result
+
+    def test_reference_override_preserves_playback_duration_and_pitch(self):
+        self.check_reference_playback(use_overrides=True)
+
+    def test_default_reference_is_not_resampled_twice(self):
+        self.check_reference_playback(use_overrides=False)
+
+    def test_playback_resampler_preserves_sample_count_duration(self):
+        for count in (48000, 48001, 480000):
+            with self.subTest(source_samples=count):
+                source = np.linspace(-.1, .1, count, dtype=np.float32)
+                playback = pipeline.base._resample(
+                    source, pipeline.SAMPLE_RATE, pipeline.base.CAPTURE_SAMPLE_RATE,
+                )
+                self.assertEqual(len(playback), count * 3)
+                self.assertAlmostEqual(
+                    len(source) / pipeline.SAMPLE_RATE,
+                    len(playback) / pipeline.base.CAPTURE_SAMPLE_RATE,
+                )
+
+    def check_reference_playback(self, *, use_overrides):
+        # Real WAV loading and scipy resampling; audio devices and GPU HTTP are mocked.
+        # Different source durations exercise both repeat and final slice handling.
+        with tempfile.TemporaryDirectory() as directory:
+            paths = {}
+            for name, seconds, frequency in (("a", 3, 440), ("b", 5, 660)):
+                source = (.1 * np.sin(2 * np.pi * frequency *
+                                     np.arange(seconds * pipeline.SAMPLE_RATE) /
+                                     pipeline.SAMPLE_RATE)).astype(np.float32)
+                paths[name] = Path(directory) / f"speaker_{name}.wav"
+                pipeline.sf.write(paths[name], source, pipeline.SAMPLE_RATE, subtype="FLOAT")
+            with patch("playback_capture.REFERENCE_DIR", Path(directory)):
+                code, result = self.run_pipeline(
+                    True, duration=5, websocket=False,
+                    reference_paths=paths if use_overrides else {},
+                )
+        self.assertEqual(code, 0)
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(len(self.last_players), 2)
+        observed_frequencies = []
+        for rate, player in self.last_players:
+            self.assertEqual(rate, 48000)
+            segments = [call.args[0] for call in player.play.call_args_list]
+            first = segments[0]
+            # Identify the source by pitch, independently of thread scheduling.
+            spectrum = np.abs(np.fft.rfft(first))
+            frequency = np.argmax(spectrum) * rate / len(first)
+            self.assertTrue(any(abs(frequency - expected) < 1 for expected in (440, 660)),
+                            f"Playback pitch changed to {frequency} Hz")
+            seconds = 3 if abs(frequency - 440) < 1 else 5
+            observed_frequencies.append(round(frequency))
+            self.assertEqual(len(first), seconds * rate)
+            self.assertEqual(len(first) / rate, seconds)
+            self.assertEqual(first.dtype, np.float32)
+            self.assertEqual(first.ndim, 1)
+            self.assertTrue(np.isfinite(first).all())
+            # Existing playback budget includes two seconds of capture headroom.
+            self.assertEqual(sum(len(segment) for segment in segments), 7 * rate)
+            self.assertEqual(len(segments[-1]), (7 % seconds) * rate)
+        self.assertCountEqual(observed_frequencies, [440, 660])
 
     def test_remote_workers(self):
         delivered = []
