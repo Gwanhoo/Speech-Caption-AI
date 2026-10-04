@@ -1,0 +1,207 @@
+{
+  "provenance": "Actual GPU MossFormer2 AMP (FP32 fallback if nonfinite), Silero, faster-whisper small on repository A.wav; NOT Windows w12.",
+  "source": "phase3/test_audio/A.wav",
+  "source_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+  "resampling": "scipy.signal.resample_poly(A, 2, 3), first 48000 samples",
+  "sample_rate": 16000,
+  "window": 0,
+  "raw_owner": 0,
+  "versions": {
+    "clearvoice": "0.1.2",
+    "silero-vad": "6.2.3",
+    "faster-whisper": "1.2.1",
+    "torch": "2.8.0+cu128",
+    "numpy": "1.26.4",
+    "scipy": "1.15.3"
+  },
+  "raw_transcripts": [
+    "저는 주말마다 새로운 음식을 만들어 보는 것을",
+    "구독과 좋아요 부탁드려요!"
+  ],
+  "input_transcript": "저는 주말마다 새로운 음식을 만들어 보는 것을",
+  "vad_results": [
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2902.0,
+      "speech_ratio": 0.9673333333333334,
+      "rms": 0.1455597880681241,
+      "peak": 0.7938532120990051,
+      "processing_seconds": 0.1451868599979207,
+      "timestamps": [
+        {
+          "start": 1568,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0,
+      "input_residual_speech": {
+        "version": 1,
+        "available": false,
+        "sample_count": 48000,
+        "reason": "not_required",
+        "normalization_rms": 0.1
+      }
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 1362.0,
+      "speech_ratio": 0.454,
+      "rms": 0.1455597880681241,
+      "peak": 0.7586737790443636,
+      "processing_seconds": 0.04345494997687638,
+      "timestamps": [
+        {
+          "start": 22048,
+          "end": 36832
+        },
+        {
+          "start": 40992,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0,
+      "input_residual_speech": {
+        "version": 1,
+        "available": true,
+        "sample_count": 48000,
+        "reason": "measured",
+        "normalization_rms": 0.1,
+        "input_residual_energy_fraction": 6.311585782631028e-05,
+        "normalization_gain": 86.4747542926427,
+        "timestamps": [],
+        "speech_detected": false,
+        "processing_seconds": 0.15074547892436385
+      }
+    }
+  ],
+  "baseline_secondary_admission": {
+    "speaker": 1,
+    "owner": 0,
+    "suppressed": false,
+    "reason": "independent_input_support",
+    "existing_partial": false,
+    "vad_ratio": 0.454,
+    "vad_duration_ms": 1362.0,
+    "tracking_method": null,
+    "tracking_active_logical": [],
+    "speech_intervals": [
+      [
+        22048,
+        36832
+      ],
+      [
+        40992,
+        48000
+      ]
+    ],
+    "owner_speech_intervals": [
+      [
+        1568,
+        48000
+      ]
+    ],
+    "speech_local_evidence": [
+      {
+        "pair_correlation": 0.12279131809355412,
+        "owner_input_correlation": 0.9999644049300526,
+        "candidate_input_correlation": 0.11837294086614385,
+        "independent_input_correlation": 0.5271399397161828,
+        "input_residual_energy_fraction": 7.118887288570916e-05,
+        "candidate_residual_energy_fraction": 0.9849222922008478
+      },
+      {
+        "pair_correlation": 0.10840618697495324,
+        "owner_input_correlation": 0.9999627732373846,
+        "candidate_input_correlation": 0.10424197021657873,
+        "independent_input_correlation": 0.4849987920247215,
+        "input_residual_energy_fraction": 7.445213939932758e-05,
+        "candidate_residual_energy_fraction": 0.9882480986255515
+      }
+    ],
+    "candidate_provenance": "NONE",
+    "candidate_transition": "keep",
+    "previous_candidate_window": null,
+    "candidate_confirmation_consecutive": false,
+    "source_support_deferred": false,
+    "source_support_checks": [
+      {
+        "interval": [
+          22048,
+          36832
+        ],
+        "direct_correlation": 0.11837294086614385,
+        "independent_correlation": 0.5271399397161828,
+        "owner_input_correlation": 0.9999644049300526,
+        "input_residual_energy_fraction": 7.118887288570916e-05,
+        "candidate_residual_energy_fraction": 0.9849222922008478,
+        "owner_established": true,
+        "owner_dominates": true,
+        "residual_gate_duration_pass": true,
+        "residual_energy_pass": false,
+        "blocked_by_owner_residual": false,
+        "owner_candidate_conflict": false,
+        "raw_direct_pass": false,
+        "raw_independent_pass": true,
+        "contradicted_by_owner": false,
+        "direct_pass": false,
+        "independent_pass": true,
+        "used_direct_fallback": false
+      },
+      {
+        "interval": [
+          40992,
+          48000
+        ],
+        "direct_correlation": 0.10424197021657873,
+        "independent_correlation": 0.4849987920247215,
+        "owner_input_correlation": 0.9999627732373846,
+        "input_residual_energy_fraction": 7.445213939932758e-05,
+        "candidate_residual_energy_fraction": 0.9882480986255515,
+        "owner_established": true,
+        "owner_dominates": true,
+        "residual_gate_duration_pass": true,
+        "residual_energy_pass": false,
+        "blocked_by_owner_residual": false,
+        "owner_candidate_conflict": false,
+        "raw_direct_pass": false,
+        "raw_independent_pass": true,
+        "contradicted_by_owner": false,
+        "direct_pass": false,
+        "independent_pass": true,
+        "used_direct_fallback": false
+      }
+    ],
+    "source_support_threshold": 0.45,
+    "minimum_independent_input_energy_fraction": 0.01,
+    "source_supported": true,
+    "weak_speech_evidence": {
+      "suppressed": false,
+      "available": true,
+      "input_speech_rms": 0.12311788084689274,
+      "input_speech_peak": 0.4421364963054657,
+      "input_background_rms": 0.1618681861717898,
+      "weak_vad": false,
+      "no_localized_burst": true,
+      "rms_within_noise_bound": false,
+      "peak_within_noise_bound": false
+    },
+    "weak_speech_check_applied": true,
+    "weak_existing_tail_suppressed": false,
+    "speech_contained_in_owner": true,
+    "cross_stream_lexical_overlap": {
+      "available": true,
+      "owner_normalized_characters": 7,
+      "candidate_normalized_characters": 9,
+      "common_prefix_characters": 0,
+      "common_suffix_characters": 0,
+      "candidate_contained_in_owner_text": false,
+      "owner_contained_in_candidate_text": false,
+      "bounded_boundary_overlap": false,
+      "duplicate_structure": false
+    },
+    "owner_candidate_conflict": false,
+    "candidate_independent_support": true
+  },
+  "fixture_sha256": "fc755ef21abadbd8bd6caa00020c03975ac4b74006dddc7a18f968d228405b61",
+  "separator_checkpoint_sha256": "00a3a48bda492db1e829b85dd443f8f43a43039a3e90f1a24962ea9caf14a11a"
+}

@@ -307,6 +307,60 @@ class PipelineTests(TestCase):
                     # preserve the supplied text through final publication.
                     self.assertIn(text, secondary_events[-1]["text"])
 
+    def test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers(self):
+        from test_input_residual_speech_admission import load_fixture
+        from phase5.subtitle_presentation import SubtitlePresentationState
+        import copy
+        (mixture, owner, candidate), metadata = load_fixture()
+        # Actual recorded separation/VAD/STT, transported through real parsers
+        # and workers. Capture and resampling are injected for exact input replay;
+        # this is not WASAPI, fresh GPU inference, or the Windows w12 recording.
+        for reverse in (False, True):
+            for text in (metadata["raw_transcripts"][1], "내일 기차가 도착합니다",
+                         "An arbitrary English sentence"):
+                with self.subTest(reverse=reverse, text=text):
+                    def response(audio, index):
+                        np.testing.assert_array_equal(audio, mixture)
+                        result = payload("r", index, len(audio))
+                        signals = [owner, candidate]
+                        vads = copy.deepcopy(metadata["vad_results"])
+                        texts = [metadata["raw_transcripts"][0], text]
+                        if reverse:
+                            signals.reverse(); vads.reverse(); texts.reverse()
+                        for slot, signal, vad, raw in zip(result["speakers"], signals, vads, texts):
+                            slot["waveform"]["data"] = base64.b64encode(signal.astype("<f4").tobytes()).decode()
+                            slot["vad"] = vad
+                            slot["raw_transcript"] = raw
+                        return result
+                    delivered = []
+                    with patch.object(pipeline.base, "_resample", return_value=mixture.copy()):
+                        code, result = self.run_pipeline(True, response_factory=response, duration=3,
+                            runtime_hooks=pipeline.LivePipelineHooks(on_subtitle=delivered.append))
+                    self.assertEqual(code, 0, result["errors"])
+                    self.assertEqual(result["errors"], [])
+                    row = result["windows"][0]
+                    mapping = row["speaker_assignment"]["raw_to_logical_mapping"]
+                    primary_id, secondary_id = mapping[str(int(reverse))], mapping[str(int(not reverse))]
+                    decision = row["secondary_leakage_diagnostic"]["subtitle_admission"]["streams"][secondary_id]
+                    self.assertEqual(decision["raw_transcript"], text)
+                    self.assertFalse(decision["stt_skipped_before_inference"])
+                    self.assertTrue(decision["transcript_rejected_after_inference"])
+                    self.assertEqual(decision["admitted_transcript"], "")
+                    self.assertEqual(decision["reason"], "owner_residual_contains_no_candidate_speech")
+                    self.assertFalse(any(e["speaker"] == secondary_id for e in result["subtitle_state_events"]))
+                    secondary_assembly = [e for e in row["assembly_events"] if e["speaker"] == secondary_id]
+                    self.assertTrue(secondary_assembly)
+                    self.assertTrue(all(e["raw"] == e["new"] == "" for e in secondary_assembly))
+                    self.assertEqual(delivered, result["subtitle_events"])
+                    self.assertEqual(result["websocket"]["published"], len(delivered))
+                    self.assertTrue(delivered)
+                    self.assertTrue(all(e["speaker"] == f"speaker_{primary_id}" for e in delivered))
+                    self.assertTrue(all(e["text"] == metadata["raw_transcripts"][0] for e in delivered))
+                    presentation = SubtitlePresentationState()
+                    for event in delivered:
+                        presentation.apply(event)
+                    self.assertEqual([e.text for e in presentation.entries], [metadata["raw_transcripts"][0]])
+
     def test_fragment_routing_permutation_and_revision_in_real_workers(self):
         """Exercise actual worker wiring/remote parsing with synthetic VAD/STT."""
         def response(audio, index):

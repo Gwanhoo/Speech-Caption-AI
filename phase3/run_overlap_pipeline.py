@@ -40,6 +40,7 @@ from separation_recovery import (  # noqa: E402
 from secondary_leakage_diagnostics import (  # noqa: E402
     SecondaryValidityTracker,
     admit_subtitle_streams,
+    attach_input_residual_speech_evidence,
     build_summary as build_secondary_leakage_summary,
     build_secondary_validity_summary,
     build_full_window_diagnostic,
@@ -1542,6 +1543,13 @@ def main(
                             speaker_times.append(elapsed)
                             stt_state["speaker_inputs"] += 1
                         stt_inference_ended = time.perf_counter()
+                        if args.vad and logical_remote_slots is None:
+                            vad_results = attach_input_residual_speech_evidence(
+                                item.source.audio, item.speakers, vad_results,
+                                lambda residual: detect_speech_activity(
+                                    vad_model, residual, args.vad_min_speech_ms
+                                ),
+                            )
                         secondary_leakage = build_window_diagnostic(
                             speaker_0=item.speakers[0],
                             speaker_1=item.speakers[1],

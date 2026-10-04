@@ -77,6 +77,51 @@ class FasterWhisperModelSourceTests(TestCase):
 
 
 class ServerLatencyDiagnosticsTests(TestCase):
+    def test_input_residual_evidence_is_computed_and_survives_binary_raw_slot_mapping(self):
+        from test_input_residual_speech_admission import load_fixture
+        from remote_gpu_client import parse_result
+        from separation_recovery import SeparationRecoveryResult, finite_audio_stats
+        import copy
+        (mixture, owner, candidate), metadata = load_fixture()
+        raw_vads = copy.deepcopy(metadata["vad_results"])
+        for vad in raw_vads:
+            vad.pop("input_residual_speech", None)
+        seen = []
+        def detect(model, audio, minimum_ms):
+            self.assertEqual(minimum_ms, 200)
+            seen.append(audio)
+            if len(seen) <= 2:
+                return raw_vads[len(seen)-1]
+            self.assertAlmostEqual(float(np.sqrt(np.mean(audio**2))), .1, places=6)
+            return dict(raw_vads[1], speech_detected=False, speech_duration_ms=0.,
+                        speech_ratio=0., timestamps=[])
+        separation = SeparationRecoveryResult(
+            np.stack((owner, candidate))[:, None, :], finite_audio_stats(mixture),
+            .01, 0., False, False, False)
+        models = Mock()
+        models.whisper.model.device = "cuda"
+        models.whisper.model.compute_type = "float16"
+        with patch.object(server.PipelineService, "_load_models", return_value=models), \
+                patch.object(server, "separate_amp", return_value=separation), \
+                patch.object(server, "detect_speech_activity", side_effect=detect), \
+                patch.object(server, "transcribe_base", side_effect=[
+                    Mock(text=text, elapsed_seconds=.01) for text in metadata["raw_transcripts"]]):
+            service = server.PipelineService(warm_up=False)
+            try:
+                result = service.process("fixture", mixture, 3.)
+            finally:
+                service.close()
+        self.assertEqual(len(seen), 3)  # Two output VADs, one input residual VAD.
+        result["window_index"] = 12
+        encoded = server.encode_binary_result(result)
+        parsed = parse_result(decode_binary_result(encoded), "fixture", 12, 48000, .02)
+        slots = parsed.logical_slots({"raw_to_logical_mapping": {"0": 1, "1": 0}})
+        evidence = slots[0]["vad"]["input_residual_speech"]
+        self.assertTrue(evidence["available"])
+        self.assertFalse(evidence["speech_detected"])
+        self.assertEqual(evidence["timestamps"], [])
+        self.assertEqual(slots[0]["raw_transcript"], metadata["raw_transcripts"][1])
+
     def test_process_uses_cached_gpu_memory_without_nvidia_smi(self):
         service = object.__new__(server.PipelineService)
         service.started_at = 0.0

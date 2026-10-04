@@ -30,6 +30,7 @@ sys.path.insert(0, str(ROOT / "phase3"))
 
 from separation_recovery import finite_audio_stats, is_pre_separation_silence, silent_separation_output  # noqa: E402
 from stt_context import LIVE_WHISPER_OPTIONS, transcribe_base  # noqa: E402
+from secondary_leakage_diagnostics import attach_input_residual_speech_evidence  # noqa: E402
 from validate_end_to_end_gpu import (  # noqa: E402
     SAMPLE_RATE,
     VAD_MINIMUM_SPEECH_MS,
@@ -284,6 +285,12 @@ class PipelineService:
                 )
             )
             vad_stage_ranges.append((speaker_vad_started, time.perf_counter()))
+        vad_results = attach_input_residual_speech_evidence(
+            audio, separated, vad_results,
+            lambda residual: detect_speech_activity(
+                self.models.vad, residual, VAD_MINIMUM_SPEECH_MS
+            ),
+        )
         vad_seconds = time.perf_counter() - vad_started
 
         stt_total = 0.0

@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 import soundfile as sf
@@ -702,6 +702,100 @@ def weak_speech_evidence(mixture: np.ndarray, vad: dict[str, Any]) -> dict[str, 
     return evidence
 
 
+def attach_input_residual_speech_evidence(
+    mixture: np.ndarray,
+    speakers: tuple[np.ndarray, np.ndarray] | list[np.ndarray],
+    vad_results: list[dict[str, Any]],
+    detect_speech: Callable[[np.ndarray], dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Check speech in the input left by the OTHER output, before slot mapping.
+
+    Residual correlation is not speech evidence: correlated separator errors
+    can pass it. Use the existing VAD on an independently constructed input
+    residual, never on the candidate waveform again. Normalize to a fixed RMS
+    (a gain, NOT a silence threshold), giving quiet residuals the same VAD scale.
+    Inspect the full window to preserve VAD context; admission intersects its
+    timestamps with each candidate interval. This is optional evidence: old
+    servers, degenerate projections and detector failures remain fail-open.
+    """
+    vads = [dict(vad) for vad in vad_results]
+    if len(vads) != 2 or len(speakers) != 2:
+        return vads
+    x = np.asarray(mixture, dtype=np.float64)
+    if x.ndim != 1 or x.size < 3 or not np.isfinite(x).all():
+        return vads
+    x = x - x.mean()
+    input_energy = float(x @ x)
+    if input_energy <= 0:
+        return vads
+    for candidate, vad in enumerate(vads):
+        diagnostic: dict[str, Any] = {
+            "version": 1, "available": False, "sample_count": len(x),
+            "reason": "not_required", "normalization_rms": 0.1,
+        }
+        vad["input_residual_speech"] = diagnostic
+        intervals = speech_intervals(vad, len(x))
+        if not vad.get("speech_detected") or not intervals:
+            continue
+        owner = np.asarray(speakers[1 - candidate], dtype=np.float64)
+        if owner.shape != x.shape or not np.isfinite(owner).all():
+            diagnostic["reason"] = "invalid_owner"
+            continue
+        # Only spend another VAD inference on an owner-dominated interval.
+        # A genuine interval elsewhere still protects the entire candidate.
+        if not any((safe_absolute_correlation(x[start:end], owner[start:end]) or 0)
+                   >= MIN_DOMINANT_INPUT_CORRELATION for start, end in intervals):
+            continue
+        owner = owner - owner.mean()
+        owner_energy = float(owner @ owner)
+        if owner_energy <= 0:
+            diagnostic["reason"] = "degenerate_owner"
+            continue
+        residual = x - float(x @ owner) / owner_energy * owner
+        energy_fraction = float(residual @ residual) / input_energy
+        diagnostic["input_residual_energy_fraction"] = energy_fraction
+        if not np.isfinite(energy_fraction) or energy_fraction <= 1e-14:
+            diagnostic["reason"] = "degenerate_input_residual"
+            continue
+        gain = 0.1 / float(np.sqrt(np.mean(residual * residual)))
+        diagnostic["normalization_gain"] = gain
+        try:
+            result = detect_speech(np.ascontiguousarray(residual * gain, dtype=np.float32))
+            stamps = result.get("timestamps")
+            spans = speech_intervals(result, len(x))
+            if (not isinstance(stamps, list) or (stamps and not spans)
+                    or type(result.get("speech_detected")) is not bool
+                    or bool(spans) != result["speech_detected"]):
+                diagnostic["reason"] = "invalid_residual_vad"
+                continue
+            diagnostic.update(
+                available=True, reason="measured", timestamps=stamps,
+                speech_detected=result["speech_detected"],
+                processing_seconds=result.get("processing_seconds"),
+            )
+        except Exception as exc:
+            diagnostic.update(reason="residual_vad_error", error=type(exc).__name__)
+    return vads
+
+
+def _residual_speech_overlap(vad: dict[str, Any], start: int, end: int,
+                             samples: int) -> bool | None:
+    evidence = vad.get("input_residual_speech", {})
+    if not isinstance(evidence, dict) or not (
+        evidence.get("version") == 1 and evidence.get("available") is True
+        and evidence.get("sample_count") == samples
+        and evidence.get("reason") == "measured"
+    ):
+        return None
+    stamps = evidence.get("timestamps")
+    spans = speech_intervals(evidence, samples)
+    if (not isinstance(stamps, list) or (stamps and not spans)
+            or type(evidence.get("speech_detected")) is not bool
+            or bool(spans) != evidence["speech_detected"]):
+        return None
+    return any(left < end and start < right for left, right in spans)
+
+
 def admit_subtitle_streams(
     *,
     mixture: np.ndarray,
@@ -755,6 +849,7 @@ def admit_subtitle_streams(
             "previous_candidate_window": context.get("window"),
             "candidate_confirmation_consecutive": consecutive,
             "source_support_deferred": False,
+            "input_residual_speech": vad_results[candidate].get("input_residual_speech"),
         }
         decisions.append(evidence)
         if not transcripts[candidate].strip() or not vad_results[candidate].get("speech_detected"):
@@ -804,6 +899,20 @@ def admit_subtitle_streams(
             )
             raw_direct_pass = (direct or 0) >= DEFAULT_SOURCE_CONFIDENCE
             raw_independent_pass = (independent or 0) >= DEFAULT_SOURCE_CONFIDENCE
+            residual_speech_overlap = _residual_speech_overlap(
+                vad_results[candidate], start, end, len(mixture)
+            )
+            # An error direction shared by the separator outputs is not an
+            # independent speech source. Require positive owner evidence AND
+            # measured absence of speech in the gain-normalized input residual.
+            # No duration, loudness, transcript or prior consensus is a vote.
+            residual_nonspeech = bool(
+                owner_dominates and raw_independent_pass
+                and residual_speech_overlap is False
+                and residual_energy is not None and residual_energy > 1e-14
+                and candidate_residual_energy is not None
+                and candidate_residual_energy > residual_energy
+            )
             # Mixture correlation can come entirely from leaked owner speech.
             # A normalized invented component then passes the direct OR route
             # despite contradicting the input residual. Require measured
@@ -876,12 +985,15 @@ def admit_subtitle_streams(
                 "owner_candidate_conflict": owner_candidate_conflict,
                 "raw_direct_pass": raw_direct_pass,
                 "raw_independent_pass": raw_independent_pass,
+                "input_residual_speech_overlap": residual_speech_overlap,
+                "residual_nonspeech": residual_nonspeech,
                 "contradicted_by_owner": contradicted_by_owner,
                 "direct_pass": (
-                    raw_direct_pass and not blocked_by_owner_residual and not contradicted_by_owner
+                    raw_direct_pass and not blocked_by_owner_residual
+                    and not contradicted_by_owner and not residual_nonspeech
                 ),
                 "independent_pass": (
-                    raw_independent_pass and not blocked_by_owner_residual
+                    raw_independent_pass and not blocked_by_owner_residual and not residual_nonspeech
                 ),
                 "used_direct_fallback": row is None,
             })
@@ -972,6 +1084,15 @@ def admit_subtitle_streams(
         # Reject only when EVERY candidate VAD interval has contradictory
         # evidence. One independent interval protects a genuine short response.
         # Neither a prior partial nor repeated text can validate today's audio.
+        if (
+            support_checks
+            and any(check["residual_nonspeech"] for check in support_checks)
+            and all(check["residual_nonspeech"] or check["contradicted_by_owner"]
+                    or unsupported_source(row)
+                    for check, row in zip(support_checks, local))
+        ):
+            candidate_decision("discard", "owner_residual_contains_no_candidate_speech")
+            continue
         if (
             support_checks
             and any(row["contradicted_by_owner"] for row in support_checks)
@@ -1082,8 +1203,7 @@ def admit_subtitle_streams(
                 if all(row is not None for row in local):
                     # Any independently input-supported interval protects the
                     # entire short utterance, even if other intervals leak.
-                    if any(row["independent_input_correlation"] is not None and
-                           row["independent_input_correlation"] >= DEFAULT_SOURCE_CONFIDENCE for row in local):
+                    if independent_observation:
                         evidence["reason"] = "independent_input_support"
                     # Duplicate leakage still needs the timing/owner gates;
                     # absence of independent input support alone is not enough.

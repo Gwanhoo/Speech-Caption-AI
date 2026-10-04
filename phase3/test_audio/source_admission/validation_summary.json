@@ -1,0 +1,342 @@
+{
+  "scope": "Linux real models and repository A/B speech; NOT Windows w12/WASAPI",
+  "passed": true,
+  "cases": [
+    {
+      "case": "recorded_actual_single_A_artifact",
+      "passed": true,
+      "baseline_reason": "independent_input_support",
+      "reason": "owner_residual_contains_no_candidate_speech",
+      "candidate_independent_support": false,
+      "suppressed": true,
+      "admitted_transcripts": [
+        "저는 주말마다 새로운 음식을 만들어 보는 것을",
+        ""
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": true,
+        "sample_count": 48000,
+        "reason": "measured",
+        "normalization_rms": 0.1,
+        "input_residual_energy_fraction": 6.311585782631028e-05,
+        "normalization_gain": 86.4747542926427,
+        "timestamps": [],
+        "speech_detected": false,
+        "processing_seconds": 0.03995307500008494
+      }
+    },
+    {
+      "case": "real_speech_ideal_sources_1_gain_1",
+      "passed": true,
+      "baseline_reason": "speech_outside_owner_awaiting_confirmation",
+      "reason": "speech_outside_owner_awaiting_confirmation",
+      "candidate_independent_support": true,
+      "suppressed": false,
+      "admitted_transcripts": [
+        "실제 첫 번째 발화",
+        "실제 두 번째 발화"
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": false,
+        "sample_count": 48000,
+        "reason": "not_required",
+        "normalization_rms": 0.1
+      }
+    },
+    {
+      "case": "real_speech_ideal_sources_1_gain_-0.01",
+      "passed": true,
+      "baseline_reason": "speech_outside_owner_awaiting_confirmation",
+      "reason": "speech_outside_owner_awaiting_confirmation",
+      "candidate_independent_support": true,
+      "suppressed": false,
+      "admitted_transcripts": [
+        "실제 첫 번째 발화",
+        "실제 두 번째 발화"
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": false,
+        "sample_count": 48000,
+        "reason": "not_required",
+        "normalization_rms": 0.1
+      }
+    },
+    {
+      "case": "real_speech_ideal_sources_0.005_gain_1",
+      "passed": true,
+      "baseline_reason": "speech_outside_owner_awaiting_confirmation",
+      "reason": "speech_outside_owner_awaiting_confirmation",
+      "candidate_independent_support": true,
+      "suppressed": false,
+      "admitted_transcripts": [
+        "실제 첫 번째 발화",
+        "실제 두 번째 발화"
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": true,
+        "sample_count": 48000,
+        "reason": "measured",
+        "normalization_rms": 0.1,
+        "input_residual_energy_fraction": 1.7919858329293985e-05,
+        "normalization_gain": 162.27533432728384,
+        "timestamps": [
+          {
+            "start": 544,
+            "end": 13280
+          },
+          {
+            "start": 21024,
+            "end": 48000
+          }
+        ],
+        "speech_detected": true,
+        "processing_seconds": 0.044557592016644776
+      }
+    },
+    {
+      "case": "real_speech_ideal_sources_0.005_gain_-0.01",
+      "passed": true,
+      "baseline_reason": "speech_outside_owner_awaiting_confirmation",
+      "reason": "speech_outside_owner_awaiting_confirmation",
+      "candidate_independent_support": true,
+      "suppressed": false,
+      "admitted_transcripts": [
+        "실제 첫 번째 발화",
+        "실제 두 번째 발화"
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": true,
+        "sample_count": 48000,
+        "reason": "measured",
+        "normalization_rms": 0.1,
+        "input_residual_energy_fraction": 1.7919858209004878e-05,
+        "normalization_gain": 16227.533838592532,
+        "timestamps": [
+          {
+            "start": 544,
+            "end": 13280
+          },
+          {
+            "start": 21024,
+            "end": 48000
+          }
+        ],
+        "speech_detected": true,
+        "processing_seconds": 0.04407760500907898
+      }
+    },
+    {
+      "case": "real_speech_ideal_sources_0.001_gain_1",
+      "passed": true,
+      "baseline_reason": "speech_outside_owner_awaiting_confirmation",
+      "reason": "speech_outside_owner_awaiting_confirmation",
+      "candidate_independent_support": true,
+      "suppressed": false,
+      "admitted_transcripts": [
+        "실제 첫 번째 발화",
+        "실제 두 번째 발화"
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": true,
+        "sample_count": 48000,
+        "reason": "measured",
+        "normalization_rms": 0.1,
+        "input_residual_energy_fraction": 7.168988969212515e-07,
+        "normalization_gain": 811.3766233104561,
+        "timestamps": [
+          {
+            "start": 544,
+            "end": 13280
+          },
+          {
+            "start": 21024,
+            "end": 48000
+          }
+        ],
+        "speech_detected": true,
+        "processing_seconds": 0.044517462025396526
+      }
+    },
+    {
+      "case": "real_speech_ideal_sources_0.001_gain_-0.01",
+      "passed": true,
+      "baseline_reason": "speech_outside_owner_awaiting_confirmation",
+      "reason": "speech_outside_owner_awaiting_confirmation",
+      "candidate_independent_support": true,
+      "suppressed": false,
+      "admitted_transcripts": [
+        "실제 첫 번째 발화",
+        "실제 두 번째 발화"
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": true,
+        "sample_count": 48000,
+        "reason": "measured",
+        "normalization_rms": 0.1,
+        "input_residual_energy_fraction": 7.168987783705556e-07,
+        "normalization_gain": 81137.67079795725,
+        "timestamps": [
+          {
+            "start": 544,
+            "end": 13280
+          },
+          {
+            "start": 21024,
+            "end": 48000
+          }
+        ],
+        "speech_detected": true,
+        "processing_seconds": 0.04454984201584011
+      }
+    },
+    {
+      "case": "real_speech_ideal_sources_1e-05_gain_1",
+      "passed": true,
+      "baseline_reason": "speech_outside_owner_awaiting_confirmation",
+      "reason": "speech_outside_owner_awaiting_confirmation",
+      "candidate_independent_support": true,
+      "suppressed": false,
+      "admitted_transcripts": [
+        "실제 첫 번째 발화",
+        "실제 두 번째 발화"
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": true,
+        "sample_count": 48000,
+        "reason": "measured",
+        "normalization_rms": 0.1,
+        "input_residual_energy_fraction": 7.169431012089686e-11,
+        "normalization_gain": 81136.480723185,
+        "timestamps": [
+          {
+            "start": 544,
+            "end": 13280
+          },
+          {
+            "start": 21024,
+            "end": 48000
+          }
+        ],
+        "speech_detected": true,
+        "processing_seconds": 0.05494917498435825
+      }
+    },
+    {
+      "case": "real_speech_ideal_sources_1e-05_gain_-0.01",
+      "passed": true,
+      "baseline_reason": "speech_outside_owner_awaiting_confirmation",
+      "reason": "speech_outside_owner_awaiting_confirmation",
+      "candidate_independent_support": true,
+      "suppressed": false,
+      "admitted_transcripts": [
+        "실제 첫 번째 발화",
+        "실제 두 번째 발화"
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": true,
+        "sample_count": 48000,
+        "reason": "measured",
+        "normalization_rms": 0.1,
+        "input_residual_energy_fraction": 7.16949627633506e-11,
+        "normalization_gain": 8113611.323123116,
+        "timestamps": [
+          {
+            "start": 544,
+            "end": 13280
+          },
+          {
+            "start": 21024,
+            "end": 48000
+          }
+        ],
+        "speech_detected": true,
+        "processing_seconds": 0.043705467018298805
+      }
+    },
+    {
+      "case": "real_weak_speech_with_owner_crosstalk",
+      "passed": true,
+      "baseline_reason": "speech_outside_owner_awaiting_confirmation",
+      "reason": "speech_outside_owner_awaiting_confirmation",
+      "candidate_independent_support": true,
+      "suppressed": false,
+      "admitted_transcripts": [
+        "실제 첫 번째 발화",
+        "실제 두 번째 발화"
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": true,
+        "sample_count": 48000,
+        "reason": "measured",
+        "normalization_rms": 0.1,
+        "input_residual_energy_fraction": 5.804598707153535e-05,
+        "normalization_gain": 90.17068039524969,
+        "timestamps": [
+          {
+            "start": 544,
+            "end": 13280
+          },
+          {
+            "start": 21024,
+            "end": 48000
+          }
+        ],
+        "speech_detected": true,
+        "processing_seconds": 0.04475579992868006
+      }
+    },
+    {
+      "case": "fresh_single_A",
+      "passed": true,
+      "baseline_reason": "independent_input_support",
+      "reason": "owner_residual_contains_no_candidate_speech",
+      "candidate_independent_support": false,
+      "suppressed": true,
+      "admitted_transcripts": [
+        "저는 주말마다 새로운 음식을 만들어 보는 것을",
+        ""
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": true,
+        "sample_count": 48000,
+        "reason": "measured",
+        "normalization_rms": 0.1,
+        "input_residual_energy_fraction": 6.311585782631028e-05,
+        "normalization_gain": 86.4747542926427,
+        "timestamps": [],
+        "speech_detected": false,
+        "processing_seconds": 0.09934672806411982
+      }
+    },
+    {
+      "case": "fresh_two_speakers",
+      "passed": true,
+      "baseline_reason": "speech_outside_owner_awaiting_confirmation",
+      "reason": "speech_outside_owner_awaiting_confirmation",
+      "candidate_independent_support": true,
+      "suppressed": false,
+      "admitted_transcripts": [
+        "안녕하세요. 오늘은 아침에 일어나서 간단한..",
+        "저는 주말마다 새로운 음식을 만들어 보는 것을"
+      ],
+      "input_residual_speech": {
+        "version": 1,
+        "available": false,
+        "sample_count": 48000,
+        "reason": "not_required",
+        "normalization_rms": 0.1
+      }
+    }
+  ]
+}
