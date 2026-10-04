@@ -51,6 +51,7 @@ from secondary_leakage_diagnostics import (  # noqa: E402
     subtitle_overlap_evidence,
 )
 from speaker_tracking import PersistentSpeakerTracker  # noqa: E402
+from speaker_mode import SpeakerMode, select_single_mode_primary  # noqa: E402
 from remote_gpu_client import (  # noqa: E402
     RemoteGPUClient,
     RemoteGPUError,
@@ -389,6 +390,13 @@ def main(
     parser.add_argument("--stride-seconds", type=int, default=STRIDE_SECONDS)
     parser.add_argument("--stt-backend", choices=("whisper", "sensevoice"), default="whisper")
     parser.add_argument("--processing-mode", choices=("local", "remote"), default="local")
+    parser.add_argument(
+        "--speaker-mode",
+        type=SpeakerMode,
+        choices=tuple(SpeakerMode),
+        default=SpeakerMode.SINGLE,
+        help="Subtitle source policy (single is the user-facing default)",
+    )
     parser.add_argument("--remote-server-url", default="http://127.0.0.1:8787")
     parser.add_argument("--remote-connect-timeout", type=float, default=5)
     parser.add_argument("--remote-read-timeout", type=float, default=30)
@@ -1476,6 +1484,7 @@ def main(
             previous_subtitle_window: int | None = None
             previous_subtitle_audio: tuple[np.ndarray, np.ndarray] | None = None
             previous_subtitle_vads: list[dict[str, Any]] = []
+            single_mode_previous_primary: int | None = None
             try:
                 while True:
                     item = separated_queue.get()
@@ -1605,7 +1614,10 @@ def main(
                         )
                         secondary_leakage["suppression"] = {
                             "stage": "legacy_post_stt",
-                            "applied": suppression_reason is not None,
+                            "applied": (
+                                suppression_reason is not None
+                                and args.speaker_mode is SpeakerMode.OVERLAP
+                            ),
                             "reason": suppression_reason,
                         }
                         secondary_leakage.update(
@@ -1620,7 +1632,10 @@ def main(
                                 },
                             }
                         )
-                        if suppression_reason is not None:
+                        if (
+                            suppression_reason is not None
+                            and args.speaker_mode is SpeakerMode.OVERLAP
+                        ):
                             transcripts[1] = ""
                             print(
                                 f"[SECONDARY ARTIFACT] window={item.source.index:03d} "
@@ -1630,9 +1645,68 @@ def main(
                             )
                         assembler_subtitle_started = time.perf_counter()
                         subtitle_vads = [dict(vad) for vad in vad_results]
-                        if suppression_reason is not None and len(subtitle_vads) == 2:
+                        if (
+                            suppression_reason is not None
+                            and args.speaker_mode is SpeakerMode.OVERLAP
+                            and len(subtitle_vads) == 2
+                        ):
                             subtitle_vads[1]["speech_detected"] = False
                             subtitle_vads[1]["timestamps"] = []
+                        single_mode_primary: int | None = None
+                        single_mode_diagnostic: dict[str, Any] = {"enabled": False}
+                        if args.speaker_mode is SpeakerMode.SINGLE:
+                            single_mode_primary, selection = select_single_mode_primary(
+                                item.speaker_assignment, vad_results
+                            )
+                            if single_mode_primary is None:
+                                logical_values = item.speaker_assignment.get(
+                                    "raw_to_logical_mapping", {}
+                                ).values()
+                                single_mode_primary = (
+                                    single_mode_previous_primary
+                                    if single_mode_previous_primary is not None
+                                    else next(
+                                        (value for value in logical_values if value in (0, 1)),
+                                        0,
+                                    )
+                                )
+                                selection["method"] = "previous_primary_for_inactive_window"
+                            else:
+                                single_mode_previous_primary = single_mode_primary
+                            streams = []
+                            for speaker_index in (0, 1):
+                                suppressed = speaker_index != single_mode_primary
+                                admitted_before_policy = transcripts[speaker_index]
+                                if suppressed:
+                                    transcripts[speaker_index] = ""
+                                    subtitle_vads[speaker_index]["speech_detected"] = False
+                                    subtitle_vads[speaker_index]["timestamps"] = []
+                                streams.append(
+                                    {
+                                        "logical_stream": speaker_index,
+                                        "raw_transcript": raw_transcripts[speaker_index],
+                                        "admitted_before_single_mode": admitted_before_policy,
+                                        "assembler_transcript": transcripts[speaker_index],
+                                        "suppressed": suppressed,
+                                        "reason": "non_primary_stream" if suppressed else "selected_primary_stream",
+                                        "assembler_forwarded": False,
+                                        "subtitle_state_forwarded": False,
+                                        "published": False,
+                                    }
+                                )
+                            single_mode_diagnostic = {
+                                "enabled": True,
+                                "primary_logical_stream": single_mode_primary,
+                                "selection": selection,
+                                "streams": streams,
+                            }
+                            secondary_leakage["single_mode"] = single_mode_diagnostic
+                            print(
+                                f"[SINGLE MODE] window={item.source.index:03d} "
+                                f"primary={single_mode_primary} "
+                                f"mapping={item.speaker_assignment['raw_to_logical_mapping']}",
+                                flush=True,
+                            )
                         if args.assemble:
                             transcripts, subtitle_vads, routing = resolve_subtitle_fragments(
                                 speakers=item.speakers,
@@ -1683,12 +1757,29 @@ def main(
                                         + json.dumps(decision, ensure_ascii=False),
                                         flush=True,
                                     )
+                        if args.speaker_mode is SpeakerMode.SINGLE:
+                            for speaker_index in (0, 1):
+                                single_mode_diagnostic["streams"][speaker_index][
+                                    "assembler_transcript"
+                                ] = transcripts[speaker_index]
                         subtitle_created_times: list[float] = []
                         window_assembly_events: list[dict[str, Any]] = []
-                        utterance_hypotheses: list[str] = []
+                        utterance_hypotheses: dict[int, str] = {}
+                        window_assembly_by_speaker: dict[int, dict[str, Any]] = {}
                         window_subtitle_state_events: list[dict[str, Any]] = []
+                        window_published_speakers: set[int] = set()
                         if args.assemble:
-                            for speaker_index, transcript in enumerate(transcripts):
+                            assembler_speakers = (
+                                tuple()
+                                if args.speaker_mode is SpeakerMode.SINGLE
+                                and single_mode_primary is None
+                                else (single_mode_primary,)
+                                if args.speaker_mode is SpeakerMode.SINGLE
+                                else (0, 1)
+                            )
+                            for speaker_index in assembler_speakers:
+                                assert speaker_index is not None
+                                transcript = transcripts[speaker_index]
                                 transition = (subtitle_vads[speaker_index].get("candidate_transition", {})
                                               if args.vad else {})
                                 if transition.get("restart"):
@@ -1720,8 +1811,13 @@ def main(
                                 event_dict = event.to_dict()
                                 event_dict["audio_overlap_evidence"] = overlap_evidence
                                 window_assembly_events.append(event_dict)
+                                window_assembly_by_speaker[speaker_index] = event_dict
                                 assembler_events.append(event_dict)
-                                utterance_hypotheses.append(event.utterance_hypothesis)
+                                utterance_hypotheses[speaker_index] = event.utterance_hypothesis
+                                if args.speaker_mode is SpeakerMode.SINGLE:
+                                    single_mode_diagnostic["streams"][speaker_index][
+                                        "assembler_forwarded"
+                                    ] = True
                                 similarity = (
                                     f" similarity={event.similarity:.3f}"
                                     if event.similarity is not None
@@ -1760,20 +1856,24 @@ def main(
                                     f"{event.utterance_hypothesis}",
                                     flush=True,
                                 )
-                            for speaker_index, hypothesis in enumerate(utterance_hypotheses):
+                            for speaker_index, hypothesis in utterance_hypotheses.items():
                                 speech_detected = (
                                     subtitle_vads[speaker_index]["speech_detected"]
                                     if args.vad
                                     else bool(transcripts[speaker_index])
                                 )
-                                if speaker_index == 1 and suppression_reason is not None:
+                                if (
+                                    speaker_index == 1
+                                    and suppression_reason is not None
+                                    and args.speaker_mode is SpeakerMode.OVERLAP
+                                ):
                                     speech_detected = False
                                 state_events = subtitle_states[speaker_index].process(
                                     window=item.source.index,
                                     hypothesis=hypothesis,
                                     speech_detected=speech_detected,
                                     stream_time_seconds=item.source.stream_end_seconds,
-                                    confirmed_prefix_length=window_assembly_events[speaker_index]["confirmed_prefix_length"],
+                                    confirmed_prefix_length=window_assembly_by_speaker[speaker_index]["confirmed_prefix_length"],
                                     source_supported=(subtitle_vads[speaker_index].get("source_supported", False)
                                                       if args.vad else False),
                                     source_text=transcripts[speaker_index],
@@ -1782,6 +1882,10 @@ def main(
                                 )
                                 for state_event in state_events:
                                     window_subtitle_state_events.append(state_event.to_dict())
+                                    if args.speaker_mode is SpeakerMode.SINGLE:
+                                        single_mode_diagnostic["streams"][speaker_index][
+                                            "subtitle_state_forwarded"
+                                        ] = True
                                     print(
                                         f"[SUBTITLE SUPPORT] window={state_event.window:03d} "
                                         f"speaker={state_event.speaker} utterance={state_event.utterance_id} "
@@ -1794,6 +1898,7 @@ def main(
                                     )
                                     if published_event:
                                         subtitle_created_times.append(time.perf_counter())
+                                        window_published_speakers.add(speaker_index)
                                     if state_event.status == "final":
                                         assemblers[speaker_index].reset_utterance(final_text=state_event.text)
                             previous_subtitle_window = item.source.index
@@ -1807,6 +1912,11 @@ def main(
                                         f"speaker_{speaker_index}: {transcript}",
                                         flush=True,
                                     )
+                        if args.speaker_mode is SpeakerMode.SINGLE:
+                            for stream in single_mode_diagnostic["streams"]:
+                                stream["published"] = (
+                                    stream["logical_stream"] in window_published_speakers
+                                )
                         assembler_subtitle_ended = time.perf_counter()
                         pipeline_ended = time.perf_counter()
                         latency_diagnostic = None
@@ -1837,6 +1947,9 @@ def main(
                         metric = {
                             "window": item.source.index,
                             "processing_mode": args.processing_mode,
+                            "speaker_mode": args.speaker_mode.value,
+                            "single_mode_primary": single_mode_primary,
+                            "single_mode": single_mode_diagnostic,
                             "remote_request_seconds": item.remote_result.request_seconds if item.remote_result else None,
                             "remote_timing": item.remote_result.timing if item.remote_result else None,
                             "remote_gpu_memory": item.remote_result.gpu_memory if item.remote_result else None,
@@ -2137,7 +2250,17 @@ def main(
             incremental_rows = [
                 {
                     "window": item["window"],
-                    "transcripts": [event["new"] for event in item["assembly_events"]],
+                    "transcripts": [
+                        next(
+                            (
+                                event["new"]
+                                for event in item["assembly_events"]
+                                if event["speaker"] == speaker
+                            ),
+                            "",
+                        )
+                        for speaker in (0, 1)
+                    ],
                 }
                 for item in results
             ]
@@ -2439,7 +2562,12 @@ def main(
                 any(text for item in results for text in item["transcripts"])
                 or separation_state["pre_separation_silence_skipped"] == expected_window_count
             )
-            and (not args.assemble or len(assembler_events) == expected_window_count * 2)
+            and (
+                not args.assemble
+                or len(assembler_events)
+                == expected_window_count
+                * (1 if args.speaker_mode is SpeakerMode.SINGLE else 2)
+            )
             and (
                 not args.websocket
                 or (
@@ -2452,6 +2580,7 @@ def main(
         summary = {
             "phase": phase_label,
             "processing_mode": args.processing_mode,
+            "speaker_mode": args.speaker_mode.value,
             "remote_server_url": args.remote_server_url if remote else None,
             "stt_backend": args.stt_backend,
             "architecture": (
