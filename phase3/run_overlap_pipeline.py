@@ -1876,7 +1876,15 @@ def main(
                                     confirmed_prefix_length=window_assembly_by_speaker[speaker_index]["confirmed_prefix_length"],
                                     source_supported=(subtitle_vads[speaker_index].get("source_supported", False)
                                                       if args.vad else False),
-                                    source_text=transcripts[speaker_index],
+                                    source_text=(
+                                        window_assembly_by_speaker[speaker_index]["raw_fragment"]
+                                        if (
+                                            window_assembly_by_speaker[speaker_index]["match_type"]
+                                            in {"fuzzy_replace", "supported_tail_replace"}
+                                            or not window_assembly_by_speaker[speaker_index]["new_fragment"]
+                                        )
+                                        else window_assembly_by_speaker[speaker_index]["new_fragment"]
+                                    ),
                                     candidate_transition=(subtitle_vads[speaker_index].get("candidate_transition")
                                                           if args.vad else None),
                                 )

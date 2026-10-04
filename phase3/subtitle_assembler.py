@@ -147,6 +147,20 @@ def fuzzy_suffix_prefix(
     return best_similarity, best_cut
 
 
+def complete_fuzzy_overlap_token(current: str, cut: int) -> int:
+    """Do not expose the unmatched tail of a partially matched current token.
+
+    Approximate Korean seams can align through the first syllable of a changed
+    eojeol.  Appending the remainder would manufacture a hybrid such as
+    ``도로상환 황을`` from ``도로상환`` / ``도로 상황을``.  The old hypothesis is
+    retained; this only moves the start of genuinely new text to the next token.
+    """
+    for token in TOKEN_PATTERN.finditer(current):
+        if token.start() < cut < token.end():
+            return token.end()
+    return cut
+
+
 def corrected_suffix_prefix(previous: str, current: str) -> tuple[int, int, float] | None:
     """Align a bounded, word-delimited seam, allowing Korean syllable errors.
 
@@ -382,6 +396,7 @@ class SubtitleAssembler:
                                 previous, raw, self.minimum_characters
                             )
                             if fuzzy_cut:
+                                fuzzy_cut = complete_fuzzy_overlap_token(raw, fuzzy_cut)
                                 match_type = "fuzzy"
                                 overlap = raw[:fuzzy_cut].strip()
                                 normalized_overlap_length = len(normalize_for_matching(overlap))
@@ -391,7 +406,28 @@ class SubtitleAssembler:
         if correction is None and previous and raw and supported_tail_revision:
             correction = anchored_prefix_revision(previous, raw)
         tail_revision = None
-        if correction and match_type in {"none", "fuzzy"}:
+        correction_covers_previous = bool(
+            correction
+            and correction[0] == len(normalize_for_matching(previous))
+        )
+        correction_beats_fuzzy_seam = bool(
+            correction
+            and similarity is not None
+            and correction[2] > similarity
+        )
+        # When fuzzy alignment already separated an overlapping head from a
+        # genuinely new suffix, keep an established prefix outside that seam and
+        # append only the suffix. A single noisy adjacent window must not turn a
+        # bounded tail append into a destructive correction. A full re-observation
+        # of the previous fragment may still correct it, and correction-only
+        # hypotheses continue to use the normal branch.
+        if correction and (
+            match_type == "none"
+            or (
+                match_type == "fuzzy"
+                and (correction_covers_previous or correction_beats_fuzzy_seam)
+            )
+        ):
             old_length, new_cut, similarity = correction
             old_suffix = normalize_for_matching(previous)[-old_length:]
             # The old seam must actually be the end of the active hypothesis.
