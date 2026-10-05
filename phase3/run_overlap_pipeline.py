@@ -517,7 +517,11 @@ def main(
         "processing_seconds": [],
     }
     assemblers = [
-        SubtitleAssembler(speaker=speaker, minimum_characters=args.assembler_min_characters)
+        SubtitleAssembler(
+            speaker=speaker, minimum_characters=args.assembler_min_characters,
+            # Keep the deferred two-speaker/overlap mode's reconciliation unchanged.
+            allow_shifted_head=args.speaker_mode is SpeakerMode.SINGLE,
+        )
         for speaker in (0, 1)
     ]
     subtitle_states = [

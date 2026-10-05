@@ -285,6 +285,47 @@ def append_preserving_text(assembled: str, new_text: str) -> str:
     return assembled + separator + new_text
 
 
+def shifted_head_continuation(previous: str, current: str) -> tuple[int, int, int] | None:
+    """Find a local word anchor after one revised window-head word.
+
+    The caller must establish shared speech in adjacent windows. Preserve the
+    old head; this is not permission to replace it with the newer recognition.
+    Require both a shared Korean ending on the preceding word and a unique,
+    complete anchor word. Optionally treat one final syllable as unfinished when
+    the Hangul onset/vowel agrees; never trim a longer tail or confirmed text.
+    Return old seam length, single-syllable tail length, and current anchor end.
+    """
+    old_tokens = list(TOKEN_PATTERN.finditer(previous))
+    new_tokens = list(TOKEN_PATTERN.finditer(current))
+    if len(old_tokens) < 2 or len(new_tokens) < 3:
+        return None
+    old_words = [token.group() for token in old_tokens]
+    new_words = [token.group() for token in new_tokens]
+    modifier, anchor = new_words[:2]
+    if not (re.fullmatch(r"[가-힣]{2,6}", modifier)
+            and re.fullmatch(r"[가-힣]{3,}", anchor)
+            and old_words.count(anchor) == new_words.count(anchor) == 1):
+        return None
+    anchor_index = old_words.index(anchor)
+    if anchor_index < 1 or anchor_index < len(old_words) - 2:
+        return None
+    old_modifier = old_words[anchor_index - 1]
+    if not (re.fullmatch(r"[가-힣]{2,6}", old_modifier)
+            and old_modifier != modifier and old_modifier[-2:] == modifier[-2:]):
+        return None
+    tail_length = 0
+    if anchor_index == len(old_words) - 2:
+        tail = old_words[-1]
+        continuation = new_words[2]
+        if not (re.fullmatch(r"[가-힣]", tail)
+                and re.fullmatch(r"[가-힣]{2,}", continuation)
+                and unicodedata.normalize("NFD", tail)[:2]
+                == unicodedata.normalize("NFD", continuation[0])[:2]):
+            return None
+        tail_length = 1
+    return len(anchor) + tail_length, tail_length, new_tokens[1].end()
+
+
 @dataclass(frozen=True)
 class AssemblyEvent:
     window: int
@@ -316,11 +357,15 @@ class AssemblyEvent:
 
 
 class SubtitleAssembler:
-    def __init__(self, speaker: int, minimum_characters: int = 6) -> None:
+    def __init__(
+        self, speaker: int, minimum_characters: int = 6, *,
+        allow_shifted_head: bool = True,
+    ) -> None:
         if minimum_characters < 2:
             raise ValueError("minimum_characters must be at least 2")
         self.speaker = speaker
         self.minimum_characters = minimum_characters
+        self.allow_shifted_head = allow_shifted_head
         self.previous = ""
         self.assembled = ""
         self.utterance_hypothesis = ""
@@ -444,6 +489,22 @@ class SubtitleAssembler:
                 correction = None
         else:
             correction = None
+        if (self.allow_shifted_head and correction is None and match_type == "none"
+                and previous and raw and shared_speech is True):
+            continuation = shifted_head_continuation(previous, raw)
+            if continuation:
+                seam_length, tail_length, raw_cut = continuation
+                normalized_active, positions = normalize_with_positions(self.utterance_hypothesis)
+                old_seam = normalize_for_matching(previous)[-seam_length:]
+                retained_length = len(normalized_active) - tail_length
+                if (normalized_active.endswith(old_seam)
+                        and retained_length >= self.confirmed_prefix_length):
+                    if tail_length:
+                        self.utterance_hypothesis = self.utterance_hypothesis[:positions[retained_length]].rstrip()
+                    match_type = "anchored_continuation"
+                    overlap = raw[:raw_cut].strip()
+                    normalized_overlap_length = len(normalize_for_matching(overlap))
+                    new_text = raw[raw_cut:]
         if correction is None and match_type == "none" and previous and raw and supported_tail_revision:
             tail_revision = supported_overlap_tail_anchor(
                 previous, raw, self.minimum_characters
