@@ -2,7 +2,7 @@
 
 2026-09-30 정확도 audit, 모델 5개 비교, 자막 교정 및 Windows 검증 항목은
 [ACCURACY_AUDIT.md](ACCURACY_AUDIT.md)에 정리했습니다. 새 remote 서버 기본값은
-`small`이며 `--whisper-model base`로 이전 STT 기준선을 재현할 수 있습니다.
+`large-v3-turbo`이며 `--whisper-model base`로 이전 STT 기준선을 재현할 수 있습니다.
 
 Windows capture와 RunPod GPU inference를 분리한 remote mode 실행 방법 및 HTTP 계약은
 [phase4/REMOTE_GPU.md](phase4/REMOTE_GPU.md)에 정리되어 있습니다. 기본 실행 모드는 기존 local GPU입니다.

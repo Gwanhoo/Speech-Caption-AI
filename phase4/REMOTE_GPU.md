@@ -12,7 +12,7 @@ It sends each complete window to the GPU server and consumes raw slot results.
 | 3 s window / 2 s stride, index, capture and stream timestamps | Windows | Audio timeline and backpressure |
 | Original window waveform | Windows -> server | Separation input; client retains it for tracking |
 | MossFormer2 AMP, finite recovery, silence gate | Server | Two raw separation slots |
-| Silero VAD (CPU), faster-whisper small CUDA FP16 | Server | VAD and transcript for each raw slot |
+| Silero VAD (CPU), faster-whisper large-v3-turbo CUDA FP16 | Server | VAD and transcript for each raw slot |
 | Raw separated waveforms | Server -> Windows | Exact overlap waveform used by tracker |
 | Raw slot -> logical speaker permutation | Windows | Adjacent-window identity continuity |
 | Permuting waveforms, VAD and transcripts together | Windows | Keep evidence attached to the correct speaker |
@@ -95,9 +95,9 @@ fallback. Startup health failure stops startup with a visible error.
 
 ## Execution
 
-The default remote STT model is now `small`. Select `--whisper-model base` to
-reproduce the previous baseline; `medium`, `large-v3-turbo`, and `large-v3` are
-also supported. `/healthz` reports `stt_model` and `stt_options`. Startup warms
+The default remote STT model is now `large-v3-turbo`. Select `--whisper-model base`
+to reproduce the previous baseline; `small`, `medium`, and `large-v3` are also
+supported. `/healthz` reports `stt_model` and `stt_options`. Startup warms
 separation, VAD and Whisper in the persistent inference thread before serving;
 `--no-warmup` is for cold-start measurement. See the measured limits and accuracy
 results in [the 2026-09-30 audit](../ACCURACY_AUDIT.md).

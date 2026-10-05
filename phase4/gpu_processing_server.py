@@ -44,7 +44,7 @@ from validate_end_to_end_gpu import (  # noqa: E402
 MAX_REQUEST_BYTES = 16 * 1024 * 1024
 MAX_AUDIO_SECONDS = 30.0
 FASTER_WHISPER_MODEL_NAME = "base"
-DEFAULT_STT_MODEL = "small"
+DEFAULT_STT_MODEL = "large-v3-turbo"
 STT_MODEL_CHOICES = ("base", "small", "medium", "large-v3-turbo", "large-v3")
 FASTER_WHISPER_CHECKPOINT_ROOT = ROOT / "checkpoints" / "faster-whisper"
 
@@ -694,14 +694,18 @@ class ProcessingHTTPServer(ThreadingHTTPServer):
         self.service = service
 
 
-def main() -> int:
+def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Local Runpod GPU processing server prototype")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8787)
     parser.add_argument("--whisper-model", choices=STT_MODEL_CHOICES, default=DEFAULT_STT_MODEL,
                         help="Multilingual STT model; use base to reproduce the previous baseline")
     parser.add_argument("--no-warmup", action="store_true", help="Disable startup warm-up for cold-start benchmarks")
-    args = parser.parse_args()
+    return parser
+
+
+def main() -> int:
+    args = build_argument_parser().parse_args()
 
     print("Loading GPU pipeline models once at server startup...", flush=True)
     service = PipelineService(args.whisper_model, warm_up=not args.no_warmup)

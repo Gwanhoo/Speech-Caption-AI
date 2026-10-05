@@ -22,6 +22,17 @@ from remote_gpu_protocol import BINARY_RESPONSE_MEDIA_TYPE, decode_binary_result
 
 
 class FasterWhisperModelSourceTests(TestCase):
+    def test_production_default_is_large_v3_turbo(self):
+        self.assertEqual(server.DEFAULT_STT_MODEL, "large-v3-turbo")
+        self.assertEqual(
+            server.build_argument_parser().parse_args([]).whisper_model,
+            "large-v3-turbo",
+        )
+
+    def test_whisper_model_cli_override_is_preserved(self):
+        args = server.build_argument_parser().parse_args(["--whisper-model", "small"])
+        self.assertEqual(args.whisper_model, "small")
+
     def test_uses_base_model_name_when_project_checkpoint_is_missing(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.object(server, "FASTER_WHISPER_CHECKPOINT_ROOT", Path(directory)):
