@@ -521,6 +521,7 @@ def main(
             speaker=speaker, minimum_characters=args.assembler_min_characters,
             # Keep the deferred two-speaker/overlap mode's reconciliation unchanged.
             allow_shifted_head=args.speaker_mode is SpeakerMode.SINGLE,
+            enable_sentence_lifecycle=args.speaker_mode is SpeakerMode.SINGLE,
         )
         for speaker in (0, 1)
     ]
@@ -1872,6 +1873,28 @@ def main(
                                     and args.speaker_mode is SpeakerMode.OVERLAP
                                 ):
                                     speech_detected = False
+                                assembly_data = window_assembly_by_speaker[speaker_index]
+                                if assembly_data["rollover_text"]:
+                                    state = subtitle_states[speaker_index]
+                                    if state.partial_text:
+                                        boundary_event = state.finalize(
+                                            item.source.index,
+                                            item.source.stream_end_seconds,
+                                            str(assembly_data["rollover_reason"]),
+                                        )
+                                        window_subtitle_state_events.append(
+                                            boundary_event.to_dict()
+                                        )
+                                        published_event = publish_subtitle_state_event(
+                                            boundary_event,
+                                            stt_inference_ended=stt_inference_ended,
+                                        )
+                                        if published_event:
+                                            subtitle_created_times.append(time.perf_counter())
+                                            window_published_speakers.add(speaker_index)
+                                        assemblers[speaker_index].commit_finalized_text(
+                                            boundary_event.text
+                                        )
                                 state_events = subtitle_states[speaker_index].process(
                                     window=item.source.index,
                                     hypothesis=hypothesis,
@@ -1884,7 +1907,8 @@ def main(
                                         window_assembly_by_speaker[speaker_index]["raw_fragment"]
                                         if (
                                             window_assembly_by_speaker[speaker_index]["match_type"]
-                                            in {"fuzzy_replace", "supported_tail_replace"}
+                                            in {"fuzzy_replace", "supported_tail_replace",
+                                                "supported_sentence_revision"}
                                             or not window_assembly_by_speaker[speaker_index]["new_fragment"]
                                         )
                                         else window_assembly_by_speaker[speaker_index]["new_fragment"]

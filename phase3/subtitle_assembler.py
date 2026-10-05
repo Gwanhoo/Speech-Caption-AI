@@ -11,6 +11,7 @@ from enum import Enum
 IGNORED_PATTERN = re.compile(r"[^0-9A-Za-z가-힣]+")
 LEADING_SEPARATOR_PATTERN = re.compile(r"^[\s,.;:!?，。！？]+")
 TOKEN_PATTERN = re.compile(r"\S+")
+SENTENCE_END_PATTERN = re.compile(r"[.!?。！？](?:[\"'”’)}\]]+)?\s*$")
 FUZZY_SIMILARITY_THRESHOLD = 0.88
 MINIMUM_RELAXED_BOUNDARY_CHARACTERS = 3
 DEFAULT_FINALIZE_SILENCE_MS = 2000
@@ -285,6 +286,38 @@ def append_preserving_text(assembled: str, new_text: str) -> str:
     return assembled + separator + new_text
 
 
+def has_sentence_ending(text: str) -> bool:
+    """Return whether Whisper emitted an explicit sentence-ending candidate."""
+    return bool(SENTENCE_END_PATTERN.search(text))
+
+
+def reconcile_supported_sentence_revision(
+    previous: str,
+    current: str,
+    minimum_characters: int,
+) -> tuple[str, str, float] | None:
+    """Preserve the prefix before an acoustically supported ending revision.
+
+    A sliding window can revise ``이어졌습니다.`` to ``이어졌지만``.  The
+    existing tail anchor supplies the lexical part of the evidence; callers
+    must additionally require the existing acoustic tail-revision evidence.
+    """
+    if not has_sentence_ending(previous):
+        return None
+    anchor = supported_overlap_tail_anchor(previous, current, minimum_characters)
+    if anchor is None:
+        return None
+    current_start, current_end, similarity = anchor
+    normalized_previous, previous_positions = normalize_with_positions(previous)
+    normalized_anchor = normalize_for_matching(current[current_start:current_end])
+    previous_start = normalized_previous.rfind(normalized_anchor)
+    if previous_start < 0:
+        return None
+    prefix_cut = previous_positions[previous_start - 1] + 1 if previous_start else 0
+    revised = append_preserving_text(previous[:prefix_cut], current[current_start:])
+    return revised, current[current_start:current_end].strip(), similarity
+
+
 def shifted_head_continuation(previous: str, current: str) -> tuple[int, int, int] | None:
     """Find a local word anchor after one revised window-head word.
 
@@ -349,6 +382,8 @@ class AssemblyEvent:
     utterance_hypothesis: str
     session_text: str
     confirmed_prefix_length: int = 0
+    rollover_text: str = ""
+    rollover_reason: str | None = None
 
     def to_dict(self) -> dict[str, object]:
         result = asdict(self)
@@ -360,12 +395,14 @@ class SubtitleAssembler:
     def __init__(
         self, speaker: int, minimum_characters: int = 6, *,
         allow_shifted_head: bool = True,
+        enable_sentence_lifecycle: bool = False,
     ) -> None:
         if minimum_characters < 2:
             raise ValueError("minimum_characters must be at least 2")
         self.speaker = speaker
         self.minimum_characters = minimum_characters
         self.allow_shifted_head = allow_shifted_head
+        self.enable_sentence_lifecycle = enable_sentence_lifecycle
         self.previous = ""
         self.assembled = ""
         self.utterance_hypothesis = ""
@@ -382,6 +419,15 @@ class SubtitleAssembler:
         self.previous = ""
         self.utterance_hypothesis = ""
 
+    def commit_finalized_text(self, final_text: str) -> None:
+        """Record a FINAL while preserving a new hypothesis already rolled over."""
+        self._finalized_session = append_preserving_text(
+            self._finalized_session, final_text
+        )
+        self.assembled = append_preserving_text(
+            self._finalized_session, self.utterance_hypothesis
+        )
+
     def process(
         self, window: int, raw: str, *,
         shared_speech: bool | None = None,
@@ -396,6 +442,11 @@ class SubtitleAssembler:
 
         raw = raw.strip()
         before_hypothesis = self.utterance_hypothesis
+        sentence_end_candidate = bool(
+            self.enable_sentence_lifecycle
+            and before_hypothesis
+            and has_sentence_ending(before_hypothesis)
+        )
         previous = self.previous if window == self.last_window + 1 and shared_speech is not False else ""
         match_type = "none"
         overlap = ""
@@ -451,6 +502,7 @@ class SubtitleAssembler:
         if correction is None and previous and raw and supported_tail_revision:
             correction = anchored_prefix_revision(previous, raw)
         tail_revision = None
+        sentence_revision = None
         correction_covers_previous = bool(
             correction
             and correction[0] == len(normalize_for_matching(previous))
@@ -505,7 +557,25 @@ class SubtitleAssembler:
                     overlap = raw[:raw_cut].strip()
                     normalized_overlap_length = len(normalize_for_matching(overlap))
                     new_text = raw[raw_cut:]
-        if correction is None and match_type == "none" and previous and raw and supported_tail_revision:
+        if (
+            sentence_end_candidate
+            and correction is None
+            and match_type == "none"
+            and previous
+            and raw
+            and supported_tail_revision
+        ):
+            sentence_revision = reconcile_supported_sentence_revision(
+                self.utterance_hypothesis, raw, self.minimum_characters
+            )
+            if sentence_revision is not None:
+                revised, overlap, similarity = sentence_revision
+                self.utterance_hypothesis = revised
+                match_type = "supported_sentence_revision"
+                normalized_overlap_length = len(normalize_for_matching(overlap))
+                new_text = raw
+        if (correction is None and sentence_revision is None and match_type == "none"
+                and previous and raw and supported_tail_revision):
             tail_revision = supported_overlap_tail_anchor(
                 previous, raw, self.minimum_characters
             )
@@ -529,7 +599,7 @@ class SubtitleAssembler:
                 normalized_overlap_length = len(normalize_for_matching(overlap))
                 new_text = raw
         new_text = LEADING_SEPARATOR_PATTERN.sub("", new_text).strip()
-        if correction is None and tail_revision is None:
+        if correction is None and tail_revision is None and sentence_revision is None:
             # Rebuild exact seams from the current display text. Appending a
             # fragment beginning inside an eojeol would create "아침 에".
             normalized_active, positions = normalize_with_positions(self.utterance_hypothesis)
@@ -545,15 +615,33 @@ class SubtitleAssembler:
                 self.utterance_hypothesis = append_preserving_text(
                     self.utterance_hypothesis, new_text
                 )
-        if correction is not None or tail_revision is not None:
+        if correction is not None or tail_revision is not None or sentence_revision is not None:
             self.confirmed_prefix_length = min(
                 self.confirmed_prefix_length,
                 normalized_common_prefix_length(before_hypothesis, self.utterance_hypothesis),
             )
+        rollover_text = ""
+        rollover_reason = None
+        if (
+            sentence_end_candidate
+            and raw
+            and sentence_revision is None
+            and (
+                match_type == "none"
+                or bool(overlap and has_sentence_ending(overlap))
+            )
+        ):
+            rollover_text = before_hypothesis
+            rollover_reason = "sentence_boundary_confirmed"
+            self.utterance_hypothesis = (
+                new_text if match_type != "none" else raw
+            ).strip()
+            self.confirmed_prefix_length = 0
+
         self.assembled = append_preserving_text(
             self._finalized_session, self.utterance_hypothesis
         )
-        self.previous = raw
+        self.previous = self.utterance_hypothesis if rollover_text else raw
         self.last_window = window
 
         normalized_raw_length = len(normalize_for_matching(raw))
@@ -565,7 +653,11 @@ class SubtitleAssembler:
             review_reasons.append("overlap_consumes_at_least_80_percent")
         duplicate_only = bool(
             raw and not new_text and overlap
-            and normalize_for_matching(before_hypothesis) == normalize_for_matching(self.utterance_hypothesis)
+            and (
+                bool(rollover_text and not self.utterance_hypothesis)
+                or normalize_for_matching(before_hypothesis)
+                == normalize_for_matching(self.utterance_hypothesis)
+            )
         )
         elapsed = time.perf_counter() - started
         return AssemblyEvent(
@@ -590,6 +682,8 @@ class SubtitleAssembler:
             utterance_hypothesis=self.utterance_hypothesis,
             session_text=self.assembled,
             confirmed_prefix_length=self.confirmed_prefix_length,
+            rollover_text=rollover_text,
+            rollover_reason=rollover_reason,
         )
 
 
