@@ -665,11 +665,12 @@ def resolve_subtitle_fragments(
 
 
 def weak_speech_evidence(mixture: np.ndarray, vad: dict[str, Any]) -> dict[str, Any]:
-    """Reject a new hypothesis only with joint weak VAD and input evidence.
+    """Reject a new hypothesis only with joint localized input evidence.
 
     Use original input, since separator RMS normalization can amplify noise.
     A short/quiet but localized speech burst passes without a second observation.
-    Missing evidence fails open; this is not a general noise/speech classifier.
+    Independently measured speech in the input residual also passes. Missing
+    evidence fails open; this is not a general noise/speech classifier.
     """
     evidence: dict[str, Any] = {"suppressed": False, "available": False}
     intervals = speech_intervals(vad, len(mixture))
@@ -686,18 +687,30 @@ def weak_speech_evidence(mixture: np.ndarray, vad: dict[str, Any]) -> dict[str, 
                     input_background_rms=background_rms)
     if speech_rms is None or speech_peak is None or background_rms is None:
         return evidence
-    # Bounded low-level noise, sparse VAD, AND no localized energy increase must
-    # agree. Duration, volume, or observation count alone never rejects speech.
+    # Bounded low-level noise AND no localized energy increase must agree.
+    # VAD duration is diagnostic only: separator noise does not become speech
+    # merely by remaining VAD-positive for more than 500 ms. Correlation is
+    # intentionally absent here because it establishes source similarity, not
+    # the presence of speech in that source.
     weak_vad = 0 < duration <= WEAK_SPEECH_MAX_DURATION_MS and 0 < ratio <= 0.20
     no_burst = speech_rms <= 1.5 * max(background_rms, ENERGY_EPSILON)
+    residual_speech = [
+        _residual_speech_overlap(vad, start, end, len(mixture))
+        for start, end in intervals
+    ]
+    independent_speech = any(value is True for value in residual_speech)
+    rms_within_noise_bound = speech_rms <= DEFAULT_SILENCE_RMS
+    peak_within_noise_bound = speech_peak <= 5 * DEFAULT_SILENCE_RMS
     evidence.update(
         available=True, weak_vad=weak_vad, no_localized_burst=no_burst,
-        rms_within_noise_bound=speech_rms <= DEFAULT_SILENCE_RMS,
-        peak_within_noise_bound=speech_peak <= 5 * DEFAULT_SILENCE_RMS,
+        rms_within_noise_bound=rms_within_noise_bound,
+        peak_within_noise_bound=peak_within_noise_bound,
+        input_residual_speech_overlap=residual_speech,
+        independent_speech_evidence=independent_speech,
     )
     evidence["suppressed"] = bool(
-        weak_vad and speech_rms <= DEFAULT_SILENCE_RMS
-        and speech_peak <= 5 * DEFAULT_SILENCE_RMS and no_burst
+        no_burst and rms_within_noise_bound and peak_within_noise_bound
+        and not independent_speech
     )
     return evidence
 
@@ -1005,7 +1018,7 @@ def admit_subtitle_streams(
         )
         evidence["source_supported"] = supported
         vads[candidate]["source_supported"] = supported
-        # Apply the same joint weak-VAD/input test to starts and continuations.
+        # Apply the same localized low-energy input test to starts and continuations.
         # A continuation keeps its previously supported prefix in subtitle state;
         # only the unsupported current fragment is removed here.
         weak_speech = weak_speech_evidence(mixture, vad_results[candidate])
@@ -1016,14 +1029,16 @@ def admit_subtitle_streams(
             and weak_speech.get("available")
             and weak_speech.get("weak_vad")
             and weak_speech.get("no_localized_burst")
+            and not weak_speech.get("independent_speech_evidence")
         )
         evidence["weak_existing_tail_suppressed"] = weak_existing_tail
         if weak_speech["suppressed"] or weak_existing_tail:
-            reason = (
-                "existing_partial_weak_unlocalized_tail"
-                if weak_existing_tail
-                else "weak_vad_and_unlocalized_low_energy_input"
-            )
+            if weak_existing_tail:
+                reason = "existing_partial_weak_unlocalized_tail"
+            elif weak_speech.get("weak_vad"):
+                reason = "weak_vad_and_unlocalized_low_energy_input"
+            else:
+                reason = "unlocalized_low_energy_input_without_speech_evidence"
             evidence.update(
                 suppressed=True,
                 source_supported=False,

@@ -963,6 +963,67 @@ class PipelineTests(TestCase):
                 self.assertEqual(evidence["reason"], "unsupported_source_on_speech_intervals")
                 self.assertFalse(evidence["weak_speech_evidence"]["suppressed"])
 
+    def test_low_energy_540ms_false_vad_emits_no_websocket_subtitle(self):
+        start, end = 34336, 42976
+
+        def response(audio, index):
+            result = payload("r", index, len(audio))
+            for raw, slot in enumerate(result["speakers"]):
+                active = index == 0 and raw == 1
+                wave = audio if active else np.zeros_like(audio)
+                slot["waveform"]["data"] = base64.b64encode(
+                    wave.astype("<f4").tobytes()
+                ).decode()
+                slot["raw_transcript"] = "무음에서 생성된 임의의 문장" if active else ""
+                slot["stt_seconds"] = 0.01 if active else 0.0
+                slot["vad"].update(
+                    speech_detected=active,
+                    speech_duration_ms=540 if active else 0,
+                    speech_ratio=0.18 if active else 0,
+                    rms=float(np.sqrt(np.mean(wave * wave))),
+                    peak=float(np.max(np.abs(wave))),
+                    timestamps=[{"start": start, "end": end}] if active else [],
+                )
+            return result
+
+        correlation_only = {
+            "owner_input_correlation": 0.4366949,
+            "candidate_input_correlation": 0.7228728,
+            "independent_input_correlation": 0.7711960,
+            "input_residual_energy_fraction": 0.80,
+            "candidate_residual_energy_fraction": 0.90,
+            "pair_correlation": 0.10,
+        }
+        delivered = []
+        with patch(
+            "secondary_leakage_diagnostics.source_input_evidence",
+            return_value=correlation_only,
+        ):
+            _, result = self.run_pipeline(
+                True,
+                response_factory=response,
+                runtime_hooks=pipeline.LivePipelineHooks(on_subtitle=delivered.append),
+                capture_factory=lambda audio: audio * 0.003,
+            )
+
+        self.assertEqual(result["errors"], [])
+        decisions = [
+            decision
+            for row in result["windows"]
+            for decision in row["secondary_leakage_diagnostic"]["subtitle_admission"]["streams"]
+            if decision["reason"] != "inactive"
+        ]
+        self.assertEqual(len(decisions), 1)
+        self.assertFalse(decisions[0]["weak_speech_evidence"]["weak_vad"])
+        self.assertTrue(decisions[0]["weak_speech_evidence"]["suppressed"])
+        self.assertTrue(decisions[0]["source_support_checks"][0]["raw_direct_pass"])
+        self.assertTrue(decisions[0]["source_support_checks"][0]["raw_independent_pass"])
+        self.assertFalse(decisions[0]["source_supported"])
+        self.assertEqual(result["subtitle_state_events"], [])
+        self.assertEqual(result["subtitle_events"], [])
+        self.assertEqual(delivered, [])
+        self.assertEqual(result["websocket"]["published"], 0)
+
     def test_overlap_artifact_and_next_raw_permutation_keep_one_stream_in_workers(self):
         def response(audio, index):
             result = payload("r", index, len(audio))

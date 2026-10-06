@@ -708,6 +708,159 @@ class GhostSubtitleRegressions(unittest.TestCase):
         self.assertEqual(final.publication_text, "검증된 정상 문장")
         self.assertNotIn("합니다", final.text)
 
+    def test_3a_live_silence_540ms_artifact_never_publishes_or_finalizes(self) -> None:
+        rng = np.random.default_rng(20261006)
+        mixture = rng.uniform(-0.000565, 0.000565, WINDOW_SAMPLES).astype(np.float32)
+        start, end = 34336, 42976
+        mixture[start:end] = rng.uniform(-0.000753, 0.000753, end - start)
+        candidate = rng.normal(0, 1, WINDOW_SAMPLES).astype(np.float32)
+        correlation_only = {
+            "owner_input_correlation": 0.4366949,
+            "candidate_input_correlation": 0.7228728,
+            "independent_input_correlation": 0.7711960,
+            "input_residual_energy_fraction": 0.80,
+            "candidate_residual_energy_fraction": 0.90,
+            "pair_correlation": 0.10,
+        }
+        candidate_vad = {
+            "speech_detected": True,
+            "speech_duration_ms": 540,
+            "speech_ratio": 0.18,
+            "timestamps": [{"start": start, "end": end}],
+        }
+        with patch(
+            "secondary_leakage_diagnostics.source_input_evidence",
+            return_value=correlation_only,
+        ):
+            texts, effective_vads, diagnostic = admit_subtitle_streams(
+                mixture=mixture,
+                speakers=(np.zeros_like(mixture), candidate),
+                transcripts=["", "무음에서 생성된 임의의 문장"],
+                vad_results=[vad(0), candidate_vad],
+                active_hypotheses=["", ""],
+                speaker_assignment={
+                    "raw_to_logical_mapping": {"0": 0, "1": 1},
+                    "active_raw_slots": [1],
+                    "assignment_method": "bootstrap",
+                },
+            )
+
+        decision = diagnostic["streams"][1]
+        weak = decision["weak_speech_evidence"]
+        self.assertFalse(weak["weak_vad"])
+        self.assertTrue(weak["no_localized_burst"])
+        self.assertTrue(weak["rms_within_noise_bound"])
+        self.assertTrue(weak["peak_within_noise_bound"])
+        self.assertTrue(decision["source_support_checks"][0]["raw_direct_pass"])
+        self.assertTrue(decision["source_support_checks"][0]["raw_independent_pass"])
+        self.assertTrue(decision["suppressed"])
+        self.assertFalse(decision["source_supported"])
+        self.assertEqual(texts[1], "")
+        self.assertFalse(effective_vads[1]["speech_detected"])
+
+        assembler = SubtitleAssembler(1)
+        state = SpeakerSubtitleState(1, require_final_support=True)
+        assembly = assembler.process(3, texts[1])
+        self.assertEqual(
+            state.process(
+                3,
+                assembly.utterance_hypothesis,
+                effective_vads[1]["speech_detected"],
+                9,
+                source_supported=effective_vads[1]["source_supported"],
+                source_text=texts[1],
+            ),
+            [],
+        )
+        self.assertEqual(state.process(6, "", False, 15), [])
+        self.assertIsNone(state.flush(6, 15))
+
+    def test_3b_low_volume_localized_speech_is_not_suppressed(self) -> None:
+        rng = np.random.default_rng(20261007)
+        mixture = rng.uniform(-0.0002, 0.0002, WINDOW_SAMPLES).astype(np.float32)
+        start, end = 34336, 42976
+        phase = np.arange(end - start)
+        mixture[start:end] = (0.0009 * np.sin(2 * np.pi * phase / 80)).astype(np.float32)
+        evidence = {
+            "owner_input_correlation": 0.20,
+            "candidate_input_correlation": 0.72,
+            "independent_input_correlation": 0.77,
+            "input_residual_energy_fraction": 0.80,
+            "candidate_residual_energy_fraction": 0.90,
+            "pair_correlation": 0.10,
+        }
+        candidate_vad = {
+            "speech_detected": True,
+            "speech_duration_ms": 540,
+            "speech_ratio": 0.18,
+            "timestamps": [{"start": start, "end": end}],
+        }
+        with patch(
+            "secondary_leakage_diagnostics.source_input_evidence", return_value=evidence
+        ):
+            texts, effective_vads, diagnostic = admit_subtitle_streams(
+                mixture=mixture,
+                speakers=(np.zeros_like(mixture), mixture.copy()),
+                transcripts=["", "작지만 국소화된 실제 발화"],
+                vad_results=[vad(0), candidate_vad],
+                active_hypotheses=["", ""],
+                speaker_assignment={},
+            )
+
+        decision = diagnostic["streams"][1]
+        self.assertTrue(decision["weak_speech_evidence"]["rms_within_noise_bound"])
+        self.assertTrue(decision["weak_speech_evidence"]["peak_within_noise_bound"])
+        self.assertFalse(decision["weak_speech_evidence"]["no_localized_burst"])
+        self.assertFalse(decision["suppressed"])
+        self.assertTrue(effective_vads[1]["source_supported"])
+        self.assertEqual(texts[1], "작지만 국소화된 실제 발화")
+
+    def test_3c_residual_vad_protects_low_volume_independent_speech(self) -> None:
+        rng = np.random.default_rng(20261008)
+        mixture = rng.uniform(-0.000565, 0.000565, WINDOW_SAMPLES).astype(np.float32)
+        start, end = 34336, 42976
+        mixture[start:end] = rng.uniform(-0.000753, 0.000753, end - start)
+        candidate_vad = {
+            "speech_detected": True,
+            "speech_duration_ms": 540,
+            "speech_ratio": 0.18,
+            "timestamps": [{"start": start, "end": end}],
+            "input_residual_speech": {
+                "version": 1,
+                "available": True,
+                "sample_count": WINDOW_SAMPLES,
+                "reason": "measured",
+                "speech_detected": True,
+                "timestamps": [{"start": start, "end": end}],
+            },
+        }
+        evidence = {
+            "owner_input_correlation": 0.98,
+            "candidate_input_correlation": 0.72,
+            "independent_input_correlation": 0.77,
+            "input_residual_energy_fraction": 0.20,
+            "candidate_residual_energy_fraction": 0.90,
+            "pair_correlation": 0.10,
+        }
+        with patch(
+            "secondary_leakage_diagnostics.source_input_evidence", return_value=evidence
+        ):
+            texts, effective_vads, diagnostic = admit_subtitle_streams(
+                mixture=mixture,
+                speakers=(mixture.copy(), rng.normal(size=WINDOW_SAMPLES).astype(np.float32)),
+                transcripts=["", "작지만 residual에서 확인된 실제 발화"],
+                vad_results=[vad(0), candidate_vad],
+                active_hypotheses=["", ""],
+                speaker_assignment={},
+            )
+
+        decision = diagnostic["streams"][1]
+        self.assertTrue(decision["weak_speech_evidence"]["no_localized_burst"])
+        self.assertTrue(decision["weak_speech_evidence"]["independent_speech_evidence"])
+        self.assertFalse(decision["suppressed"])
+        self.assertTrue(effective_vads[1]["source_supported"])
+        self.assertTrue(texts[1])
+
     def test_4_unsupported_tentative_is_discarded_on_silence(self) -> None:
         state = SpeakerSubtitleState(1, require_final_support=True)
         partial = state.process(
