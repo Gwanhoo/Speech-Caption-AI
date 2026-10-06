@@ -828,9 +828,12 @@ def admit_subtitle_streams(
     internally, but remains unpublished until acoustic confirmation.
     Missing/ambiguous acoustics fail open. Rejected continuations leave the
     previously admitted utterance prefix untouched.
-    Temporal consensus is not an admission test: a genuine short utterance may
-    have only one observation. Block acoustically unsupported starts here,
-    before PARTIAL publication, so silence/flush cannot retain them as FINAL.
+    Generic temporal consensus is not an admission test: a genuine short
+    utterance may have only one observation. The narrow exception is a strong,
+    localized, short source with no independent speech confirmation; keep that
+    candidate internal until speech evidence replaces it or silence discards it.
+    Block acoustically unsupported starts here, before PARTIAL publication, so
+    silence/flush cannot retain them as FINAL.
     """
     texts = list(transcripts)
     vads = [dict(vad) for vad in vad_results]
@@ -1024,6 +1027,17 @@ def admit_subtitle_streams(
         weak_speech = weak_speech_evidence(mixture, vad_results[candidate])
         evidence["weak_speech_evidence"] = weak_speech
         evidence["weak_speech_check_applied"] = True
+        short_localized_source_without_speech_confirmation = bool(
+            weak_speech.get("available")
+            and weak_speech.get("weak_vad")
+            and not weak_speech.get("no_localized_burst")
+            and not weak_speech.get("rms_within_noise_bound")
+            and not weak_speech.get("peak_within_noise_bound")
+            and not weak_speech.get("independent_speech_evidence")
+        )
+        evidence["short_localized_source_without_speech_confirmation"] = (
+            short_localized_source_without_speech_confirmation
+        )
         weak_existing_tail = bool(
             active_hypotheses[candidate]
             and weak_speech.get("available")
@@ -1078,12 +1092,28 @@ def admit_subtitle_streams(
         leakage_like = bool(contained and owner_conflict)
         evidence["candidate_independent_support"] = independent_observation
 
-        def candidate_decision(action: str, reason: str) -> None:
+        def candidate_decision(
+            action: str,
+            reason: str,
+            *,
+            independent_support: bool | None = None,
+            speech_confirmation_required: bool = False,
+            restart: bool = False,
+        ) -> None:
             evidence.update(candidate_transition=action, reason=reason)
             vads[candidate]["candidate_transition"] = {
-                "action": action, "independent_support": independent_observation,
+                "action": action,
+                "independent_support": (
+                    independent_observation
+                    if independent_support is None
+                    else independent_support
+                ),
                 "owner_contained_conflict": leakage_like,
+                "speech_confirmation_required": speech_confirmation_required,
             }
+            if restart:
+                evidence["candidate_restart"] = True
+                vads[candidate]["candidate_transition"]["restart"] = True
             if action in {"hold", "discard"}:
                 evidence["source_support_deferred"] = supported if action == "hold" else False
                 evidence["source_supported"] = False
@@ -1117,6 +1147,21 @@ def admit_subtitle_streams(
             candidate_decision("discard", "shared_owner_component_without_independent_source")
             continue
         if provenance == "TENTATIVE":
+            if context.get("speech_confirmation_required"):
+                if short_localized_source_without_speech_confirmation:
+                    candidate_decision(
+                        "hold",
+                        "short_localized_source_awaiting_speech_confirmation",
+                        independent_support=False,
+                        speech_confirmation_required=True,
+                    )
+                else:
+                    candidate_decision(
+                        "keep",
+                        "speech_evidence_restarts_deferred_transient",
+                        restart=True,
+                    )
+                continue
             if (consecutive and leakage_like and context.get("owner_contained_conflict")) or (
                 local and all(unsupported_source(row) for row in local)
             ):
@@ -1132,6 +1177,18 @@ def admit_subtitle_streams(
                 if independent_observation:
                     evidence["candidate_restart"] = True
                     vads[candidate]["candidate_transition"]["restart"] = True
+            continue
+
+        if (
+            not active_hypotheses[candidate]
+            and short_localized_source_without_speech_confirmation
+        ):
+            candidate_decision(
+                "hold",
+                "short_localized_source_awaiting_speech_confirmation",
+                independent_support=False,
+                speech_confirmation_required=True,
+            )
             continue
 
         if (

@@ -1024,6 +1024,95 @@ class PipelineTests(TestCase):
         self.assertEqual(delivered, [])
         self.assertEqual(result["websocket"]["published"], 0)
 
+    def test_strong_316ms_transient_is_tentative_and_emits_no_websocket_subtitle(self):
+        start, end = 16000, 16000 + 5056
+        capture_calls = 0
+
+        def capture(audio):
+            nonlocal capture_calls
+            capture_calls += 1
+            if capture_calls > 1:
+                return np.zeros_like(audio)
+            samples = np.arange(len(audio))
+            value = 0.06776 * np.sqrt(2) * np.sin(2 * np.pi * samples / 291)
+            burst_start, burst_end = 48000, 48000 + 15168
+            value[burst_start:burst_end] = (
+                0.15226
+                * np.sqrt(2)
+                * np.sin(2 * np.pi * np.arange(burst_end - burst_start) / 123)
+            )
+            value[burst_start] = 0.52701
+            return value.astype(np.float32).reshape(audio.shape)
+
+        def response(audio, index):
+            result = payload("r", index, len(audio))
+            for raw, slot in enumerate(result["speakers"]):
+                active = index == 0 and raw == 1
+                wave = audio if active else np.zeros_like(audio)
+                slot["waveform"]["data"] = base64.b64encode(
+                    wave.astype("<f4").tobytes()
+                ).decode()
+                slot["raw_transcript"] = "실제 발화가 아닌 임의의 추론 문장" if active else ""
+                slot["stt_seconds"] = 0.01 if active else 0.0
+                slot["vad"].update(
+                    speech_detected=active,
+                    speech_duration_ms=316 if active else 0,
+                    speech_ratio=316 / 3000 if active else 0,
+                    rms=float(np.sqrt(np.mean(wave * wave))),
+                    peak=float(np.max(np.abs(wave))),
+                    timestamps=[{"start": start, "end": end}] if active else [],
+                    input_residual_speech=(
+                        {
+                            "version": 1,
+                            "available": True,
+                            "sample_count": len(audio),
+                            "reason": "measured",
+                            "speech_detected": False,
+                            "timestamps": [],
+                        }
+                        if active
+                        else {"version": 1, "available": False, "reason": "not_required"}
+                    ),
+                )
+            return result
+
+        source_only = {
+            "owner_input_correlation": 0.30,
+            "candidate_input_correlation": 0.94443,
+            "independent_input_correlation": 0.95578,
+            "input_residual_energy_fraction": 0.80,
+            "candidate_residual_energy_fraction": 0.90,
+            "pair_correlation": 0.10,
+        }
+        delivered = []
+        with patch(
+            "secondary_leakage_diagnostics.source_input_evidence",
+            return_value=source_only,
+        ):
+            _, result = self.run_pipeline(
+                True,
+                response_factory=response,
+                capture_factory=capture,
+                runtime_hooks=pipeline.LivePipelineHooks(on_subtitle=delivered.append),
+            )
+
+        self.assertEqual(result["errors"], [])
+        decisions = [
+            decision
+            for row in result["windows"]
+            for decision in row["secondary_leakage_diagnostic"]["subtitle_admission"]["streams"]
+            if decision["reason"] != "inactive"
+        ]
+        self.assertEqual(len(decisions), 1)
+        self.assertEqual(decisions[0]["candidate_transition"], "hold")
+        self.assertFalse(decisions[0]["source_supported"])
+        state_events = result["subtitle_state_events"]
+        self.assertEqual([event["action"] for event in state_events], ["start", "discard"])
+        self.assertTrue(all(event["publication_text"] == "" for event in state_events))
+        self.assertEqual(result["subtitle_events"], [])
+        self.assertEqual(delivered, [])
+        self.assertEqual(result["websocket"]["published"], 0)
+
     def test_overlap_artifact_and_next_raw_permutation_keep_one_stream_in_workers(self):
         def response(audio, index):
             result = payload("r", index, len(audio))

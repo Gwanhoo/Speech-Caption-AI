@@ -883,6 +883,10 @@ class SpeakerSubtitleState:
         self._candidate_window: int | None = None
         self._candidate_independent_support = False
         self._candidate_owner_conflict = False
+        # A source-correlated short transient can be real input without being
+        # speech. Admission keeps it private until a later window provides the
+        # missing speech evidence or restarts the utterance.
+        self._candidate_speech_confirmation_required = False
         # Independently evidenced text withheld for confirmation, NOT generic
         # unsupported text. This private buffer is never publication text.
         self._candidate_supported_text = ""
@@ -912,6 +916,9 @@ class SpeakerSubtitleState:
             "window": self._candidate_window,
             "independent_support": self._candidate_independent_support,
             "owner_contained_conflict": self._candidate_owner_conflict,
+            "speech_confirmation_required": (
+                self._candidate_speech_confirmation_required
+            ),
             "pending_text_supported": bool(
                 self._candidate_supported_text
                 and normalize_for_matching(self._candidate_supported_text) == normalize_for_matching(self.partial_text)
@@ -1106,6 +1113,9 @@ class SpeakerSubtitleState:
         self._candidate_window = window
         self._candidate_independent_support = bool(transition.get("independent_support"))
         self._candidate_owner_conflict = bool(transition.get("owner_contained_conflict"))
+        self._candidate_speech_confirmation_required = bool(
+            transition.get("speech_confirmation_required")
+        )
         support_update.update(candidate_provenance=self._candidate_provenance.value,
                               candidate_transition=candidate_action)
         self.previous_raw = hypothesis
@@ -1195,6 +1205,7 @@ class SpeakerSubtitleState:
         self._candidate_window = None
         self._candidate_independent_support = False
         self._candidate_owner_conflict = False
+        self._candidate_speech_confirmation_required = False
         self._candidate_supported_text = ""
         self.stable_text = ""
         self.tentative_text = ""
