@@ -32,18 +32,22 @@ from PySide6.QtWidgets import (
 try:
     from .live_caption_controller import (
         DEFAULT_REMOTE_SERVER_URL,
+        LOGGER,
         LiveCaptionConfig,
         LiveCaptionController,
         SpeakerMode,
+        configure_gui_runtime,
     )
     from .subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState
     from .subtitle_overlay import OverlayStyle, SubtitleOverlay
 except ImportError:  # Direct execution: python phase5/gui_app.py
     from live_caption_controller import (  # type: ignore[no-redef]
         DEFAULT_REMOTE_SERVER_URL,
+        LOGGER,
         LiveCaptionConfig,
         LiveCaptionController,
         SpeakerMode,
+        configure_gui_runtime,
     )
     from subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState  # type: ignore[no-redef]
     from subtitle_overlay import OverlayStyle, SubtitleOverlay  # type: ignore[no-redef]
@@ -489,10 +493,16 @@ class MainWindow(QMainWindow):
 
 
 def main() -> int:
-    app = QApplication.instance() or QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    return app.exec()
+    configure_gui_runtime()
+    try:
+        app = QApplication.instance() or QApplication(sys.argv)
+        window = MainWindow()
+        window.show()
+        return app.exec()
+    except BaseException:
+        # pythonw has no console for an uncaught GUI startup exception.
+        LOGGER.exception("VOXLUX GUI startup failed")
+        raise
 
 
 if __name__ == "__main__":

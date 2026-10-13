@@ -3,10 +3,11 @@ from __future__ import annotations
 import sys
 import os
 import threading
+import logging
 from dataclasses import dataclass, field
 from importlib import import_module
 from pathlib import Path
-from typing import Any, Callable, Protocol
+from typing import Any, Callable, Protocol, TextIO
 
 # PySide6 6.8.x adds an incompatible ``typing.Self`` on Python 3.10.
 # Resolve the backport first so later PyTorch imports keep the valid object.
@@ -37,6 +38,39 @@ DEFAULT_REMOTE_SERVER_URL = os.environ.get(
     "GPU_SERVER_URL", "https://1djm8of460wbeh-8787.proxy.runpod.net"
 ).rstrip("/")
 DEFAULT_GUI_OUTPUT = ROOT / "phase5" / "output" / "gui_last_run.json"
+DEFAULT_GUI_LOG = ROOT / "phase5" / "output" / "voxlux.log"
+LOGGER = logging.getLogger("voxlux")
+_CONSOLE_STREAMS: list[TextIO] = []
+
+
+def configure_gui_runtime(log_path: Path = DEFAULT_GUI_LOG) -> Path:
+    """Make GUI diagnostics available when launched with ``pythonw``.
+
+    The Phase 3 pipeline deliberately writes progress to stdout.  Windows
+    ``pythonw`` sets stdout/stderr to ``None``; route those streams to the same
+    append-only log used for worker exceptions before starting that pipeline.
+    """
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    resolved_log_path = log_path.resolve()
+    if not any(
+        isinstance(handler, logging.FileHandler)
+        and Path(handler.baseFilename).resolve() == resolved_log_path
+        for handler in LOGGER.handlers
+    ):
+        handler = logging.FileHandler(resolved_log_path, encoding="utf-8")
+        handler.setFormatter(
+            logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+        )
+        LOGGER.addHandler(handler)
+    LOGGER.setLevel(logging.INFO)
+    LOGGER.propagate = False
+
+    for stream_name in ("stdout", "stderr"):
+        if getattr(sys, stream_name) is None:
+            stream = resolved_log_path.open("a", encoding="utf-8")
+            setattr(sys, stream_name, stream)
+            _CONSOLE_STREAMS.append(stream)
+    return resolved_log_path
 
 
 @dataclass(frozen=True)
@@ -226,6 +260,7 @@ class LiveCaptionWorker(QObject):
             self.status.emit("대기 중")
             self.finished.emit(True, message)
         except BaseException as exc:
+            LOGGER.exception("Live caption worker failed")
             message = user_error_message(exc)
             self.server_state.emit(False, "연결 안 됨")
             self.error.emit(message)

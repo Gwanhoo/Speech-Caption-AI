@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import os
+import sys
+import tempfile
 import threading
 import time
 import unittest
+from pathlib import Path
 from typing import Union
 from unittest.mock import Mock, patch
 
@@ -18,6 +21,7 @@ from phase5.live_caption_controller import (
     LiveCaptionController,
     LiveCaptionWorker,
     Phase4PipelineBackend,
+    configure_gui_runtime,
 )
 from PySide6.QtWidgets import QApplication, QLabel
 from PySide6.QtCore import Qt
@@ -395,6 +399,19 @@ class GuiTests(unittest.TestCase):
         self.assertFalse(worker.stop_event.is_set())
         worker.request_stop()
         self.assertTrue(worker.stop_event.is_set())
+
+    def test_consoleless_runtime_redirects_output_to_log(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            log_path = os.path.join(temporary_directory, "voxlux.log")
+            with patch.object(sys, "stdout", None), patch.object(sys, "stderr", None):
+                configured_path = configure_gui_runtime(Path(log_path))
+                print("consoleless pipeline diagnostic", flush=True)
+                sys.stderr.write("consoleless error diagnostic\\n")
+                sys.stderr.flush()
+            self.assertEqual(configured_path, Path(log_path).resolve())
+            contents = configured_path.read_text(encoding="utf-8")
+            self.assertIn("consoleless pipeline diagnostic", contents)
+            self.assertIn("consoleless error diagnostic", contents)
 
 
 if __name__ == "__main__":
