@@ -6,11 +6,13 @@ only chooses which already-structured events are visible to the reader.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import logging
 import time
 from typing import Any, Callable
 
 
 FINAL_LIFETIME_SECONDS = 4.0
+LOGGER = logging.getLogger("voxlux.presentation")
 
 
 @dataclass(frozen=True)
@@ -53,6 +55,7 @@ class SubtitlePresentationState:
         return tuple(finals[-available:] + partials) if available else tuple(partials)
 
     def clear(self) -> None:
+        self._log_decision("clear", "session_reset")
         self._final_deadlines.clear()
         self._final_entries.clear()
         self._partials.clear()
@@ -73,11 +76,13 @@ class SubtitlePresentationState:
         for key in expired:
             del self._final_deadlines[key]
         # Keep sequence/finalization tombstones: expiry must not permit replay.
+        self._log_decision("expire", "final_lifetime_elapsed", keys=expired)
         return True
 
     def apply(self, event: dict[str, Any]) -> bool:
         entry = self._entry_from_event(event)
         if entry is None:
+            self._log_decision("reject", "invalid_event", event=event)
             return False
 
         event_id = (
@@ -87,20 +92,25 @@ class SubtitlePresentationState:
             entry.sequence,
         )
         if event_id in self._seen_event_ids:
+            self._log_decision("reject", "duplicate_event", entry=entry)
             return False
         if entry.sequence <= self._latest_sequence.get(entry.speaker_id, -1):
+            self._log_decision("reject", "stale_sequence", entry=entry)
             return False
 
         key = (entry.speaker_id, entry.utterance_id)
         if entry.status == "partial":
             if key in self._finalized_utterances:
+                self._log_decision("reject", "finalized_utterance_replay", entry=entry)
                 return False
             current = self._partials.get(entry.speaker_id)
             if current is not None and entry.utterance_id < current.utterance_id:
+                self._log_decision("reject", "older_utterance", entry=entry)
                 return False
             self._partials[entry.speaker_id] = entry
         else:
             if key in self._finalized_utterances:
+                self._log_decision("reject", "duplicate_final", entry=entry)
                 return False
             current = self._partials.get(entry.speaker_id)
             if current is not None and entry.utterance_id == current.utterance_id:
@@ -119,7 +129,35 @@ class SubtitlePresentationState:
 
         self._remember_event(event_id)
         self._latest_sequence[entry.speaker_id] = entry.sequence
+        self._log_decision("accept", "event_applied", entry=entry)
         return True
+
+    def _log_decision(
+        self,
+        action: str,
+        reason: str,
+        *,
+        entry: SubtitleFeedEntry | None = None,
+        event: dict[str, Any] | None = None,
+        keys: set[tuple[str, int]] | None = None,
+    ) -> None:
+        source: dict[str, Any] = event or {}
+        LOGGER.info(
+            "action=%s reason=%s speaker=%r utterance_id=%r status=%r "
+            "sequence=%r text=%r keys=%r visible=%r",
+            action,
+            reason,
+            entry.speaker_id if entry else source.get("speaker"),
+            entry.utterance_id if entry else source.get("utterance_id"),
+            entry.status if entry else source.get("status"),
+            entry.sequence if entry else source.get("sequence"),
+            entry.text if entry else source.get("text"),
+            sorted(keys) if keys else None,
+            [
+                (value.speaker_id, value.utterance_id, value.status, value.sequence, value.text)
+                for value in self.entries
+            ],
+        )
 
     def _remember_event(self, event_id: tuple[str, int, str, int]) -> None:
         self._seen_event_ids.add(event_id)

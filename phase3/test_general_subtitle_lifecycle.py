@@ -167,6 +167,68 @@ class GeneralSubtitleLifecycleTests(unittest.TestCase):
         finals.extend(event.text for event in events if event.status == "final")
         self.assertEqual(finals, sentences)
 
+    def test_completed_sentence_tail_without_punctuation_is_not_replayed(self) -> None:
+        harness = GeneralSubtitleHarness()
+        first = "한편 전문가들은 건강관리에 주의할 것을 당부했습니다."
+        harness.speech(0, first)
+
+        assembly, events = harness.speech(
+            1,
+            "했습니다 그럼요 외출하기 전에 날씨를 확인하세요.",
+            shared_speech=True,
+        )
+
+        self.assertEqual(assembly.match_type, "sentence_tail_exact")
+        self.assertEqual([event.status for event in events], ["final", "partial"])
+        self.assertEqual(events[0].text, first)
+        self.assertEqual(events[1].utterance_id, 2)
+        self.assertEqual(
+            events[1].text,
+            "그럼요 외출하기 전에 날씨를 확인하세요.",
+        )
+        self.assertNotIn("했습니다 그럼요", events[1].text)
+
+        _, continuation = harness.speech(
+            2,
+            "외출하기 전에 날씨를 확인하는 것도 좋은 방법입니다.",
+            shared_speech=True,
+        )
+        self.assertEqual(continuation[-1].utterance_id, 2)
+        self.assertTrue(continuation[-1].text.startswith("그럼요 "))
+        self.assertNotIn("했습니다 그럼요", continuation[-1].text)
+
+    def test_changed_sentence_ending_is_not_treated_as_replayed_tail(self) -> None:
+        harness = GeneralSubtitleHarness()
+        first = "오늘 점검을 완료했습니다."
+        harness.speech(0, first)
+
+        assembly, events = harness.speech(
+            1,
+            "했습니다만 추가 확인이 필요합니다.",
+            shared_speech=True,
+        )
+
+        self.assertNotEqual(assembly.match_type, "sentence_tail_exact")
+        self.assertEqual(events[0].status, "final")
+        self.assertEqual(events[1].text, "했습니다만 추가 확인이 필요합니다.")
+
+    def test_sentence_tail_words_are_preserved_without_shared_audio(self) -> None:
+        harness = GeneralSubtitleHarness()
+        harness.speech(0, "첫 발표를 완료했습니다.")
+
+        assembly, events = harness.speech(
+            1,
+            "했습니다 다음 발표에서도 실제로 반복한 말입니다.",
+            shared_speech=False,
+        )
+
+        self.assertNotEqual(assembly.match_type, "sentence_tail_exact")
+        self.assertEqual(events[1].utterance_id, 2)
+        self.assertEqual(
+            events[1].text,
+            "했습니다 다음 발표에서도 실제로 반복한 말입니다.",
+        )
+
     def test_overlap_mode_keeps_existing_assembler_behavior(self) -> None:
         assembler = SubtitleAssembler(
             0,

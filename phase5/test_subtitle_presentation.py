@@ -46,6 +46,18 @@ class SubtitlePresentationStateTests(unittest.TestCase):
         self.assertFalse(state.expire())
         self.assertEqual(len(state.entries), 2)
 
+    def test_rejected_replay_records_identity_and_visible_snapshot(self) -> None:
+        final = event("speaker_0", 1, 1, "완료된 문장", "final")
+        self.assertTrue(self.state.apply(final))
+
+        with self.assertLogs("voxlux.presentation", level="INFO") as captured:
+            self.assertFalse(self.state.apply(dict(final, sequence=2)))
+
+        diagnostic = "\n".join(captured.output)
+        self.assertIn("reason=duplicate_final", diagnostic)
+        self.assertIn("utterance_id=1", diagnostic)
+        self.assertIn("완료된 문장", diagnostic)
+
     def test_discard_closes_only_matching_partial_without_a_final_caption(self):
         self.state.apply(event("speaker_0", 1, 1, "미확인 후보"))
         self.state.apply(event("speaker_1", 1, 2, "다른 발화"))

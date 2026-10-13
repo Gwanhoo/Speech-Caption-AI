@@ -115,6 +115,31 @@ def longest_relaxed_boundary_suffix_prefix(previous: str, current: str) -> int:
     return 0
 
 
+def sentence_end_tail_suffix_prefix(previous: str, current: str) -> tuple[int, int]:
+    """Match an exact normalized tail repeated without sentence punctuation.
+
+    Whisper sometimes carries the final few syllables of a completed sentence
+    into the next overlapping window while omitting the punctuation, e.g.
+    ``당부했습니다.`` -> ``했습니다 그럼요 ...``.  This is intentionally
+    limited to a completed previous sentence and a complete current-head token;
+    it does not search internal text or treat a changed word as a duplicate.
+    """
+    if not has_sentence_ending(previous):
+        return 0, 0
+    normalized_previous, _ = normalize_with_positions(previous)
+    normalized_current, current_positions = normalize_with_positions(current)
+    minimum = max(4, MINIMUM_RELAXED_BOUNDARY_CHARACTERS)
+    for length in range(
+        min(len(normalized_previous), len(normalized_current)), minimum - 1, -1
+    ):
+        if normalized_previous[-length:] != normalized_current[:length]:
+            continue
+        current_cut = current_positions[length - 1] + 1
+        if is_boundary_after(current, current_cut):
+            return length, current_cut
+    return 0, 0
+
+
 def fuzzy_suffix_prefix(
     previous: str,
     current: str,
@@ -488,15 +513,26 @@ class SubtitleAssembler:
                             normalized_overlap_length = len(normalize_for_matching(overlap))
                             new_text = raw[relaxed_cut:]
                         else:
-                            similarity, fuzzy_cut = fuzzy_suffix_prefix(
-                                previous, raw, self.minimum_characters
+                            sentence_tail_length, sentence_tail_cut = (
+                                sentence_end_tail_suffix_prefix(previous, raw)
+                                if shared_speech is True
+                                else (0, 0)
                             )
-                            if fuzzy_cut:
-                                fuzzy_cut = complete_fuzzy_overlap_token(raw, fuzzy_cut)
-                                match_type = "fuzzy"
-                                overlap = raw[:fuzzy_cut].strip()
-                                normalized_overlap_length = len(normalize_for_matching(overlap))
-                                new_text = raw[fuzzy_cut:]
+                            if sentence_tail_cut:
+                                match_type = "sentence_tail_exact"
+                                overlap = raw[:sentence_tail_cut].strip()
+                                normalized_overlap_length = sentence_tail_length
+                                new_text = raw[sentence_tail_cut:]
+                            else:
+                                similarity, fuzzy_cut = fuzzy_suffix_prefix(
+                                    previous, raw, self.minimum_characters
+                                )
+                                if fuzzy_cut:
+                                    fuzzy_cut = complete_fuzzy_overlap_token(raw, fuzzy_cut)
+                                    match_type = "fuzzy"
+                                    overlap = raw[:fuzzy_cut].strip()
+                                    normalized_overlap_length = len(normalize_for_matching(overlap))
+                                    new_text = raw[fuzzy_cut:]
 
         correction = corrected_suffix_prefix(previous, raw) if previous and raw else None
         if correction is None and previous and raw and supported_tail_revision:
@@ -629,6 +665,7 @@ class SubtitleAssembler:
             and (
                 match_type == "none"
                 or bool(overlap and has_sentence_ending(overlap))
+                or match_type == "sentence_tail_exact"
             )
         ):
             rollover_text = before_hypothesis
