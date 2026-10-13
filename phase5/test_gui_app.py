@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import logging
 import sys
 import tempfile
 import threading
@@ -13,15 +14,17 @@ from unittest.mock import Mock, patch
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from phase5.gui_app import MainWindow
+from phase5.gui_app import MainWindow, main as gui_main
 from phase5.subtitle_presentation import SubtitlePresentationState
 from phase5.live_caption_controller import (
     EnvironmentInfo,
+    LOGGER,
     LiveCaptionConfig,
     LiveCaptionController,
     LiveCaptionWorker,
     Phase4PipelineBackend,
     configure_gui_runtime,
+    shutdown_gui_runtime,
 )
 from PySide6.QtWidgets import QApplication, QLabel
 from PySide6.QtCore import Qt
@@ -401,17 +404,118 @@ class GuiTests(unittest.TestCase):
         self.assertTrue(worker.stop_event.is_set())
 
     def test_consoleless_runtime_redirects_output_to_log(self) -> None:
+        original_stdout, original_stderr = sys.stdout, sys.stderr
+        original_handlers = LOGGER.handlers[:]
+        original_logger_state = (LOGGER.level, LOGGER.propagate)
         with tempfile.TemporaryDirectory() as temporary_directory:
             log_path = os.path.join(temporary_directory, "voxlux.log")
             with patch.object(sys, "stdout", None), patch.object(sys, "stderr", None):
-                configured_path = configure_gui_runtime(Path(log_path))
-                print("consoleless pipeline diagnostic", flush=True)
-                sys.stderr.write("consoleless error diagnostic\\n")
-                sys.stderr.flush()
+                try:
+                    configured_path = configure_gui_runtime(Path(log_path))
+                    redirected_stdout, redirected_stderr = sys.stdout, sys.stderr
+                    handler = next(h for h in LOGGER.handlers if h not in original_handlers)
+                    log_stream = handler.stream
+                    # Configuring twice must not duplicate handles or log records.
+                    configure_gui_runtime(Path(log_path))
+                    self.assertEqual(len(LOGGER.handlers), len(original_handlers) + 1)
+                    self.assertIs(sys.stdout, redirected_stdout)
+                    self.assertIs(sys.stderr, redirected_stderr)
+                    print("consoleless pipeline diagnostic", flush=True)
+                    sys.stderr.write("consoleless error diagnostic\\n")
+                    sys.stderr.flush()
+                    print("buffered stdout diagnostic", end="")
+                    sys.stderr.write("buffered stderr diagnostic")
+                    LOGGER.info("runtime logging diagnostic")
+                finally:
+                    shutdown_gui_runtime()
+                self.assertIsNone(sys.stdout)
+                self.assertIsNone(sys.stderr)
+                self.assertTrue(redirected_stdout.closed)
+                self.assertTrue(redirected_stderr.closed)
+                self.assertTrue(log_stream.closed)
+                self.assertIsNone(handler.stream)
+            self.assertIs(sys.stdout, original_stdout)
+            self.assertIs(sys.stderr, original_stderr)
+            self.assertEqual(LOGGER.handlers, original_handlers)
+            self.assertEqual((LOGGER.level, LOGGER.propagate), original_logger_state)
             self.assertEqual(configured_path, Path(log_path).resolve())
             contents = configured_path.read_text(encoding="utf-8")
             self.assertIn("consoleless pipeline diagnostic", contents)
             self.assertIn("consoleless error diagnostic", contents)
+            self.assertIn("buffered stdout diagnostic", contents)
+            self.assertIn("buffered stderr diagnostic", contents)
+            self.assertEqual(contents.count("runtime logging diagnostic"), 1)
+            shutdown_gui_runtime()  # Repeated shutdown is harmless.
+            configured_path.unlink()  # Windows must release all three file handles.
+
+    def test_runtime_shutdown_preserves_external_streams_and_handlers(self) -> None:
+        original_stdout, original_stderr = sys.stdout, sys.stderr
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            log_path = Path(temporary_directory) / "voxlux.log"
+            external_handler = logging.FileHandler(log_path, encoding="utf-8")
+            LOGGER.addHandler(external_handler)
+            try:
+                try:
+                    configure_gui_runtime(log_path)
+                    self.assertIs(sys.stdout, original_stdout)
+                    self.assertIs(sys.stderr, original_stderr)
+                    with patch.object(sys, "stdout", None), patch.object(sys, "stderr", None):
+                        configure_gui_runtime(log_path)
+                        redirected_stdout, redirected_stderr = sys.stdout, sys.stderr
+                finally:
+                    shutdown_gui_runtime()
+                self.assertIs(sys.stdout, original_stdout)
+                self.assertIs(sys.stderr, original_stderr)
+                self.assertTrue(redirected_stdout.closed)
+                self.assertTrue(redirected_stderr.closed)
+                self.assertIn(external_handler, LOGGER.handlers)
+                self.assertFalse(external_handler.stream.closed)
+            finally:
+                LOGGER.removeHandler(external_handler)
+                external_handler.close()
+
+    def test_gui_main_releases_runtime_on_exit_and_startup_failure(self) -> None:
+        for startup_failure in (False, True):
+            with (
+                self.subTest(startup_failure=startup_failure),
+                tempfile.TemporaryDirectory() as directory,
+            ):
+                log_path = Path(directory) / "voxlux.log"
+                original_handlers = LOGGER.handlers[:]
+                with (
+                    patch.object(sys, "stdout", None),
+                    patch.object(sys, "stderr", None),
+                    patch(
+                        "phase5.gui_app.configure_gui_runtime",
+                        side_effect=lambda: configure_gui_runtime(log_path),
+                    ),
+                    patch("phase5.gui_app.QApplication") as application,
+                    patch("phase5.gui_app.MainWindow") as window,
+                ):
+                    application.instance.return_value.exec.side_effect = (
+                        lambda: LOGGER.info("event loop diagnostic") or 0
+                    )
+                    if startup_failure:
+                        window.side_effect = RuntimeError("startup diagnostic")
+                    try:
+                        if startup_failure:
+                            with self.assertRaisesRegex(RuntimeError, "startup diagnostic"):
+                                gui_main()
+                        else:
+                            self.assertEqual(gui_main(), 0)
+                        self.assertIsNone(sys.stdout)
+                        self.assertIsNone(sys.stderr)
+                        self.assertEqual(LOGGER.handlers, original_handlers)
+                        contents = log_path.read_text(encoding="utf-8")
+                        self.assertIn(
+                            "startup diagnostic" if startup_failure else "event loop diagnostic",
+                            contents,
+                        )
+                        if startup_failure:
+                            self.assertIn("VOXLUX GUI startup failed", contents)
+                        log_path.unlink()
+                    finally:
+                        shutdown_gui_runtime()
 
 
 if __name__ == "__main__":

@@ -37,6 +37,7 @@ try:
         LiveCaptionController,
         SpeakerMode,
         configure_gui_runtime,
+        shutdown_gui_runtime,
     )
     from .subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState
     from .subtitle_overlay import OverlayStyle, SubtitleOverlay
@@ -48,6 +49,7 @@ except ImportError:  # Direct execution: python phase5/gui_app.py
         LiveCaptionController,
         SpeakerMode,
         configure_gui_runtime,
+        shutdown_gui_runtime,
     )
     from subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState  # type: ignore[no-redef]
     from subtitle_overlay import OverlayStyle, SubtitleOverlay  # type: ignore[no-redef]
@@ -493,8 +495,8 @@ class MainWindow(QMainWindow):
 
 
 def main() -> int:
-    configure_gui_runtime()
     try:
+        configure_gui_runtime()
         app = QApplication.instance() or QApplication(sys.argv)
         window = MainWindow()
         window.show()
@@ -503,6 +505,8 @@ def main() -> int:
         # pythonw has no console for an uncaught GUI startup exception.
         LOGGER.exception("VOXLUX GUI startup failed")
         raise
+    finally:
+        shutdown_gui_runtime()
 
 
 if __name__ == "__main__":

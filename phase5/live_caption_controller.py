@@ -40,7 +40,9 @@ DEFAULT_REMOTE_SERVER_URL = os.environ.get(
 DEFAULT_GUI_OUTPUT = ROOT / "phase5" / "output" / "gui_last_run.json"
 DEFAULT_GUI_LOG = ROOT / "phase5" / "output" / "voxlux.log"
 LOGGER = logging.getLogger("voxlux")
-_CONSOLE_STREAMS: list[TextIO] = []
+_CONSOLE_STREAMS: list[tuple[str, TextIO | None, TextIO]] = []
+_GUI_LOG_HANDLERS: list[logging.FileHandler] = []
+_LOGGER_STATE: tuple[int, bool] | None = None
 
 
 def configure_gui_runtime(log_path: Path = DEFAULT_GUI_LOG) -> Path:
@@ -50,6 +52,8 @@ def configure_gui_runtime(log_path: Path = DEFAULT_GUI_LOG) -> Path:
     ``pythonw`` sets stdout/stderr to ``None``; route those streams to the same
     append-only log used for worker exceptions before starting that pipeline.
     """
+    global _LOGGER_STATE
+
     log_path.parent.mkdir(parents=True, exist_ok=True)
     resolved_log_path = log_path.resolve()
     if not any(
@@ -62,15 +66,40 @@ def configure_gui_runtime(log_path: Path = DEFAULT_GUI_LOG) -> Path:
             logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
         )
         LOGGER.addHandler(handler)
+        _GUI_LOG_HANDLERS.append(handler)
+    if _LOGGER_STATE is None:
+        _LOGGER_STATE = (LOGGER.level, LOGGER.propagate)
     LOGGER.setLevel(logging.INFO)
     LOGGER.propagate = False
 
     for stream_name in ("stdout", "stderr"):
-        if getattr(sys, stream_name) is None:
+        original_stream = getattr(sys, stream_name)
+        if original_stream is None:
             stream = resolved_log_path.open("a", encoding="utf-8")
             setattr(sys, stream_name, stream)
-            _CONSOLE_STREAMS.append(stream)
+            _CONSOLE_STREAMS.append((stream_name, original_stream, stream))
     return resolved_log_path
+
+
+def shutdown_gui_runtime() -> None:
+    """Release GUI-owned log files after workers and the event loop finish."""
+    global _LOGGER_STATE
+
+    while _CONSOLE_STREAMS:
+        stream_name, original_stream, stream = _CONSOLE_STREAMS.pop()
+        # A caller (or a test patch) may already have restored/replaced stdout.
+        if getattr(sys, stream_name) is stream:
+            setattr(sys, stream_name, original_stream)
+        stream.close()
+    while _GUI_LOG_HANDLERS:
+        handler = _GUI_LOG_HANDLERS.pop()
+        LOGGER.removeHandler(handler)
+        handler.close()
+    if _LOGGER_STATE is not None:
+        level, propagate = _LOGGER_STATE
+        LOGGER.setLevel(level)
+        LOGGER.propagate = propagate
+        _LOGGER_STATE = None
 
 
 @dataclass(frozen=True)
