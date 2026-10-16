@@ -15,6 +15,97 @@ def production_source_fragment(event) -> str:
 
 
 class ProductionEvidenceRegressions(unittest.TestCase):
+    def test_supported_window_10_to_11_revision_preserves_unobserved_leading_reply(self) -> None:
+        unsupported = SubtitleAssembler(0)
+        unsupported.process(10, "네, 현재까지 큰 교육을")
+        unsupported_event = unsupported.process(
+            11,
+            "현재까지 큰 교통 혼잡은 발생하지 않았습니다.",
+            shared_speech=True,
+            supported_tail_revision=False,
+        )
+        self.assertEqual(unsupported_event.match_type, "none")
+        self.assertIn("큰 교육을 현재까지", unsupported_event.utterance_hypothesis)
+
+        assembler = SubtitleAssembler(0)
+        state = SpeakerSubtitleState(0, require_final_support=True)
+        first = assembler.process(10, "네, 현재까지 큰 교육을")
+        state.process(
+            10, first.utterance_hypothesis, True, 23,
+            confirmed_prefix_length=first.confirmed_prefix_length,
+            source_supported=True, source_text=first.raw,
+        )
+
+        event = assembler.process(
+            11,
+            "현재까지 큰 교통 혼잡은 발생하지 않았습니다.",
+            shared_speech=True,
+            supported_tail_revision=True,
+        )
+
+        self.assertEqual(event.match_type, "supported_tail_replace")
+        self.assertEqual(
+            event.utterance_hypothesis,
+            "네, 현재까지 큰 교통 혼잡은 발생하지 않았습니다.",
+        )
+        partial = state.process(
+            11, event.utterance_hypothesis, True, 25,
+            confirmed_prefix_length=event.confirmed_prefix_length,
+            source_supported=True, source_text=production_source_fragment(event),
+        )[0]
+        self.assertEqual(partial.publication_text, event.utterance_hypothesis)
+
+    def test_supported_tail_revision_preserves_independent_leading_sentence(self) -> None:
+        assembler = SubtitleAssembler(0)
+        assembler.process(10, "별도 안내입니다. 현재까지 큰 교육을")
+
+        event = assembler.process(
+            11,
+            "현재까지 큰 교통 혼잡은 발생하지 않았습니다.",
+            shared_speech=True,
+            supported_tail_revision=True,
+        )
+
+        self.assertEqual(event.match_type, "supported_tail_replace")
+        self.assertEqual(
+            event.utterance_hypothesis,
+            "별도 안내입니다. 현재까지 큰 교통 혼잡은 발생하지 않았습니다.",
+        )
+        self.assertEqual(event.utterance_hypothesis.count("현재까지"), 1)
+
+    def test_supported_tail_revision_does_not_swallow_distinct_new_sentence(self) -> None:
+        assembler = SubtitleAssembler(0)
+        assembler.process(0, "첫 번째 안내를 마칩니다")
+
+        event = assembler.process(
+            1,
+            "두 번째 소식을 전합니다",
+            shared_speech=True,
+            supported_tail_revision=True,
+        )
+
+        self.assertNotEqual(event.match_type, "supported_tail_replace")
+        self.assertEqual(
+            event.utterance_hypothesis,
+            "첫 번째 안내를 마칩니다 두 번째 소식을 전합니다",
+        )
+
+    def test_supported_tail_revision_keeps_intentional_repetition(self) -> None:
+        assembler = SubtitleAssembler(0)
+        repeated = "안내를 마칩니다 안내를 마칩니다"
+        assembler.process(0, repeated)
+
+        event = assembler.process(
+            1,
+            "안내를 마칩니다",
+            shared_speech=True,
+            supported_tail_revision=True,
+        )
+
+        self.assertNotEqual(event.match_type, "supported_tail_replace")
+        self.assertEqual(event.utterance_hypothesis, repeated)
+        self.assertEqual(event.utterance_hypothesis.count("안내를 마칩니다"), 2)
+
     def test_unsupported_full_fuzzy_correction_preserves_prefix_and_extends_suffix(self) -> None:
         assembler = SubtitleAssembler(0)
         state = SpeakerSubtitleState(0, require_final_support=True)

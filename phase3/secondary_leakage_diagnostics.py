@@ -49,6 +49,7 @@ TEMPORAL_CONTINUITY_CONFIG = {
 # path.
 MIN_INDEPENDENT_INPUT_ENERGY_FRACTION = 0.01
 WEAK_SPEECH_MAX_DURATION_MS = 500
+CONTINUOUS_TAIL_MIN_OVERLAP_COVERAGE = 0.95
 
 
 def _finite_float(value: Any) -> float | None:
@@ -567,9 +568,53 @@ def subtitle_overlap_evidence(
         current[0][0] <= previous[-1][0] - stride
         and previous[-1][1] - stride <= current[0][1]
     )
-    evidence["supported_tail_revision"] = bool(
-        previous[-1][0] >= stride
+    previous_tail = (
+        max(0, previous[-1][0] - stride),
+        min(overlap_samples, previous[-1][1] - stride),
+    )
+    current_prefix = (
+        max(0, current[0][0]),
+        min(overlap_samples, current[0][1]),
+    )
+    shared_tail_start = max(previous_tail[0], current_prefix[0])
+    shared_tail = (
+        shared_tail_start,
+        max(shared_tail_start, min(previous_tail[1], current_prefix[1])),
+    )
+    shared_tail_samples = max(0, shared_tail[1] - shared_tail[0])
+    previous_tail_samples = max(0, previous_tail[1] - previous_tail[0])
+    continuous_tail_coverage = (
+        shared_tail_samples / previous_tail_samples
+        if previous_tail_samples else 0.0
+    )
+    continuous_tail_geometry_supported = bool(
+        # The old VAD interval began before the 1s overlap and reaches the old
+        # window end. The corresponding current interval covers nearly all of
+        # that clipped tail and continues into the current window's new region.
+        previous[-1][0] < stride < previous[-1][1]
+        and previous_tail == (0, overlap_samples)
+        and current[0][0] < overlap_samples < current[0][1]
+        and continuous_tail_coverage >= CONTINUOUS_TAIL_MIN_OVERLAP_COVERAGE
+    )
+    bounded_tail_revision = bool(
+        evidence["previous_tail_in_overlap"]
         and evidence["tail_covered_by_current_prefix"]
+    )
+    evidence.update(
+        previous_tail_overlap_interval=list(previous_tail),
+        current_prefix_overlap_interval=list(current_prefix),
+        shared_tail_interval=list(shared_tail),
+        continuous_tail_coverage=continuous_tail_coverage,
+        continuous_tail_min_overlap_coverage=CONTINUOUS_TAIL_MIN_OVERLAP_COVERAGE,
+        continuous_tail_geometry_supported=continuous_tail_geometry_supported,
+        tail_revision_geometry=(
+            "tail_started_in_overlap" if bounded_tail_revision
+            else "continuous_tail_across_overlap" if continuous_tail_geometry_supported
+            else None
+        ),
+    )
+    evidence["supported_tail_revision"] = bool(
+        (bounded_tail_revision or continuous_tail_geometry_supported)
         and correlation is not None
         and correlation >= SECONDARY_ARTIFACT_CONFIG["high_abs_waveform_correlation"]
     )

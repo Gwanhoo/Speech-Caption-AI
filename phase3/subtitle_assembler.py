@@ -265,7 +265,7 @@ def supported_overlap_tail_anchor(
     previous: str,
     current: str,
     minimum_characters: int,
-) -> tuple[int, int, float] | None:
+) -> tuple[int, int, float, int] | None:
     """Locate a bounded previous-tail/current-head anchor for acoustic revision.
 
     This only identifies lexical correspondence. The caller must separately
@@ -279,9 +279,11 @@ def supported_overlap_tail_anchor(
     if not left or not right:
         return None
     minimum_anchor = max(5, minimum_characters - 1)
-    allowed_left_tail = max(1, round(len(left) * 0.15))
+    # Acoustic support permits a bounded two-syllable correction after a
+    # substantial shared anchor (e.g. ``현재까지큰교`` + ``육을``/``통``).
+    allowed_left_tail = max(2, round(len(left) * 0.15))
     allowed_right_head = max(3, round(len(right) * 0.20))
-    best: tuple[int, int, float] | None = None
+    best: tuple[int, int, float, int] | None = None
     best_rank = (0, 0.0)
     for block in SequenceMatcher(None, left, right, autojunk=False).get_matching_blocks():
         if block.size < minimum_anchor:
@@ -296,7 +298,13 @@ def supported_overlap_tail_anchor(
             continue
         start = right_positions[block.b]
         end = right_positions[block.b + block.size - 1] + 1
-        best = start, end, similarity
+        # When the current window starts at the shared anchor, it contains no
+        # lexical evidence against the preceding text from the old window.
+        # Preserve that unobserved prefix instead of letting acoustic overlap
+        # support delete it. A changed prefix on both sides (block.b > 0)
+        # remains eligible for the established whole-tail correction path.
+        unobserved_previous_prefix = block.a if block.b == 0 else 0
+        best = start, end, similarity, unobserved_previous_prefix
         best_rank = rank
     return best
 
@@ -332,7 +340,7 @@ def reconcile_supported_sentence_revision(
     anchor = supported_overlap_tail_anchor(previous, current, minimum_characters)
     if anchor is None:
         return None
-    current_start, current_end, similarity = anchor
+    current_start, current_end, similarity, _ = anchor
     normalized_previous, previous_positions = normalize_with_positions(previous)
     normalized_anchor = normalize_for_matching(current[current_start:current_end])
     previous_start = normalized_previous.rfind(normalized_anchor)
@@ -634,12 +642,28 @@ class SubtitleAssembler:
                 tail_revision = None
             else:
                 protected_length = min(self.confirmed_prefix_length, len(normalized_active))
+                anchor_start, anchor_end, similarity, unobserved_previous_prefix = (
+                    tail_revision
+                )
+                if unobserved_previous_prefix:
+                    previous_start = len(normalized_active) - len(normalized_previous)
+                    protected_length = max(
+                        protected_length,
+                        previous_start + unobserved_previous_prefix,
+                    )
                 protected_cut = (
                     positions[protected_length - 1] + 1 if protected_length else 0
                 )
+                if unobserved_previous_prefix:
+                    while (
+                        protected_cut < len(self.utterance_hypothesis)
+                        and IGNORED_PATTERN.fullmatch(
+                            self.utterance_hypothesis[protected_cut]
+                        )
+                    ):
+                        protected_cut += 1
                 protected_prefix = self.utterance_hypothesis[:protected_cut].rstrip()
                 self.utterance_hypothesis = append_preserving_text(protected_prefix, raw)
-                anchor_start, anchor_end, similarity = tail_revision
                 match_type = "supported_tail_replace"
                 overlap = raw[anchor_start:anchor_end].strip()
                 normalized_overlap_length = len(normalize_for_matching(overlap))

@@ -219,6 +219,81 @@ class CaptionContinuityTests(unittest.TestCase):
         event = SubtitleAssembler(0).process(0, "가 가 진짜 진짜 3개 3개 123 123")
         self.assertEqual(event.utterance_hypothesis, event.raw)
 
+    def test_window_10_to_11_continuous_overlap_supports_bounded_revision(self):
+        # The VAD coordinates are from gui_last_run windows 10/11. The saved
+        # report has no waveform arrays, so only the shared waveform is synthetic.
+        previous = self.audio()
+        current = np.concatenate((previous[-SR:], self.audio()[:2 * SR]))
+        previous_vad = {"timestamps": [{"start": 31264, "end": 48000}]}
+        current_vad = {"timestamps": [{"start": 32, "end": 48000}]}
+
+        evidence = subtitle_overlap_evidence(
+            previous, current, previous_vad, current_vad, SR,
+        )
+
+        self.assertTrue(evidence["shared_speech"])
+        self.assertFalse(evidence["previous_tail_in_overlap"])
+        self.assertTrue(evidence["continuous_tail_geometry_supported"])
+        self.assertEqual(
+            evidence["tail_revision_geometry"],
+            "continuous_tail_across_overlap",
+        )
+        self.assertEqual(evidence["shared_tail_interval"], [32, SR])
+        self.assertGreater(evidence["continuous_tail_coverage"], 0.99)
+        self.assertTrue(evidence["supported_tail_revision"])
+        assembler = SubtitleAssembler(0)
+        assembler.process(10, "네, 현재까지 큰 교육을")
+        event = assembler.process(
+            11,
+            "현재까지 큰 교통 혼잡은 발생하지 않았습니다.",
+            shared_speech=evidence["shared_speech"],
+            supported_tail_revision=evidence["supported_tail_revision"],
+        )
+        self.assertEqual(event.match_type, "supported_tail_replace")
+        self.assertEqual(
+            event.utterance_hypothesis,
+            "네, 현재까지 큰 교통 혼잡은 발생하지 않았습니다.",
+        )
+        self.assertEqual(event.utterance_hypothesis.count("현재까지"), 1)
+
+    def test_overlap_revision_gate_requires_timing_and_waveform_evidence(self):
+        previous = self.audio()
+        shared_current = np.concatenate((previous[-SR:], self.audio()[:2 * SR]))
+        cases = (
+            ("new_start_in_overlap", previous, shared_current, vad((2.4, 3)), vad((.4, 3)), True),
+            ("no_shared_speech", previous, shared_current, vad((0, 1)), vad((1, 3)), False),
+            ("low_correlation", previous, self.audio(), vad((0, 3)), vad((0, 3)), False),
+            ("insufficient_continuous_coverage", previous, shared_current, vad((0, 3)), vad((.2, 3)), False),
+            ("boundary_touch_only", previous, shared_current, vad((0, 2)), vad((0, 3)), False),
+        )
+        for name, old_audio, new_audio, old_vad, new_vad, expected in cases:
+            with self.subTest(name=name):
+                evidence = subtitle_overlap_evidence(
+                    old_audio, new_audio, old_vad, new_vad, SR,
+                )
+                self.assertEqual(evidence["supported_tail_revision"], expected)
+
+    def test_supported_overlap_preserves_a_genuine_new_repetition(self):
+        previous = self.audio()
+        current = np.concatenate((previous[-SR:], self.audio()[:2 * SR]))
+        evidence = subtitle_overlap_evidence(
+            previous, current, vad((0, 3)), vad((0, 3)), SR,
+        )
+        self.assertTrue(evidence["supported_tail_revision"])
+        text = "다시 한번 시작하겠습니다"
+        assembler = SubtitleAssembler(0)
+        assembler.process(0, text)
+
+        event = assembler.process(
+            1,
+            text + " " + text,
+            shared_speech=evidence["shared_speech"],
+            supported_tail_revision=evidence["supported_tail_revision"],
+        )
+
+        self.assertEqual(event.match_type, "token_exact")
+        self.assertEqual(event.utterance_hypothesis.count(text), 2)
+
     def test_d_revision_requires_timing_adjacency_and_new_content(self):
         for window, support, following in (
             (1, False, "제가 돌려서 다음 이야기"),
