@@ -548,13 +548,23 @@ class SubtitleAssembler:
             and similarity is not None
             and correction[2] > similarity
         )
+        unsupported_full_correction_with_extension = bool(
+            correction
+            and match_type == "fuzzy"
+            and correction_covers_previous
+            and new_text.strip()
+            and self.allow_shifted_head
+            and shared_speech is True
+            and shifted_head_continuation(previous, raw) is not None
+            and not supported_tail_revision
+        )
         # When fuzzy alignment already separated an overlapping head from a
         # genuinely new suffix, keep an established prefix outside that seam and
         # append only the suffix. A single noisy adjacent window must not turn a
-        # bounded tail append into a destructive correction. A full re-observation
-        # of the previous fragment may still correct it, and correction-only
-        # hypotheses continue to use the normal branch.
-        if correction and (
+        # bounded tail append into a destructive correction. Replacing the whole
+        # previous hypothesis while also extending it requires acoustic revision
+        # support; correction-only hypotheses continue to use the normal branch.
+        if correction and not unsupported_full_correction_with_extension and (
             match_type == "none"
             or (
                 match_type == "fuzzy"

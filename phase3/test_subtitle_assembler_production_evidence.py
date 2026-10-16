@@ -15,6 +15,45 @@ def production_source_fragment(event) -> str:
 
 
 class ProductionEvidenceRegressions(unittest.TestCase):
+    def test_unsupported_full_fuzzy_correction_preserves_prefix_and_extends_suffix(self) -> None:
+        assembler = SubtitleAssembler(0)
+        state = SpeakerSubtitleState(0, require_final_support=True)
+        first = assembler.process(4, "오전에는 비교적")
+        state.process(
+            4,
+            first.utterance_hypothesis,
+            True,
+            11,
+            confirmed_prefix_length=first.confirmed_prefix_length,
+            source_supported=True,
+            source_text=first.raw,
+        )
+
+        event = assembler.process(
+            5,
+            "이전에는 비교적 맑은 날씨가 이어졌지만",
+            shared_speech=True,
+            supported_tail_revision=False,
+        )
+
+        self.assertEqual(event.match_type, "fuzzy")
+        self.assertEqual(event.new_fragment, "맑은 날씨가 이어졌지만")
+        self.assertEqual(
+            event.utterance_hypothesis,
+            "오전에는 비교적 맑은 날씨가 이어졌지만",
+        )
+        self.assertEqual(event.utterance_hypothesis.count("비교적"), 1)
+        partial = state.process(
+            5,
+            event.utterance_hypothesis,
+            True,
+            13,
+            confirmed_prefix_length=event.confirmed_prefix_length,
+            source_supported=True,
+            source_text=production_source_fragment(event),
+        )[0]
+        self.assertEqual(partial.publication_text, event.utterance_hypothesis)
+
     def test_shifted_window_head_preserves_prefix_through_publication_and_flush(self) -> None:
         # User-supplied gui_last_run examples, not an imported JSON replay.
         for old, raw, expected in (
@@ -59,8 +98,15 @@ class ProductionEvidenceRegressions(unittest.TestCase):
             with self.subTest(old=old):
                 assembler = SubtitleAssembler(0)
                 assembler.process(0, old)
-                event = assembler.process(1, raw, shared_speech=True)
+                event = assembler.process(
+                    1,
+                    raw,
+                    shared_speech=True,
+                    supported_tail_revision=False,
+                )
                 self.assertEqual(event.utterance_hypothesis, expected)
+                if old == "오전에는 비교적":
+                    self.assertEqual(event.match_type, "fuzzy_replace")
 
     def test_shifted_head_requires_shared_speech_and_adjacent_windows(self) -> None:
         old = "오늘 서울 도심에서는 아침부터"
