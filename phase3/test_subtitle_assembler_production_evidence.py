@@ -1,8 +1,15 @@
 from __future__ import annotations
 
+import json
 import unittest
+from pathlib import Path
 
 from subtitle_assembler import SpeakerSubtitleState, SubtitleAssembler, normalize_for_matching
+
+
+LOGGED_WINDOW_FIXTURE = (
+    Path(__file__).with_name("test_fixtures") / "gui_last_run_overlap_windows.json"
+)
 
 
 def production_source_fragment(event) -> str:
@@ -14,7 +21,166 @@ def production_source_fragment(event) -> str:
     return event.new_fragment
 
 
+def logged_windows() -> dict[int, dict[str, object]]:
+    """Load the minimal, immutable primary-stream extract from gui_last_run."""
+    fixture = json.loads(LOGGED_WINDOW_FIXTURE.read_text(encoding="utf-8"))
+    return {entry["window"]: entry for entry in fixture["windows"]}
+
+
+class LoggedWindowReplay:
+    """Exercise assembler/state ordering with recorded text, VAD, and timing."""
+
+    def __init__(self) -> None:
+        self.assembler = SubtitleAssembler(0, enable_sentence_lifecycle=True)
+        self.state = SpeakerSubtitleState(0, require_final_support=True)
+
+    def process(
+        self,
+        record: dict[str, object],
+        *,
+        supported_tail_revision: bool | None = None,
+    ):
+        overlap = record["overlap"]
+        assembly = self.assembler.process(
+            record["window"],
+            record["raw"],
+            shared_speech=overlap["shared_speech"],
+            supported_tail_revision=(
+                overlap["supported_tail_revision"]
+                if supported_tail_revision is None
+                else supported_tail_revision
+            ),
+        )
+        events = []
+        if assembly.rollover_text and self.state.partial_text:
+            final = self.state.finalize(
+                record["window"],
+                record["stream_end_seconds"],
+                assembly.rollover_reason or "",
+            )
+            self.assembler.commit_finalized_text(final.text)
+            events.append(final)
+        events.extend(
+            self.state.process(
+                record["window"],
+                assembly.utterance_hypothesis,
+                record["vad"]["speech_detected"],
+                record["stream_end_seconds"],
+                confirmed_prefix_length=assembly.confirmed_prefix_length,
+                source_supported=bool(record["raw"]),
+                source_text=production_source_fragment(assembly),
+            )
+        )
+        return assembly, events
+
+
 class ProductionEvidenceRegressions(unittest.TestCase):
+    def test_logged_windows_4_to_7_keep_prefix_and_defer_final(self) -> None:
+        records = logged_windows()
+        self.assertEqual(records[5]["vad"]["speech_duration_ms"], 2900.0)
+        self.assertEqual(records[7]["vad"]["timestamps"], [[0, 37344], [43040, 48000]])
+        self.assertFalse(records[7]["overlap"]["supported_tail_revision"])
+
+        replay = LoggedWindowReplay()
+        observed = {
+            window: replay.process(records[window])
+            for window in range(2, 8)
+        }
+        window_5, window_5_events = observed[5]
+        self.assertEqual(window_5.match_type, "fuzzy")
+        self.assertEqual(window_5.new_fragment, "맑은 날씨가 이어졌지만")
+        self.assertTrue(window_5_events[0].publication_text.startswith("오전에는"))
+        self.assertNotIn("이전에는", window_5.utterance_hypothesis)
+
+        window_7, window_7_events = observed[7]
+        expected = (
+            "오전에는 비교적 맑은 날씨가 이어졌지만 오후부터는 일부 지역에 "
+            "구름이 많아질 것으로 예상됩니다."
+        )
+        self.assertEqual(window_7.match_type, "sentence_head_revision")
+        self.assertEqual(window_7.rollover_text, "")
+        self.assertEqual(window_7.utterance_hypothesis, expected)
+        self.assertEqual([event.status for event in window_7_events], ["partial"])
+        self.assertEqual(replay.state.partial_text, expected)
+        self.assertNotIn("많아졌습니다", replay.state.partial_text)
+        self.assertEqual(
+            replay.state.final_segments,
+            ["오늘 서울 도심에서는 아침부터 많은 시민들이 출근길에 나섰습니다."],
+        )
+
+    def test_logged_windows_10_to_15_preserve_reply_and_fragment_revision(self) -> None:
+        records = logged_windows()
+        self.assertEqual(records[10]["vad"]["timestamps"][-1], [31264, 48000])
+        self.assertEqual(records[11]["vad"]["timestamps"], [[32, 48000]])
+        self.assertFalse(records[11]["overlap"]["supported_tail_revision"])
+
+        replay = LoggedWindowReplay()
+        observed = {}
+        for window in range(8, 16):
+            # The original log predates L2 and records false here. The L2 gate
+            # regression derives true from these recorded VAD coordinates plus
+            # synthetic shared audio; this text/state replay consumes that gate.
+            observed[window] = replay.process(
+                records[window],
+                supported_tail_revision=True if window == 11 else None,
+            )
+
+        window_10, window_10_events = observed[10]
+        self.assertEqual(window_10.match_type, "token_exact")
+        self.assertEqual(window_10.utterance_hypothesis, "네, 현재까지 큰 교육을")
+        self.assertEqual(window_10_events[-1].publication_text, "네, 현재까지 큰 교육을")
+
+        window_11, _ = observed[11]
+        self.assertEqual(window_11.match_type, "supported_tail_replace")
+        self.assertEqual(
+            window_11.utterance_hypothesis,
+            "네, 현재까지 큰 교통 혼잡은 발생하지 않았습니다.",
+        )
+        self.assertEqual(window_11.utterance_hypothesis.count("현재까지"), 1)
+        self.assertNotIn("교육을 현재까지", window_11.utterance_hypothesis)
+
+        window_14, window_14_events = observed[14]
+        corrected = (
+            "한편 전문가들은 갑작스러운 기운 변화에 대비해 "
+            "건강관리에 주의할 것을 당부했습니다."
+        )
+        self.assertEqual(window_14.match_type, "sentence_head_revision")
+        self.assertEqual(window_14.rollover_text, "")
+        self.assertEqual(window_14.utterance_hypothesis, corrected)
+        self.assertEqual([event.status for event in window_14_events], ["partial"])
+
+        window_15, window_15_events = observed[15]
+        self.assertEqual(window_15_events[0].status, "final")
+        self.assertEqual(window_15_events[0].text, corrected)
+        self.assertEqual(window_15.utterance_hypothesis, "그럼요. 외출하기 전")
+        self.assertEqual(window_15_events[-1].publication_text, "그럼요. 외출하기 전")
+
+    def test_logged_windows_18_to_21_do_not_replay_finalized_text(self) -> None:
+        records = logged_windows()
+        self.assertEqual(records[20]["vad"]["speech_duration_ms"], 734.0)
+        self.assertFalse(records[21]["vad"]["speech_detected"])
+
+        replay = LoggedWindowReplay()
+        observed = {
+            window: replay.process(records[window])
+            for window in (18, 19, 20, 21)
+        }
+        first = "오늘 준비한 소식은 여기까지입니다."
+        second = "시청해 주셔서 감사합니다."
+
+        window_19, window_19_events = observed[19]
+        self.assertEqual(window_19_events[0].text, first)
+        self.assertEqual(window_19.utterance_hypothesis, second)
+        self.assertNotIn(first, replay.state.final_segments[-1])
+
+        window_20, window_20_events = observed[20]
+        self.assertTrue(window_20.duplicate_only)
+        self.assertEqual(window_20_events[0].text, second)
+        self.assertEqual(window_20.utterance_hypothesis, "")
+        self.assertEqual(observed[21][1], [])
+        self.assertEqual(replay.state.partial_text, "")
+        self.assertEqual(replay.state.final_segments, [first, second])
+
     def test_supported_window_10_to_11_revision_preserves_unobserved_leading_reply(self) -> None:
         unsupported = SubtitleAssembler(0)
         unsupported.process(10, "네, 현재까지 큰 교육을")

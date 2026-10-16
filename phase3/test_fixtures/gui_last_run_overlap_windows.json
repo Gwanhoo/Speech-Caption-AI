@@ -1,0 +1,26 @@
+{
+  "source": "phase5/output/gui_last_run.json",
+  "source_note": "Exact primary RAW STT, stream-end time, VAD fields, and recorded overlap flags extracted from the 2026-10-13 GUI run. No waveform samples or STT confidence values were present in this fixture.",
+  "window_seconds": 3,
+  "stride_seconds": 2,
+  "windows": [
+    {"window": 2, "stream_end_seconds": 7, "raw": "오늘 서울 도심에서는 아침부터", "vad": {"speech_detected": true, "speech_duration_ms": 1846.0, "timestamps": [[18464, 48000]]}, "overlap": {"shared_speech": null, "supported_tail_revision": false}},
+    {"window": 3, "stream_end_seconds": 9, "raw": "아침에서는 아침부터 많은 시민들이 출근길에 나섰습니다.", "vad": {"speech_detected": true, "speech_duration_ms": 3000.0, "timestamps": [[0, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 4, "stream_end_seconds": 11, "raw": "출근길에 나섰습니다. 오전에는 비교적", "vad": {"speech_detected": true, "speech_duration_ms": 2676.0, "timestamps": [[0, 23520], [28704, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 5, "stream_end_seconds": 13, "raw": "이전에는 비교적 맑은 날씨가 이어졌지만", "vad": {"speech_detected": true, "speech_duration_ms": 2900.0, "timestamps": [[0, 41440], [43040, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 6, "stream_end_seconds": 15, "raw": "오후부터는 일부 지역에 구름이 많아졌습니다.", "vad": {"speech_detected": true, "speech_duration_ms": 2868.0, "timestamps": [[0, 9184], [11296, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 7, "stream_end_seconds": 17, "raw": "구름이 많아질 것으로 예상됩니다.", "vad": {"speech_detected": true, "speech_duration_ms": 2644.0, "timestamps": [[0, 37344], [43040, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 8, "stream_end_seconds": 19, "raw": "시민들은 대중교통을 이용하거나 도로", "vad": {"speech_detected": true, "speech_duration_ms": 2644.0, "timestamps": [[0, 5600], [11296, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 9, "stream_end_seconds": 21, "raw": "이용하거나 도로 상황을 확인하며 이동하고 있습니다.", "vad": {"speech_detected": true, "speech_duration_ms": 3000.0, "timestamps": [[0, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 10, "stream_end_seconds": 23, "raw": "이동하고 있습니다. 네, 현재까지 큰 교육을", "vad": {"speech_detected": true, "speech_duration_ms": 2576.0, "timestamps": [[0, 17376], [22560, 29664], [31264, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 11, "stream_end_seconds": 25, "raw": "현재까지 큰 교통 혼잡은 발생하지 않았습니다.", "vad": {"speech_detected": true, "speech_duration_ms": 2998.0, "timestamps": [[32, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 12, "stream_end_seconds": 27, "raw": "하지 않았습니다. 한편 전문가들은 갑작스러운", "vad": {"speech_detected": true, "speech_duration_ms": 2642.0, "timestamps": [[32, 16352], [22048, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 13, "stream_end_seconds": 29, "raw": "인가들은 갑작스러운 기운 변화에 대비해 건강을 받았다.", "vad": {"speech_detected": true, "speech_duration_ms": 2834.0, "timestamps": [[32, 40416], [43040, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 14, "stream_end_seconds": 31, "raw": "비해 건강관리에 주의할 것을 당부했습니다.", "vad": {"speech_detected": true, "speech_duration_ms": 2836.0, "timestamps": [[0, 8160], [10784, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 15, "stream_end_seconds": 33, "raw": "당부했습니다. 그럼요. 외출하기 전", "vad": {"speech_detected": true, "speech_duration_ms": 2542.0, "timestamps": [[32, 17376], [22560, 34272], [36384, 48000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 18, "stream_end_seconds": 39, "raw": "오늘 준비한 소식은 여기까지입니다.", "vad": {"speech_detected": true, "speech_duration_ms": 2396.0, "timestamps": [[1568, 39904]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 19, "stream_end_seconds": 41, "raw": "시청해 주셔서 감사합니다.", "vad": {"speech_detected": true, "speech_duration_ms": 2394.0, "timestamps": [[0, 7648], [13344, 44000]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 20, "stream_end_seconds": 43, "raw": "감사합니다.", "vad": {"speech_detected": true, "speech_duration_ms": 734.0, "timestamps": [[0, 11744]]}, "overlap": {"shared_speech": true, "supported_tail_revision": false}},
+    {"window": 21, "stream_end_seconds": 45, "raw": "", "vad": {"speech_detected": false, "speech_duration_ms": 0.0, "timestamps": []}, "overlap": {"shared_speech": null, "supported_tail_revision": false}}
+  ]
+}
