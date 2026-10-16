@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import unittest
 
-from subtitle_assembler import SpeakerSubtitleState, SubtitleAssembler
+from subtitle_assembler import (
+    SpeakerSubtitleState,
+    SubtitleAssembler,
+    normalize_for_matching,
+    reconcile_adjacent_sentence_head_revision,
+)
 
 
 def source_fragment(event) -> str:
@@ -166,6 +171,227 @@ class GeneralSubtitleLifecycleTests(unittest.TestCase):
         _, events = harness.silence(len(sentences))
         finals.extend(event.text for event in events if event.status == "final")
         self.assertEqual(finals, sentences)
+
+    def test_7_window_6_to_7_revises_ending_before_final(self) -> None:
+        harness = GeneralSubtitleHarness()
+        harness.speech(6, "오후부터는 일부 지역에 구름이 많아졌습니다.")
+
+        assembly, events = harness.speech(
+            7,
+            "구름이 많아질 것으로 예상됩니다.",
+            shared_speech=True,
+            supported_tail_revision=False,
+        )
+
+        corrected = "오후부터는 일부 지역에 구름이 많아질 것으로 예상됩니다."
+        self.assertEqual(assembly.match_type, "sentence_head_revision")
+        self.assertEqual(assembly.rollover_text, "")
+        self.assertEqual(assembly.utterance_hypothesis, corrected)
+        self.assertEqual([event.status for event in events], ["partial"])
+        self.assertEqual(events[0].utterance_id, 1)
+        self.assertEqual(events[0].publication_text, corrected)
+
+        _, following = harness.speech(
+            8,
+            "시민들은 대중교통을 이용하고 있습니다.",
+            shared_speech=True,
+        )
+        self.assertEqual([event.status for event in following], ["final", "partial"])
+        self.assertEqual(following[0].text, corrected)
+        self.assertNotIn("많아졌습니다", following[0].text)
+        self.assertNotIn(corrected, following[1].publication_text)
+
+    def test_8_window_13_to_14_repairs_clipped_head_before_final(self) -> None:
+        harness = GeneralSubtitleHarness()
+        harness.speech(12, "한편 전문가들은 갑작스러운")
+        harness.speech(
+            13,
+            "인가들은 갑작스러운 기운 변화에 대비해 건강을 받았다.",
+            shared_speech=True,
+        )
+
+        assembly, events = harness.speech(
+            14,
+            "비해 건강관리에 주의할 것을 당부했습니다.",
+            shared_speech=True,
+            supported_tail_revision=False,
+        )
+
+        corrected = (
+            "한편 전문가들은 갑작스러운 기운 변화에 대비해 "
+            "건강관리에 주의할 것을 당부했습니다."
+        )
+        self.assertEqual(assembly.match_type, "sentence_head_revision")
+        self.assertEqual(assembly.rollover_text, "")
+        self.assertEqual(assembly.utterance_hypothesis, corrected)
+        self.assertEqual([event.status for event in events], ["partial"])
+        self.assertEqual(events[0].utterance_id, 1)
+        self.assertEqual(events[0].publication_text, corrected)
+
+        _, following = harness.speech(
+            15,
+            "당부했습니다. 그럼요. 외출하기 전",
+            shared_speech=True,
+        )
+        self.assertEqual([event.status for event in following], ["final", "partial"])
+        self.assertEqual(following[0].text, corrected)
+        self.assertEqual(following[1].publication_text, "그럼요. 외출하기 전")
+        self.assertNotIn("건강을 받았다", following[0].text)
+
+    def test_9_related_new_sentence_is_not_mistaken_for_revision(self) -> None:
+        harness = GeneralSubtitleHarness()
+        first = "오늘 예산안을 검토했다."
+        second = "예산안을 다시 설명합니다."
+        harness.speech(0, first)
+
+        assembly, events = harness.speech(
+            1,
+            second,
+            shared_speech=True,
+            supported_tail_revision=False,
+        )
+
+        self.assertNotEqual(assembly.match_type, "sentence_head_revision")
+        self.assertEqual([event.status for event in events], ["final", "partial"])
+        self.assertEqual(events[0].text, first)
+        self.assertEqual(events[1].publication_text, second)
+
+    def test_sentence_head_revision_preserves_independent_leading_speech(self) -> None:
+        previous = (
+            "첫 번째 소식은 이미 전했습니다. "
+            "오후부터는 일부 지역에 구름이 많아졌습니다."
+        )
+        current = "구름이 많아질 것으로 예상됩니다."
+        expected = (
+            "첫 번째 소식은 이미 전했습니다. "
+            "오후부터는 일부 지역에 구름이 많아질 것으로 예상됩니다."
+        )
+
+        revision = reconcile_adjacent_sentence_head_revision(
+            previous, previous, current, 6, 0
+        )
+        self.assertIsNotNone(revision)
+        self.assertEqual(revision[0], expected)
+
+        assembler = SubtitleAssembler(0, enable_sentence_lifecycle=True)
+        assembler.process(0, previous)
+        event = assembler.process(1, current, shared_speech=True)
+        self.assertEqual(event.match_type, "sentence_head_revision")
+        self.assertEqual(event.utterance_hypothesis, expected)
+        self.assertIn("첫 번째 소식은 이미 전했습니다.", event.utterance_hypothesis)
+
+    def test_sentence_head_revision_accepts_zero_confirmed_prefix(self) -> None:
+        previous = "오후부터는 일부 지역에 구름이 많아졌습니다."
+        current = "구름이 많아질 것으로 예상됩니다."
+        expected = "오후부터는 일부 지역에 구름이 많아질 것으로 예상됩니다."
+
+        revision = reconcile_adjacent_sentence_head_revision(
+            previous, previous, current, 6, 0
+        )
+        self.assertIsNotNone(revision)
+        self.assertEqual(revision[0], expected)
+
+        assembler = SubtitleAssembler(0, enable_sentence_lifecycle=True)
+        first = assembler.process(0, previous)
+        self.assertEqual(first.confirmed_prefix_length, 0)
+        event = assembler.process(1, current, shared_speech=True)
+        self.assertEqual(event.match_type, "sentence_head_revision")
+        self.assertEqual(event.rollover_text, "")
+        self.assertEqual(event.utterance_hypothesis, expected)
+
+    def test_sentence_head_revision_respects_confirmed_prefix_around_seam(self) -> None:
+        current = "구름이 많아질 것으로 예상됩니다."
+
+        before = SubtitleAssembler(0, enable_sentence_lifecycle=True)
+        before.process(0, "먼저 안내드리며 오후부터는")
+        established_before = before.process(
+            1,
+            "먼저 안내드리며 오후부터는 일부 지역에 구름이 많아졌습니다.",
+            shared_speech=True,
+        )
+        before_seam = normalize_for_matching(
+            established_before.utterance_hypothesis
+        ).index(normalize_for_matching("구름이 많아졌습니다."))
+        self.assertLess(established_before.confirmed_prefix_length, before_seam)
+        direct_before = reconcile_adjacent_sentence_head_revision(
+            established_before.utterance_hypothesis,
+            established_before.raw,
+            current,
+            6,
+            established_before.confirmed_prefix_length,
+        )
+        self.assertIsNotNone(direct_before)
+        revised = before.process(2, current, shared_speech=True)
+        self.assertEqual(revised.match_type, "sentence_head_revision")
+        self.assertEqual(revised.rollover_text, "")
+
+        after = SubtitleAssembler(0, enable_sentence_lifecycle=True)
+        after.process(0, "오후부터는 일부 지역에 구름이 많아")
+        established_after = after.process(
+            1,
+            "오후부터는 일부 지역에 구름이 많아졌습니다.",
+            shared_speech=True,
+        )
+        after_seam = normalize_for_matching(
+            established_after.utterance_hypothesis
+        ).index(normalize_for_matching("구름이 많아졌습니다."))
+        self.assertGreater(established_after.confirmed_prefix_length, after_seam)
+        direct_after = reconcile_adjacent_sentence_head_revision(
+            established_after.utterance_hypothesis,
+            established_after.raw,
+            current,
+            6,
+            established_after.confirmed_prefix_length,
+        )
+        self.assertIsNone(direct_after)
+        separated = after.process(2, current, shared_speech=True)
+        self.assertNotEqual(separated.match_type, "sentence_head_revision")
+        self.assertEqual(
+            separated.rollover_text,
+            "오후부터는 일부 지역에 구름이 많아졌습니다.",
+        )
+        self.assertEqual(separated.utterance_hypothesis, current)
+
+    def test_sentence_head_revision_preserves_active_text_before_previous_window(self) -> None:
+        active = "한편 전문가들은 갑작스러운 기운 변화에 대비해 건강을 받았다."
+        previous = "인가들은 갑작스러운 기운 변화에 대비해 건강을 받았다."
+        current = "비해 건강관리에 주의할 것을 당부했습니다."
+        expected = (
+            "한편 전문가들은 갑작스러운 기운 변화에 대비해 "
+            "건강관리에 주의할 것을 당부했습니다."
+        )
+
+        revision = reconcile_adjacent_sentence_head_revision(
+            active, previous, current, 6, 0
+        )
+        self.assertIsNotNone(revision)
+        self.assertEqual(revision[0], expected)
+
+        assembler = SubtitleAssembler(0, enable_sentence_lifecycle=True)
+        assembler.process(0, "한편 전문가들은 갑작스러운")
+        assembler.process(1, previous, shared_speech=True)
+        event = assembler.process(2, current, shared_speech=True)
+        self.assertEqual(event.match_type, "sentence_head_revision")
+        self.assertEqual(event.utterance_hypothesis, expected)
+        self.assertTrue(event.utterance_hypothesis.startswith("한편 전문가들은"))
+
+    def test_actual_new_sentence_is_not_sentence_head_revision(self) -> None:
+        previous = "오늘 예산안을 검토했다."
+        current = "예산안을 다시 설명합니다."
+
+        self.assertIsNone(
+            reconcile_adjacent_sentence_head_revision(
+                previous, previous, current, 6, 0
+            )
+        )
+
+        harness = GeneralSubtitleHarness()
+        harness.speech(0, previous)
+        assembly, events = harness.speech(1, current, shared_speech=True)
+        self.assertNotEqual(assembly.match_type, "sentence_head_revision")
+        self.assertEqual([event.status for event in events], ["final", "partial"])
+        self.assertEqual(events[0].text, previous)
+        self.assertEqual(events[1].publication_text, current)
 
     def test_completed_sentence_tail_without_punctuation_is_not_replayed(self) -> None:
         harness = GeneralSubtitleHarness()

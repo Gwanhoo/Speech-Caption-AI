@@ -351,6 +351,78 @@ def reconcile_supported_sentence_revision(
     return revised, current[current_start:current_end].strip(), similarity
 
 
+def reconcile_adjacent_sentence_head_revision(
+    active: str,
+    previous: str,
+    current: str,
+    minimum_characters: int,
+    confirmed_prefix_length: int,
+) -> tuple[str, str, float] | None:
+    """Revise a still-active sentence when the next window starts inside it.
+
+    This is deliberately narrower than general fuzzy correction.  It requires
+    shared audio at the caller, a unique current-head anchor, a short changed
+    ending after that anchor, and substantial new text.  The seam must also be
+    outside the independently confirmed prefix.  These constraints cover a
+    premature Whisper full stop without treating a merely related new sentence
+    as permission to rewrite an older one.
+    """
+    if not has_sentence_ending(previous):
+        return None
+    normalized_previous, previous_positions = normalize_with_positions(previous)
+    normalized_current, current_positions = normalize_with_positions(current)
+    normalized_active, active_positions = normalize_with_positions(active)
+    if not normalized_previous or not normalized_current or not normalized_active:
+        return None
+
+    minimum_anchor = max(4, minimum_characters - 2)
+    best: tuple[int, int, float] | None = None
+    best_rank = (0, 0.0)
+    for block in SequenceMatcher(
+        None, normalized_previous, normalized_current, autojunk=False
+    ).get_matching_blocks():
+        if block.b != 0 or block.a <= 0 or block.size < minimum_anchor:
+            continue
+        changed_tail = len(normalized_previous) - block.a - block.size
+        if not 1 <= changed_tail <= 4:
+            continue
+        if len(normalized_current) - block.size < minimum_anchor:
+            continue
+        previous_end = previous_positions[block.a + block.size - 1] + 1
+        current_end = current_positions[block.size - 1] + 1
+        if (
+            is_boundary_after(previous, previous_end)
+            or is_boundary_after(current, current_end)
+        ):
+            continue
+        anchor = normalized_previous[block.a:block.a + block.size]
+        if (
+            normalized_previous.count(anchor) != 1
+            or normalized_current.count(anchor) != 1
+        ):
+            continue
+        old_suffix_length = len(normalized_previous) - block.a
+        similarity = 2 * block.size / (old_suffix_length + block.size)
+        rank = (block.size, similarity)
+        if rank <= best_rank:
+            continue
+        best = old_suffix_length, current_end, similarity
+        best_rank = rank
+    if best is None:
+        return None
+
+    old_suffix_length, current_end, similarity = best
+    old_suffix = normalized_previous[-old_suffix_length:]
+    if not normalized_active.endswith(old_suffix):
+        return None
+    seam = len(normalized_active) - old_suffix_length
+    if seam < confirmed_prefix_length:
+        return None
+    cut = active_positions[seam]
+    revised = active[:cut] + current
+    return revised, current[:current_end].strip(), similarity
+
+
 def shifted_head_continuation(previous: str, current: str) -> tuple[int, int, int] | None:
     """Find a local word anchor after one revised window-head word.
 
@@ -626,6 +698,28 @@ class SubtitleAssembler:
                 revised, overlap, similarity = sentence_revision
                 self.utterance_hypothesis = revised
                 match_type = "supported_sentence_revision"
+                normalized_overlap_length = len(normalize_for_matching(overlap))
+                new_text = raw
+        if (
+            sentence_end_candidate
+            and correction is None
+            and sentence_revision is None
+            and match_type == "none"
+            and previous
+            and raw
+            and shared_speech is True
+        ):
+            sentence_revision = reconcile_adjacent_sentence_head_revision(
+                self.utterance_hypothesis,
+                previous,
+                raw,
+                self.minimum_characters,
+                self.confirmed_prefix_length,
+            )
+            if sentence_revision is not None:
+                revised, overlap, similarity = sentence_revision
+                self.utterance_hypothesis = revised
+                match_type = "sentence_head_revision"
                 normalized_overlap_length = len(normalize_for_matching(overlap))
                 new_text = raw
         if (correction is None and sentence_revision is None and match_type == "none"
