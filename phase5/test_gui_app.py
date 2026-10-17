@@ -27,7 +27,9 @@ from phase5.live_caption_controller import (
     SpeakerMode,
     configure_gui_runtime,
     shutdown_gui_runtime,
+    user_error_message,
 )
+from remote_gpu_client import RemoteConnectionError, RemoteTimeoutError
 from PySide6.QtWidgets import QApplication, QLabel
 from PySide6.QtCore import Qt
 from typing_extensions import Self as TypingExtensionsSelf
@@ -65,6 +67,20 @@ class ExplodingBackend:
 
     def run(self, config: LiveCaptionConfig, hooks) -> int:
         raise AssertionError("preflight failure must prevent pipeline start")
+
+
+class RecoveringBackend(BlockingBackend):
+    """First health check fails; a later user-initiated start succeeds."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.preflight_attempts = 0
+
+    def preflight(self, config: LiveCaptionConfig) -> EnvironmentInfo:
+        self.preflight_attempts += 1
+        if self.preflight_attempts == 1:
+            raise RemoteConnectionError("mock server unavailable")
+        return super().preflight(config)
 
 
 class GuiTests(unittest.TestCase):
@@ -492,6 +508,49 @@ class GuiTests(unittest.TestCase):
             self.assertIn("연결 안 됨", window.server_state_label.text())
         finally:
             window.close()
+
+    def test_stop_before_worker_runs_skips_preflight_request(self) -> None:
+        backend = Mock()
+        worker = LiveCaptionWorker(LiveCaptionConfig(), backend=backend)
+        finished: list[tuple[bool, str]] = []
+        worker.finished.connect(lambda success, message: finished.append((success, message)))
+
+        worker.request_stop()
+        worker.run()
+
+        backend.preflight.assert_not_called()
+        self.assertEqual(finished, [(True, "시작이 취소되었습니다.")])
+
+    def test_connection_failure_returns_idle_and_a_later_start_recovers(self) -> None:
+        backend = RecoveringBackend()
+        controller = LiveCaptionController(backend=backend)
+        errors: list[str] = []
+        controller.error.connect(errors.append)
+        try:
+            self.assertTrue(controller.start(LiveCaptionConfig(websocket_enabled=False)))
+            self.pump_until(lambda: controller.state == "idle")
+            self.assertEqual(backend.preflight_attempts, 1)
+            self.assertIn("RunPod 서버에 연결할 수 없습니다", errors[-1])
+
+            self.assertTrue(controller.start(LiveCaptionConfig(websocket_enabled=False)))
+            self.pump_until(backend.started.is_set)
+            self.assertEqual(backend.preflight_attempts, 2)
+            self.assertTrue(controller.stop())
+            self.pump_until(lambda: controller.state == "idle")
+        finally:
+            if controller.state != "idle":
+                controller.stop()
+                self.pump_until(lambda: controller.state == "idle")
+
+    def test_connection_and_timeout_messages_are_distinct(self) -> None:
+        self.assertIn(
+            "연결할 수 없습니다",
+            user_error_message(RemoteConnectionError("refused")),
+        )
+        self.assertIn(
+            "응답 시간이 초과",
+            user_error_message(RemoteTimeoutError("read timed out")),
+        )
 
     def test_backend_reuses_phase4_pipeline_with_fixed_live_settings(self) -> None:
         backend = Phase4PipelineBackend()

@@ -166,12 +166,11 @@ class ClientTests(TestCase):
         finally:
             client.close()
 
-    def test_unavailable_real_socket(self):
-        server = ThreadingHTTPServer(("127.0.0.1", 0), BaseHTTPRequestHandler)
-        port = server.server_port
-        server.server_close()
-        client = RemoteGPUClient(f"http://127.0.0.1:{port}", .2, .2)
+    def test_injected_connection_failure_is_classified_as_connection_error(self):
+        """A closed listener is OS/firewall dependent; inject its contract instead."""
+        client = RemoteGPUClient("http://127.0.0.1:8787")
         try:
+            client.session.request = Mock(side_effect=requests.ConnectionError("refused"))
             with self.assertRaises(RemoteConnectionError): client.health()
         finally:
             client.close()

@@ -280,6 +280,14 @@ class LiveCaptionWorker(QObject):
     @Slot()
     def run(self) -> None:
         try:
+            # The user can press Stop after QThread.start() but before this
+            # queued slot begins.  Avoid opening a needless health request in
+            # that case; an in-flight request still follows its configured
+            # requests timeout.
+            if self.stop_event.is_set():
+                self.status.emit("대기 중")
+                self.finished.emit(True, "시작이 취소되었습니다.")
+                return
             self.status.emit("RunPod 서버 상태 확인 중…")
             info = self.backend.preflight(self.config)
             self.server_state.emit(True, "연결됨")
