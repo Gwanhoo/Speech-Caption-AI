@@ -45,6 +45,8 @@ huggingface/
 *.temp
 tmp/
 temp/
+build/
+dist/
 phase0/output/
 phase1/output/
 phase1/diagnostic/*.wav
