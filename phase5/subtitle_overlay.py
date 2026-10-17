@@ -4,8 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from PySide6.QtCore import QPoint, Qt, Slot
-from PySide6.QtGui import QFont, QGuiApplication, QMouseEvent
-from PySide6.QtWidgets import QFrame, QLabel, QVBoxLayout, QWidget
+from PySide6.QtGui import QColor, QFont, QFontMetrics, QGuiApplication, QMouseEvent
+from PySide6.QtWidgets import QFrame, QLabel, QLayout, QSizePolicy, QVBoxLayout, QWidget
 
 try:
     from .subtitle_presentation import SubtitleFeedEntry
@@ -18,18 +18,36 @@ class OverlayStyle:
     font_size: int = 28
     background_opacity: int = 72
     bold: bool = True
+    text_color: str = "#FFFFFF"
+
+
+@dataclass(frozen=True)
+class OverlayLayoutMetrics:
+    source_rows: int
+    visible_rows: int
+    required_height: int
+    maximum_height: int
+    window_height: int
 
 
 class SubtitleOverlay(QWidget):
     """Draggable, transparent overlay that renders an existing UI snapshot."""
 
     MAX_ROWS = 3
+    HORIZONTAL_MARGIN = 20
+    VERTICAL_MARGIN = 8
+    ROW_SPACING = 2
+    FRAME_BORDER_HEIGHT = 2
+    EMPTY_HEIGHT = 1
+    MAX_SCREEN_HEIGHT_RATIO = 0.30
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._style = OverlayStyle()
         self._drag_offset: QPoint | None = None
+        self._was_dragged = False
         self._entries: tuple[SubtitleFeedEntry, ...] = ()
+        self._source_entries: tuple[SubtitleFeedEntry, ...] = ()
         self.setWindowTitle("AI 실시간 자막 Overlay")
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint
@@ -41,12 +59,20 @@ class SubtitleOverlay(QWidget):
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
+        # Without this, Qt caches the previous child minimum and a
+        # 3 -> 2 -> 1 -> 0 update shrinks one event late.
+        root.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
         self._card = QFrame(self)
         self._card.setObjectName("overlayCard")
         root.addWidget(self._card)
         layout = QVBoxLayout(self._card)
-        layout.setContentsMargins(28, 18, 28, 18)
-        layout.setSpacing(8)
+        layout.setContentsMargins(
+            self.HORIZONTAL_MARGIN,
+            self.VERTICAL_MARGIN,
+            self.HORIZONTAL_MARGIN,
+            self.VERTICAL_MARGIN,
+        )
+        layout.setSpacing(self.ROW_SPACING)
         self._labels: list[QLabel] = []
         for _ in range(self.MAX_ROWS):
             label = QLabel(self._card)
@@ -54,6 +80,7 @@ class SubtitleOverlay(QWidget):
                 Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
             )
             label.setWordWrap(True)
+            label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
             label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
             layout.addWidget(label)
@@ -71,14 +98,24 @@ class SubtitleOverlay(QWidget):
     def entries(self) -> tuple[SubtitleFeedEntry, ...]:
         return self._entries
 
+    @property
+    def layout_metrics(self) -> OverlayLayoutMetrics:
+        return OverlayLayoutMetrics(
+            source_rows=len(self._source_entries),
+            visible_rows=len(self._entries),
+            required_height=self._required_height(self._entries),
+            maximum_height=self._maximum_height(),
+            window_height=self.height(),
+        )
+
     def _place_on_primary_screen(self) -> None:
         screen = QGuiApplication.primaryScreen()
         if screen is None:
-            self.resize(900, 210)
+            self.resize(900, self.EMPTY_HEIGHT)
             return
         available = screen.availableGeometry()
         width = min(max(320, round(available.width() * 0.82)), available.width())
-        height = min(max(150, round(available.height() * 0.20)), 230)
+        height = self.EMPTY_HEIGHT
         x = available.x() + (available.width() - width) // 2
         bottom_margin = max(16, round(available.height() * 0.04))
         y = available.y() + available.height() - height - bottom_margin
@@ -87,9 +124,10 @@ class SubtitleOverlay(QWidget):
     @Slot(object)
     def set_entries(self, entries: object) -> None:
         snapshot = tuple(entries) if isinstance(entries, (tuple, list)) else ()
-        self._entries = tuple(
+        self._source_entries = tuple(
             entry for entry in snapshot[-self.MAX_ROWS:] if isinstance(entry, SubtitleFeedEntry)
         )
+        self._entries = self._fit_entries_to_screen(self._source_entries)
         for index, label in enumerate(self._labels):
             if index < len(self._entries):
                 entry = self._entries[index]
@@ -99,16 +137,28 @@ class SubtitleOverlay(QWidget):
             else:
                 label.clear()
                 label.setVisible(False)
+        self._resize_for_entries()
 
     def clear_entries(self) -> None:
         self.set_entries(())
 
     def apply_style(self, style: OverlayStyle) -> None:
+        color = QColor(style.text_color)
         self._style = OverlayStyle(
             font_size=max(16, min(52, style.font_size)),
             background_opacity=max(20, min(95, style.background_opacity)),
             bold=style.bold,
+            text_color=color.name().upper() if color.isValid() else "#FFFFFF",
         )
+        self._entries = self._fit_entries_to_screen(self._source_entries)
+        for index, label in enumerate(self._labels):
+            if index < len(self._entries):
+                entry = self._entries[index]
+                label.setText(entry.text)
+                label.setVisible(True)
+            else:
+                label.clear()
+                label.setVisible(False)
         alpha = round(255 * self._style.background_opacity / 100)
         self._card.setStyleSheet(
             "QFrame#overlayCard {"
@@ -119,15 +169,118 @@ class SubtitleOverlay(QWidget):
         )
         for index, entry in enumerate(self._entries):
             self._apply_label_style(self._labels[index], entry.status)
+        self._resize_for_entries()
 
     def _apply_label_style(self, label: QLabel, status: str) -> None:
         font = QFont()
         font.setPointSize(self._style.font_size)
-        font.setBold(self._style.bold if status == "final" else False)
+        font.setBold(self._style.bold)
         label.setFont(font)
         # PARTIAL is intentionally subtle: no status text or speaker label.
         text_alpha = 255 if status == "final" else 210
-        label.setStyleSheet(f"color: rgba(255, 255, 255, {text_alpha});")
+        color = QColor(self._style.text_color)
+        label.setStyleSheet(
+            "color: rgba("
+            f"{color.red()}, {color.green()}, {color.blue()}, {text_alpha}"
+            ");"
+        )
+
+    def _resize_for_entries(self) -> None:
+        """Match the window to its rows and cap extreme content to a compact bar."""
+        if not self._entries:
+            self._card.hide()
+            self._set_window_height(self.EMPTY_HEIGHT)
+            return
+        self._card.show()
+        desired_heights = [
+            self._entry_height(entry, self._text_width()) for entry in self._entries
+        ]
+        non_text_height = self._non_text_height(len(self._entries))
+        maximum_height = self._maximum_height()
+        height = min(maximum_height, non_text_height + sum(desired_heights))
+        available_text_height = max(1, height - non_text_height)
+        for index, desired_height in enumerate(desired_heights):
+            remaining_rows = len(desired_heights) - index - 1
+            row_height = min(desired_height, max(1, available_text_height - remaining_rows))
+            self._labels[index].setFixedHeight(row_height)
+            available_text_height -= row_height
+        self._set_window_height(height)
+
+    def _set_window_height(self, height: int) -> None:
+        if height == self.height():
+            return
+        if self._was_dragged:
+            self.resize(self.width(), height)
+            return
+        screen = QGuiApplication.primaryScreen()
+        if screen is None:
+            self.resize(self.width(), height)
+            return
+        available = screen.availableGeometry()
+        bottom_margin = max(16, round(available.height() * 0.04))
+        self.setGeometry(
+            self.x(),
+            available.y() + available.height() - height - bottom_margin,
+            self.width(),
+            height,
+        )
+
+    def _fit_entries_to_screen(
+        self, candidates: tuple[SubtitleFeedEntry, ...]
+    ) -> tuple[SubtitleFeedEntry, ...]:
+        """Prefer the newest readable entries when several wrapped rows do not fit."""
+        selected: list[SubtitleFeedEntry] = []
+        maximum_height = self._maximum_height()
+        for entry in reversed(candidates):
+            proposed = [entry, *selected]
+            required_height = self._required_height(tuple(proposed))
+            if required_height > maximum_height and selected:
+                break
+            selected = proposed
+        return tuple(selected)
+
+    def _required_height(self, entries: tuple[SubtitleFeedEntry, ...]) -> int:
+        if not entries:
+            return self.EMPTY_HEIGHT
+        return self._non_text_height(len(entries)) + sum(
+            self._entry_height(entry, self._text_width()) for entry in entries
+        )
+
+    def _non_text_height(self, row_count: int) -> int:
+        spacing = self.ROW_SPACING * max(0, row_count - 1)
+        return self.VERTICAL_MARGIN * 2 + self.FRAME_BORDER_HEIGHT + spacing
+
+    def _text_width(self) -> int:
+        return max(1, self.width() - self.HORIZONTAL_MARGIN * 2 - 2)
+
+    def _maximum_height(self) -> int:
+        screen = QGuiApplication.primaryScreen()
+        if screen is None:
+            return max(180, self._non_text_height(1) + self._font_line_height())
+        available_height = screen.availableGeometry().height()
+        one_line_height = self._non_text_height(1) + self._font_line_height()
+        return max(one_line_height, round(available_height * self.MAX_SCREEN_HEIGHT_RATIO))
+
+    def _font_line_height(self) -> int:
+        font = QFont()
+        font.setPointSize(self._style.font_size)
+        font.setBold(self._style.bold)
+        return QFontMetrics(font).height()
+
+    def _entry_height(self, entry: SubtitleFeedEntry, width: int) -> int:
+        font = QFont()
+        font.setPointSize(self._style.font_size)
+        font.setBold(self._style.bold)
+        metrics = QFontMetrics(font)
+        bounds = metrics.boundingRect(
+            0,
+            0,
+            width,
+            10000,
+            int(Qt.TextFlag.TextWordWrap | Qt.AlignmentFlag.AlignHCenter),
+            entry.text,
+        )
+        return max(metrics.height(), bounds.height())
 
     def mousePressEvent(self, event: QMouseEvent) -> None:  # noqa: N802
         if event.button() == Qt.MouseButton.LeftButton:
@@ -139,6 +292,7 @@ class SubtitleOverlay(QWidget):
     def mouseMoveEvent(self, event: QMouseEvent) -> None:  # noqa: N802
         if event.buttons() & Qt.MouseButton.LeftButton and self._drag_offset is not None:
             self.move(event.globalPosition().toPoint() - self._drag_offset)
+            self._was_dragged = True
             event.accept()
             return
         super().mouseMoveEvent(event)

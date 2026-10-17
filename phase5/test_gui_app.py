@@ -16,7 +16,7 @@ from unittest.mock import Mock, patch
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from phase5.gui_app import MainWindow, main as gui_main
-from phase5.subtitle_presentation import SubtitlePresentationState
+from phase5.subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState
 from phase5.live_caption_controller import (
     EnvironmentInfo,
     LOGGER,
@@ -455,10 +455,102 @@ class GuiTests(unittest.TestCase):
             window.overlay_font_size.setValue(34)
             window.overlay_opacity.setValue(55)
             window.overlay_bold_checkbox.setChecked(False)
+            window.overlay_text_color_combo.setCurrentIndex(
+                window.overlay_text_color_combo.findData("#FDE047")
+            )
             self.assertIs(window._ensure_overlay(), overlay)
             self.assertEqual(overlay.style_config.font_size, 34)
             self.assertEqual(overlay.style_config.background_opacity, 55)
             self.assertFalse(overlay.style_config.bold)
+            self.assertEqual(overlay.style_config.text_color, "#FDE047")
+        finally:
+            window.close()
+
+    def test_long_mock_captions_expand_overlay_without_label_clipping(self) -> None:
+        window = MainWindow()
+        overlay = window._ensure_overlay()
+        initial_height = overlay.height()
+        long_text = "긴 자막이 화면 폭에 맞춰 자연스럽게 줄바꿈되는지 확인합니다. "
+        try:
+            window.apply_subtitle_event(self.event("speaker_0", 1, 1, "첫 번째 확정 자막", "final"))
+            window.apply_subtitle_event(self.event("speaker_1", 1, 2, "두 번째 확정 자막", "final"))
+            window.apply_subtitle_event(self.event("speaker_0", 2, 3, long_text))
+            overlay.show()
+            self.app.processEvents()
+            visible = [label for label in overlay._labels if label.isVisible()]
+            self.assertEqual(len(visible), overlay.MAX_ROWS)
+            self.assertGreater(overlay.height(), initial_height)
+            self.assertTrue(all(label.wordWrap() for label in visible))
+            self.assertTrue(
+                all(label.height() >= label.heightForWidth(label.width()) for label in visible)
+            )
+        finally:
+            window.close()
+
+    def test_overlay_height_shrinks_with_three_two_one_and_zero_rows(self) -> None:
+        window = MainWindow()
+        overlay = window._ensure_overlay()
+        entries = tuple(
+            SubtitleFeedEntry(
+                speaker_id="speaker_0",
+                utterance_id=index,
+                sequence=index,
+                status="partial",
+                text=f"자막 {index}",
+            )
+            for index in range(1, 4)
+        )
+        measurements: list[tuple[int, int, int]] = []
+        try:
+            overlay.show()
+            for row_count in (3, 2, 1, 0):
+                overlay.set_entries(entries[:row_count])
+                self.app.processEvents()
+                metrics = overlay.layout_metrics
+                measurements.append(
+                    (row_count, metrics.required_height, metrics.window_height)
+                )
+                self.assertEqual(metrics.source_rows, row_count)
+                self.assertEqual(metrics.visible_rows, row_count)
+                self.assertEqual(metrics.window_height, metrics.required_height)
+
+            heights = [actual for _rows, _required, actual in measurements]
+            self.assertTrue(
+                all(earlier > later for earlier, later in zip(heights, heights[1:])),
+                measurements,
+            )
+        finally:
+            window.close()
+
+    def test_partial_overlay_uses_selected_weight_and_color(self) -> None:
+        window = MainWindow()
+        overlay = window._ensure_overlay()
+        try:
+            window.overlay_text_color_combo.setCurrentIndex(
+                window.overlay_text_color_combo.findData("#A7F3D0")
+            )
+            window.apply_subtitle_event(self.event("speaker_0", 1, 1, "진행 중 자막"))
+            label = overlay._labels[0]
+            self.assertTrue(label.font().bold())
+            self.assertIn("167, 243, 208", label.styleSheet())
+        finally:
+            window.close()
+
+    def test_extreme_wrapped_rows_keep_only_the_newest_readable_overlay_entry(self) -> None:
+        window = MainWindow()
+        overlay = window._ensure_overlay()
+        text = "매우 긴 자막이 여러 행으로 반복되어도 오버레이가 잘린 행을 표시하지 않아야 합니다. " * 3
+        try:
+            window.apply_subtitle_event(self.event("speaker_0", 1, 1, text, "final"))
+            window.apply_subtitle_event(self.event("speaker_1", 1, 2, text, "final"))
+            window.apply_subtitle_event(self.event("speaker_0", 2, 3, text))
+            overlay.show()
+            self.app.processEvents()
+            visible = [label for label in overlay._labels if label.isVisible()]
+            self.assertLess(len(visible), overlay.MAX_ROWS)
+            self.assertEqual(overlay.entries[-1].sequence, 3)
+            self.assertLessEqual(overlay.height(), overlay.layout_metrics.maximum_height)
+            self.assertEqual(window.subtitle_model.rowCount(), window.subtitle_model.MAX_ENTRIES)
         finally:
             window.close()
 

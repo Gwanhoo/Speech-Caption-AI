@@ -330,12 +330,19 @@ class MainWindow(QMainWindow):
         self.overlay_opacity.setValue(72)
         self.overlay_bold_checkbox = QCheckBox("굵게")
         self.overlay_bold_checkbox.setChecked(True)
+        self.overlay_text_color_combo = QComboBox()
+        self.overlay_text_color_combo.setObjectName("overlayTextColor")
+        self.overlay_text_color_combo.addItem("흰색", "#FFFFFF")
+        self.overlay_text_color_combo.addItem("노란색", "#FDE047")
+        self.overlay_text_color_combo.addItem("연두색", "#A7F3D0")
         overlay_layout.addWidget(self.overlay_visible_checkbox)
         overlay_layout.addWidget(QLabel("글자 크기"))
         overlay_layout.addWidget(self.overlay_font_size)
         overlay_layout.addWidget(QLabel("배경 투명도"))
         overlay_layout.addWidget(self.overlay_opacity, 1)
         overlay_layout.addWidget(self.overlay_bold_checkbox)
+        overlay_layout.addWidget(QLabel("글자 색상"))
+        overlay_layout.addWidget(self.overlay_text_color_combo)
         root.addWidget(overlay_card)
 
         subtitle_card = QFrame()
@@ -378,6 +385,7 @@ class MainWindow(QMainWindow):
         self.overlay_font_size.valueChanged.connect(self.apply_overlay_style)
         self.overlay_opacity.valueChanged.connect(self.apply_overlay_style)
         self.overlay_bold_checkbox.toggled.connect(self.apply_overlay_style)
+        self.overlay_text_color_combo.currentIndexChanged.connect(self.apply_overlay_style)
 
         self.apply_controller_state(self.controller.state)
         self.setStyleSheet(APP_STYLE)
@@ -444,6 +452,7 @@ class MainWindow(QMainWindow):
             font_size=self.overlay_font_size.value(),
             background_opacity=self.overlay_opacity.value(),
             bold=self.overlay_bold_checkbox.isChecked(),
+            text_color=str(self.overlay_text_color_combo.currentData()),
         )
 
     def _ensure_overlay(self) -> SubtitleOverlay:
