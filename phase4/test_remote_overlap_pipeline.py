@@ -36,8 +36,9 @@ class PipelineTests(TestCase):
     def run_pipeline(self, remote, fail_first=False, failure=None, fail_all=False,
                      latency_diagnostics=False, runtime_hooks=None,
                      response_factory=None, duration=5, websocket=True, capture_factory=None,
-                     reference_paths=None, speaker_mode="overlap"):
+                     reference_paths=None, speaker_mode="overlap", output_device_id=None):
         speaker = Mock(name="speaker")
+        speaker.id = output_device_id or "{default-endpoint}"
         players = []
         def open_player(**kwargs):
             player = MagicMock()
@@ -80,6 +81,8 @@ class PipelineTests(TestCase):
             output = Path(directory) / "result.json"
             argv = ["run_overlap_pipeline", "--duration", str(duration), "--assemble", "--json-output", str(output)]
             argv += ["--speaker-mode", speaker_mode]
+            if output_device_id is not None:
+                argv += ["--output-device-id", output_device_id]
             if reference_paths is None:
                 argv += ["--live"]
             else:
@@ -97,6 +100,7 @@ class PipelineTests(TestCase):
             # Spoof only the pipeline guard; real WAV I/O must use the host platform.
             stack.enter_context(patch.object(pipeline, "sys", Mock(wraps=sys, platform="win32")))
             stack.enter_context(patch.object(pipeline.sc, "default_speaker", return_value=speaker))
+            stack.enter_context(patch.object(pipeline.sc, "all_speakers", return_value=[speaker]))
             stack.enter_context(patch.object(pipeline.sc, "get_microphone", return_value=loopback))
             stack.enter_context(patch.object(pipeline, "RemoteGPUClient", return_value=client))
             load = stack.enter_context(patch.object(pipeline.base, "load_models", return_value=(Mock(), "cuda:0", Mock(), 1, 1, 1)))
@@ -108,6 +112,7 @@ class PipelineTests(TestCase):
             for name in ("is_available", "reset_peak_memory_stats", "memory_allocated", "memory_reserved", "max_memory_allocated"):
                 cuda_calls.append(stack.enter_context(patch.object(pipeline.torch.cuda, name, return_value=True if name == "is_available" else 0)))
             code = pipeline.main(runtime_hooks=runtime_hooks)
+            self.last_loopback_calls = list(pipeline.sc.get_microphone.call_args_list)
             if remote:
                 client.close.assert_called_once()
             result = json.loads(output.read_text())
@@ -227,6 +232,20 @@ class PipelineTests(TestCase):
         self.assertEqual(logged_updates, [event["support_update"] for event in partials])
         self.assertTrue(all(update["reason"] == "current_source_covers_unretained_text"
                             for update in logged_updates))
+
+    def test_explicit_output_device_id_reaches_loopback_capture(self):
+        selected_id = "{selected-output-endpoint}"
+        code, result = self.run_pipeline(
+            True,
+            websocket=False,
+            output_device_id=selected_id,
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(result["errors"], [])
+        self.assertIn(
+            ((selected_id,), {"include_loopback": True}),
+            self.last_loopback_calls,
+        )
 
     def test_single_mode_routes_only_mapped_primary_with_raw_hallucinations(self):
         hallucinations = ["어서 오세요", "An arbitrary English hallucination"]

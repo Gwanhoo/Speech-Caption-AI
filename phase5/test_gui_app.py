@@ -9,6 +9,7 @@ import threading
 import time
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Union
 from unittest.mock import Mock, patch
 
@@ -116,6 +117,124 @@ class GuiTests(unittest.TestCase):
             self.assertEqual(overlap_item.toolTip(), "기능 개발 중입니다.")
             visible_labels = [label.text() for label in window.findChildren(QLabel)]
             self.assertFalse(any("Speaker" in text for text in visible_labels))
+        finally:
+            window.close()
+
+    def test_selected_output_device_id_is_passed_from_gui_to_backend(self) -> None:
+        backend = BlockingBackend()
+        controller = LiveCaptionController(backend=backend)
+        window = MainWindow(controller)
+        try:
+            window.output_device_combo.clear()
+            window.output_device_combo.addItem("Windows 기본 출력 장치", None)
+            window.output_device_combo.addItem("동일 이름 장치 (id-a)", "{id-a}")
+            window.output_device_combo.addItem("동일 이름 장치 (id-b)", "{id-b}")
+            window.output_device_combo.setCurrentIndex(2)
+            window.start_captioning()
+            self.pump_until(backend.started.is_set)
+            self.assertEqual(backend.config.output_device_id, "{id-b}")
+        finally:
+            if controller.state != "idle":
+                window.stop_captioning()
+                self.pump_until(lambda: controller.state == "idle")
+            window.close()
+
+    def test_output_device_refresh_preserves_surviving_selection(self) -> None:
+        devices = [
+            SimpleNamespace(device_id="{id-a}", name="같은 이름", is_default=True),
+            SimpleNamespace(device_id="{id-b}", name="같은 이름", is_default=False),
+        ]
+        with patch("phase5.gui_app.list_output_devices", return_value=devices):
+            window = MainWindow()
+            try:
+                window.output_device_combo.setCurrentIndex(
+                    window.output_device_combo.findData("{id-b}")
+                )
+                window.refresh_output_devices()
+                self.assertEqual(window.output_device_combo.currentData(), "{id-b}")
+                self.assertIn("유지", window.device_label.text())
+            finally:
+                window.close()
+
+    def test_output_device_refresh_reverts_missing_selection_to_default(self) -> None:
+        initial_devices = [
+            SimpleNamespace(device_id="{id-a}", name="스피커", is_default=True),
+            SimpleNamespace(device_id="{id-b}", name="헤드셋", is_default=False),
+        ]
+        remaining_devices = [
+            SimpleNamespace(device_id="{id-a}", name="스피커", is_default=True),
+        ]
+        with patch(
+            "phase5.gui_app.list_output_devices",
+            side_effect=[initial_devices, remaining_devices],
+        ):
+            window = MainWindow()
+            try:
+                window.output_device_combo.setCurrentIndex(
+                    window.output_device_combo.findData("{id-b}")
+                )
+                window.refresh_output_devices()
+                self.assertIsNone(window.output_device_combo.currentData())
+                self.assertIn("사라져", window.device_label.text())
+            finally:
+                window.close()
+
+    def test_no_output_device_blocks_start_and_keeps_refresh_available(self) -> None:
+        backend = BlockingBackend()
+        with patch("phase5.gui_app.list_output_devices", return_value=[]):
+            controller = LiveCaptionController(backend=backend)
+            window = MainWindow(controller)
+            try:
+                self.assertFalse(window.start_button.isEnabled())
+                self.assertTrue(window.refresh_device_button.isEnabled())
+                window.start_captioning()
+                self.assertEqual(controller.state, "idle")
+                self.assertIsNone(backend.config)
+                self.assertIn("사용 가능한 Windows 출력 장치가 없습니다", window.status_label.text())
+            finally:
+                window.close()
+
+    def test_output_device_enumeration_failure_blocks_start_with_error(self) -> None:
+        backend = BlockingBackend()
+        with patch(
+            "phase5.gui_app.list_output_devices",
+            side_effect=RuntimeError("WASAPI enumeration failed"),
+        ):
+            controller = LiveCaptionController(backend=backend)
+            window = MainWindow(controller)
+            try:
+                self.assertFalse(window.start_button.isEnabled())
+                window.start_captioning()
+                self.assertEqual(controller.state, "idle")
+                self.assertIsNone(backend.config)
+                self.assertIn("오디오 장치 목록을 가져올 수 없습니다", window.status_label.text())
+            finally:
+                window.close()
+
+    def test_refresh_enumeration_failure_disables_start_after_prior_success(self) -> None:
+        devices = [
+            SimpleNamespace(device_id="{id-a}", name="스피커", is_default=True),
+        ]
+        with patch(
+            "phase5.gui_app.list_output_devices",
+            side_effect=[devices, RuntimeError("WASAPI enumeration failed")],
+        ):
+            window = MainWindow()
+            try:
+                self.assertTrue(window.start_button.isEnabled())
+                window.refresh_output_devices()
+                self.assertFalse(window.start_button.isEnabled())
+                self.assertTrue(window.refresh_device_button.isEnabled())
+                self.assertIn("가져올 수 없습니다", window.device_label.text())
+            finally:
+                window.close()
+
+    def test_device_refresh_controls_are_disabled_while_running(self) -> None:
+        window = MainWindow()
+        try:
+            window.apply_controller_state("running")
+            self.assertFalse(window.output_device_combo.isEnabled())
+            self.assertFalse(window.refresh_device_button.isEnabled())
         finally:
             window.close()
 
@@ -375,7 +494,10 @@ class GuiTests(unittest.TestCase):
 
     def test_backend_reuses_phase4_pipeline_with_fixed_live_settings(self) -> None:
         backend = Phase4PipelineBackend()
-        config = LiveCaptionConfig(server_url="https://example.invalid")
+        config = LiveCaptionConfig(
+            server_url="https://example.invalid",
+            output_device_id="{selected-endpoint}",
+        )
         hooks = object()
         pipeline_module = Mock()
         pipeline_module.main.return_value = 0
@@ -392,6 +514,7 @@ class GuiTests(unittest.TestCase):
         self.assertEqual(argv[argv.index("--stride-seconds") + 1], "2")
         self.assertIn("--assemble", argv)
         self.assertEqual(argv[argv.index("--speaker-mode") + 1], "single")
+        self.assertEqual(argv[argv.index("--output-device-id") + 1], "{selected-endpoint}")
         self.assertIn("--websocket", argv)
         self.assertIs(main.call_args.kwargs["runtime_hooks"], hooks)
 

@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT / "phase4"))
 
 import run_realtime_pipeline as base  # noqa: E402
 from audio_diagnostics import select_capture_channel, capture_audio_diagnostics
+from audio_devices import get_loopback_microphone, resolve_output_speaker
 from separation_recovery import (  # noqa: E402
     Fp32FallbackError,
     InvalidSeparationInput,
@@ -409,6 +410,10 @@ def main(
     parser.add_argument("--vad-min-speech-ms", type=int, default=200)
     parser.add_argument("--json-output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--save-wav", action="store_true")
+    parser.add_argument(
+        "--output-device-id",
+        help="Windows output endpoint WASAPI ID; omit to use the current default output device",
+    )
     parser.add_argument("--capture-channel", choices=("first", "mean"), default="first",
                         help="Channel selection; compare diagnostics before choosing mean")
     parser.add_argument(
@@ -696,8 +701,12 @@ def main(
                 flush=True,
             )
 
-        speaker = sc.default_speaker()
-        loopback = sc.get_microphone(speaker.name, include_loopback=True)
+        speaker = resolve_output_speaker(sc, args.output_device_id)
+        loopback = get_loopback_microphone(sc, speaker)
+        print(
+            f"System audio device: {speaker.name} (WASAPI ID: {getattr(speaker, 'id', '')})",
+            flush=True,
+        )
         reference_overrides = {"a": args.reference_a, "b": args.reference_b}
         references: dict[str, np.ndarray] = {}
         if not args.live:

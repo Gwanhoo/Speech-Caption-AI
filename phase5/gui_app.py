@@ -41,6 +41,7 @@ try:
     )
     from .subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState
     from .subtitle_overlay import OverlayStyle, SubtitleOverlay
+    from audio_devices import list_output_devices
 except ImportError:  # Direct execution: python phase5/gui_app.py
     from live_caption_controller import (  # type: ignore[no-redef]
         DEFAULT_REMOTE_SERVER_URL,
@@ -53,6 +54,7 @@ except ImportError:  # Direct execution: python phase5/gui_app.py
     )
     from subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState  # type: ignore[no-redef]
     from subtitle_overlay import OverlayStyle, SubtitleOverlay  # type: ignore[no-redef]
+    from audio_devices import list_output_devices  # type: ignore[no-redef]
 
 
 APP_STYLE = """
@@ -282,10 +284,20 @@ class MainWindow(QMainWindow):
         device_title = QLabel("오디오 장치")
         device_title.setObjectName("fieldTitle")
         device_title.setFixedWidth(95)
+        self.output_device_combo = QComboBox()
+        self.output_device_combo.setObjectName("outputDevice")
         self.device_label = QLabel("자막 시작 시 WASAPI loopback 장치를 확인합니다.")
         self.device_label.setObjectName("deviceState")
         self.device_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.refresh_device_button = QPushButton("새로고침")
+        self.refresh_device_button.setObjectName("refreshDeviceButton")
+        self.refresh_device_button.setMinimumWidth(92)
+        self._has_available_output_devices = self._refresh_output_devices(
+            announce_selection_change=False,
+        )
         device_row.addWidget(device_title)
+        device_row.addWidget(self.output_device_combo, 1)
+        device_row.addWidget(self.refresh_device_button)
         device_row.addWidget(self.device_label, 1)
         info_layout.addLayout(device_row)
         root.addWidget(info_card)
@@ -353,6 +365,7 @@ class MainWindow(QMainWindow):
 
         self.start_button.clicked.connect(self.start_captioning)
         self.stop_button.clicked.connect(self.stop_captioning)
+        self.refresh_device_button.clicked.connect(self.refresh_output_devices)
         self.controller.server_state.connect(self.set_server_state)
         self.controller.device_state.connect(self.device_label.setText)
         self.controller.status.connect(self.status_label.setText)
@@ -366,6 +379,7 @@ class MainWindow(QMainWindow):
         self.overlay_opacity.valueChanged.connect(self.apply_overlay_style)
         self.overlay_bold_checkbox.toggled.connect(self.apply_overlay_style)
 
+        self.apply_controller_state(self.controller.state)
         self.setStyleSheet(APP_STYLE)
 
     @Slot()
@@ -376,12 +390,19 @@ class MainWindow(QMainWindow):
             return
         if self.controller.state != "idle":
             return
+        if not self._has_available_output_devices:
+            self.show_error(
+                self._output_device_error
+                or "사용 가능한 Windows 출력 장치가 없습니다. 장치를 연결한 뒤 새로고침하세요."
+            )
+            return
         self.subtitle_model.clear()
         self.latency_label.setText("최근 latency: —")
         if self.controller.start(
             LiveCaptionConfig(
                 server_url=server_url,
                 speaker_mode=SpeakerMode(self.speaker_mode_combo.currentData()),
+                output_device_id=self.output_device_combo.currentData(),
             )
         ):
             self._ensure_overlay()
@@ -450,10 +471,12 @@ class MainWindow(QMainWindow):
     @Slot(str)
     def apply_controller_state(self, state: str) -> None:
         active = state != "idle"
-        self.start_button.setEnabled(not active)
+        self.start_button.setEnabled(not active and self._has_available_output_devices)
         self.stop_button.setEnabled(state in {"starting", "running"})
         self.server_url_edit.setEnabled(not active)
         self.speaker_mode_combo.setEnabled(not active)
+        self.output_device_combo.setEnabled(not active and self._has_available_output_devices)
+        self.refresh_device_button.setEnabled(not active)
         if state == "starting":
             self.status_label.setStyleSheet("color: #1d4ed8;")
             self.status_label.setText("서버와 오디오 장치 확인 중…")
@@ -463,6 +486,67 @@ class MainWindow(QMainWindow):
             self._hide_and_clear_overlay()
         elif state == "idle" and not self.status_label.text().startswith("오류:"):
             self.status_label.setStyleSheet("color: #334155;")
+
+    @Slot()
+    def refresh_output_devices(self) -> None:
+        """Refresh idle-only device choices without changing capture in flight."""
+        if self.controller.state != "idle":
+            return
+        self._has_available_output_devices = self._refresh_output_devices(
+            announce_selection_change=True,
+        )
+        self.apply_controller_state(self.controller.state)
+
+    def _refresh_output_devices(self, *, announce_selection_change: bool) -> bool:
+        """Populate stable endpoint IDs and retain a surviving explicit choice."""
+        previous_device_id = self.output_device_combo.currentData()
+        self.output_device_combo.clear()
+        self.output_device_combo.addItem("Windows 기본 출력 장치", None)
+        try:
+            import soundcard as sc
+
+            devices = list_output_devices(sc)
+        except Exception as exc:
+            self._output_device_error = (
+                f"오디오 장치 목록을 가져올 수 없습니다: {exc}. 새로고침 후 다시 시도하세요."
+            )
+            self.device_label.setText(self._output_device_error)
+            self.output_device_combo.setEnabled(False)
+            self.output_device_combo.setToolTip(self._output_device_error)
+            return False
+        if not devices:
+            self._output_device_error = (
+                "사용 가능한 Windows 출력 장치가 없습니다. 장치를 연결한 뒤 새로고침하세요."
+            )
+            self.device_label.setText(self._output_device_error)
+            self.output_device_combo.setEnabled(False)
+            self.output_device_combo.setToolTip(self._output_device_error)
+            return False
+        self._output_device_error = ""
+        self.output_device_combo.setToolTip("")
+        for device in devices:
+            suffix = "기본" if device.is_default else device.device_id[-12:]
+            self.output_device_combo.addItem(f"{device.name} ({suffix})", device.device_id)
+            self.output_device_combo.setItemData(
+                self.output_device_combo.count() - 1,
+                f"WASAPI ID: {device.device_id}",
+                Qt.ItemDataRole.ToolTipRole,
+            )
+        if previous_device_id is not None:
+            retained_index = self.output_device_combo.findData(previous_device_id)
+            if retained_index >= 0:
+                self.output_device_combo.setCurrentIndex(retained_index)
+                if announce_selection_change:
+                    self.device_label.setText("선택한 오디오 장치를 유지하고 목록을 새로고침했습니다.")
+            else:
+                self.output_device_combo.setCurrentIndex(0)
+                if announce_selection_change:
+                    self.device_label.setText(
+                        "선택한 오디오 장치가 사라져 Windows 기본 출력 장치로 변경했습니다."
+                    )
+        elif announce_selection_change:
+            self.device_label.setText("오디오 장치 목록을 새로고침했습니다.")
+        return True
 
     @Slot(bool, str)
     def _run_finished(self, success: bool, message: str) -> None:

@@ -30,6 +30,10 @@ from remote_gpu_client import (  # noqa: E402
     RemoteTimeoutError,
 )
 from speaker_mode import SpeakerMode  # noqa: E402
+from audio_devices import (  # noqa: E402
+    get_loopback_microphone,
+    resolve_output_speaker,
+)
 
 
 # Keep the deployment address in one place.  The GUI exposes this value for a
@@ -112,6 +116,7 @@ class LiveCaptionConfig:
     websocket_port: int = 8765
     json_output: Path = DEFAULT_GUI_OUTPUT
     speaker_mode: SpeakerMode = SpeakerMode.SINGLE
+    output_device_id: str | None = None
 
 
 @dataclass(frozen=True)
@@ -162,12 +167,8 @@ class Phase4PipelineBackend:
         if sys.platform != "win32":
             raise RuntimeError("Windows WASAPI 환경에서만 시스템 오디오를 캡처할 수 있습니다.")
         sc = import_module("soundcard")
-        speaker = sc.default_speaker()
-        if speaker is None:
-            raise RuntimeError("기본 Windows 출력 오디오 장치를 찾을 수 없습니다.")
-        loopback = sc.get_microphone(speaker.name, include_loopback=True)
-        if loopback is None:
-            raise RuntimeError("기본 출력 장치의 WASAPI loopback을 찾을 수 없습니다.")
+        speaker = resolve_output_speaker(sc, config.output_device_id)
+        loopback = get_loopback_microphone(sc, speaker)
         device_name = getattr(loopback, "name", None) or speaker.name
         return EnvironmentInfo(
             device_name=f"{device_name} (WASAPI loopback)",
@@ -207,6 +208,8 @@ class Phase4PipelineBackend:
             "--json-output",
             str(config.json_output),
         ]
+        if config.output_device_id is not None:
+            argv.extend(["--output-device-id", config.output_device_id])
         if config.websocket_enabled:
             argv.extend(
                 [
