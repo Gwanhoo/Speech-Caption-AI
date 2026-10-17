@@ -153,6 +153,21 @@ def _load_phase4_pipeline() -> Any:
 class Phase4PipelineBackend:
     """Thin adapter around the existing Phase 4-I orchestration."""
 
+    @staticmethod
+    def _validate_server_profile(
+        config: LiveCaptionConfig,
+        health: dict[str, Any],
+    ) -> None:
+        """Reject known profile mismatches while accepting legacy health payloads."""
+        server_profile = health.get("processing_profile")
+        if server_profile is None:
+            return
+        if server_profile != config.speaker_mode.value:
+            raise RuntimeError(
+                "GPU 서버 처리 프로필이 GUI 모드와 일치하지 않습니다. "
+                f"GUI={config.speaker_mode.value}, 서버={server_profile}"
+            )
+
     def preflight(self, config: LiveCaptionConfig) -> EnvironmentInfo:
         client = RemoteGPUClient(
             config.server_url,
@@ -163,6 +178,7 @@ class Phase4PipelineBackend:
             health = client.health()
         finally:
             client.close()
+        self._validate_server_profile(config, health)
 
         if sys.platform != "win32":
             raise RuntimeError("Windows WASAPI 환경에서만 시스템 오디오를 캡처할 수 있습니다.")

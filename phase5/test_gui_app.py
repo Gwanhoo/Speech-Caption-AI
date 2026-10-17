@@ -24,6 +24,7 @@ from phase5.live_caption_controller import (
     LiveCaptionController,
     LiveCaptionWorker,
     Phase4PipelineBackend,
+    SpeakerMode,
     configure_gui_runtime,
     shutdown_gui_runtime,
 )
@@ -517,6 +518,26 @@ class GuiTests(unittest.TestCase):
         self.assertEqual(argv[argv.index("--output-device-id") + 1], "{selected-endpoint}")
         self.assertIn("--websocket", argv)
         self.assertIs(main.call_args.kwargs["runtime_hooks"], hooks)
+
+    def test_preflight_profile_validation_rejects_known_mismatch(self) -> None:
+        backend = Phase4PipelineBackend()
+        with self.assertRaisesRegex(RuntimeError, "GUI=single, 서버=overlap"):
+            backend._validate_server_profile(
+                LiveCaptionConfig(speaker_mode=SpeakerMode.SINGLE),
+                {"processing_profile": "overlap"},
+            )
+
+    def test_preflight_profile_validation_accepts_match_and_legacy_health(self) -> None:
+        backend = Phase4PipelineBackend()
+        config = LiveCaptionConfig(speaker_mode=SpeakerMode.SINGLE)
+        backend._validate_server_profile(
+            config,
+            {"processing_profile": "single"},
+        )
+        backend._validate_server_profile(
+            config,
+            {"status": "ready", "gpu_ready": True, "models_loaded": True},
+        )
 
     def test_worker_can_be_constructed(self) -> None:
         worker = LiveCaptionWorker(

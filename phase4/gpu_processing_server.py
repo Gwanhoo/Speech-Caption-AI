@@ -31,6 +31,7 @@ sys.path.insert(0, str(ROOT / "phase3"))
 from separation_recovery import finite_audio_stats, is_pre_separation_silence, silent_separation_output  # noqa: E402
 from stt_context import LIVE_WHISPER_OPTIONS, transcribe_base  # noqa: E402
 from secondary_leakage_diagnostics import attach_input_residual_speech_evidence  # noqa: E402
+from speaker_mode import SpeakerMode  # noqa: E402
 from validate_end_to_end_gpu import (  # noqa: E402
     SAMPLE_RATE,
     VAD_MINIMUM_SPEECH_MS,
@@ -70,8 +71,8 @@ def faster_whisper_model_source(model_name: str = FASTER_WHISPER_MODEL_NAME) -> 
 
 @dataclass(frozen=True)
 class LoadedModels:
-    separator: Any
-    separation_device: torch.device
+    separator: Any | None
+    separation_device: torch.device | None
     whisper: WhisperModel
     vad: Any
 
@@ -79,9 +80,19 @@ class LoadedModels:
 class PipelineService:
     whisper_model_name = DEFAULT_STT_MODEL
 
-    def __init__(self, whisper_model_name: str = DEFAULT_STT_MODEL, *, warm_up: bool = True) -> None:
+    def __init__(
+        self,
+        whisper_model_name: str = DEFAULT_STT_MODEL,
+        processing_profile: SpeakerMode | str = SpeakerMode.SINGLE,
+        *,
+        warm_up: bool = True,
+    ) -> None:
         if whisper_model_name not in STT_MODEL_CHOICES:
             raise ValueError(f"Unsupported STT model: {whisper_model_name}")
+        try:
+            self.processing_profile = SpeakerMode(processing_profile)
+        except ValueError as exc:
+            raise ValueError(f"Unsupported processing profile: {processing_profile}") from exc
         self.whisper_model_name = whisper_model_name
         self.started_at = time.time()
         self.ready = False
@@ -113,9 +124,20 @@ class PipelineService:
     def _warm_up_models(self) -> None:
         """Initialize CUDA in the same persistent thread used for requests."""
         audio = np.random.default_rng(0).normal(0, 0.01, SAMPLE_RATE * 3).astype(np.float32)
-        separated = separate_amp(self.models.separator, self.models.separation_device, audio)
-        for slot in range(2):
-            detect_speech_activity(self.models.vad, separated.output[slot, 0], VAD_MINIMUM_SPEECH_MS)
+        if self.processing_profile is SpeakerMode.OVERLAP:
+            assert self.models.separator is not None
+            assert self.models.separation_device is not None
+            separated = separate_amp(
+                self.models.separator, self.models.separation_device, audio
+            )
+            for slot in range(2):
+                detect_speech_activity(
+                    self.models.vad,
+                    separated.output[slot, 0],
+                    VAD_MINIMUM_SPEECH_MS,
+                )
+        else:
+            detect_speech_activity(self.models.vad, audio, VAD_MINIMUM_SPEECH_MS)
         # Warm decoding even when the synthetic separator output is VAD-negative.
         transcribe_base(self.models.whisper, np.zeros(SAMPLE_RATE * 3, dtype=np.float32))
 
@@ -130,10 +152,16 @@ class PipelineService:
     def _load_models(self) -> LoadedModels:
         self.memory["before_models"] = self._memory_record()
         try:
-            started = time.perf_counter()
-            separator, separation_device = load_separator()
-            self.load_times["mossformer2_seconds"] = time.perf_counter() - started
-            self.memory["after_mossformer2"] = self._memory_record()
+            separator = None
+            separation_device = None
+            if self.processing_profile is SpeakerMode.OVERLAP:
+                started = time.perf_counter()
+                separator, separation_device = load_separator()
+                self.load_times["mossformer2_seconds"] = time.perf_counter() - started
+                self.memory["after_mossformer2"] = self._memory_record()
+            else:
+                self.load_times["mossformer2_seconds"] = 0.0
+                self.memory["after_mossformer2"] = dict(self.memory["before_models"])
 
             started = time.perf_counter()
             whisper = WhisperModel(
@@ -166,6 +194,12 @@ class PipelineService:
                 "status": "ready" if self.ready else "not_ready",
                 "gpu_ready": self.ready and torch.cuda.is_available(),
                 "models_loaded": self.ready,
+                "processing_profile": self.processing_profile.value,
+                "model_status": {
+                    "mossformer2_loaded": self.models.separator is not None,
+                    "faster_whisper_loaded": self.models.whisper is not None,
+                    "silero_vad_loaded": self.models.vad is not None,
+                },
                 "model_load_count": self.model_load_count,
                 "model_load_seconds": dict(self.load_times),
                 "gpu_memory": {
@@ -264,20 +298,30 @@ class PipelineService:
             request_diagnostics["server_processing_started_perf_counter"] = processing_started
         silence = is_pre_separation_silence(finite_audio_stats(audio))
         separation_started = time.perf_counter()
-        separation = None if silence else separate_amp(
-            self.models.separator, self.models.separation_device, audio
-        )
+        if self.processing_profile is SpeakerMode.SINGLE:
+            separation = None
+            separated = [
+                np.ascontiguousarray(audio, dtype=np.float32),
+                np.zeros(len(audio), dtype=np.float32),
+            ]
+        else:
+            assert self.models.separator is not None
+            assert self.models.separation_device is not None
+            separation = None if silence else separate_amp(
+                self.models.separator, self.models.separation_device, audio
+            )
+            output = silent_separation_output(len(audio)) if silence else separation.output
+            separated = [
+                np.ascontiguousarray(output[index, 0, :], dtype=np.float32)
+                for index in (0, 1)
+            ]
         separation_ended = time.perf_counter()
-        output = silent_separation_output(len(audio)) if silence else separation.output
-        separated = [
-            np.ascontiguousarray(output[index, 0, :], dtype=np.float32)
-            for index in (0, 1)
-        ]
 
         vad_started = time.perf_counter()
-        vad_results = []
+        vad_results: list[dict[str, Any]] = []
         vad_stage_ranges: list[tuple[float, float]] = []
-        for speaker_audio in separated:
+        vad_inputs = separated if self.processing_profile is SpeakerMode.OVERLAP else separated[:1]
+        for speaker_audio in vad_inputs:
             speaker_vad_started = time.perf_counter()
             vad_results.append(
                 detect_speech_activity(
@@ -285,12 +329,30 @@ class PipelineService:
                 )
             )
             vad_stage_ranges.append((speaker_vad_started, time.perf_counter()))
-        vad_results = attach_input_residual_speech_evidence(
-            audio, separated, vad_results,
-            lambda residual: detect_speech_activity(
-                self.models.vad, residual, VAD_MINIMUM_SPEECH_MS
-            ),
-        )
+        if self.processing_profile is SpeakerMode.OVERLAP:
+            vad_results = attach_input_residual_speech_evidence(
+                audio,
+                separated,
+                vad_results,
+                lambda residual: detect_speech_activity(
+                    self.models.vad, residual, VAD_MINIMUM_SPEECH_MS
+                ),
+            )
+        else:
+            inactive_started = time.perf_counter()
+            vad_results.append(
+                {
+                    "speech_detected": False,
+                    "speech_duration_ms": 0.0,
+                    "speech_ratio": 0.0,
+                    "rms": 0.0,
+                    "peak": 0.0,
+                    "processing_seconds": 0.0,
+                    "timestamps": [],
+                    "audio_duration_ms": len(audio) * 1000 / SAMPLE_RATE,
+                }
+            )
+            vad_stage_ranges.append((inactive_started, inactive_started))
         vad_seconds = time.perf_counter() - vad_started
 
         stt_total = 0.0
@@ -339,9 +401,9 @@ class PipelineService:
         gpu_memory_query_ended = time.perf_counter()
         timing: dict[str, Any] = {
             "queue_wait_seconds": queue_wait_seconds,
-            "separation_seconds": 0.0 if silence else separation.total_seconds,
-            "amp_seconds": 0.0 if silence else separation.amp_seconds,
-            "fp32_seconds": 0.0 if silence else separation.fp32_seconds,
+            "separation_seconds": 0.0 if separation is None else separation.total_seconds,
+            "amp_seconds": 0.0 if separation is None else separation.amp_seconds,
+            "fp32_seconds": 0.0 if separation is None else separation.fp32_seconds,
             "vad_seconds": vad_seconds,
             "stt_seconds": stt_total,
             "processing_seconds": processing_seconds,
@@ -388,6 +450,7 @@ class PipelineService:
         return {
             "type": "processing_result",
             "schema_version": 1,
+            "processing_profile": self.processing_profile.value,
             "request_id": request_id,
             "received_at_ms": round(received_at * 1000),
             "audio": {
@@ -396,7 +459,15 @@ class PipelineService:
                 "channels": 1,
             },
             "models": {
-                "mossformer2": {"device": str(self.models.separation_device), "amp": True},
+                "mossformer2": {
+                    "loaded": self.models.separator is not None,
+                    "device": (
+                        str(self.models.separation_device)
+                        if self.models.separation_device is not None
+                        else "not_loaded"
+                    ),
+                    "amp": self.models.separator is not None,
+                },
                 "faster_whisper": {
                     "model": self.whisper_model_name,
                     "device": str(self.models.whisper.model.device),
@@ -407,7 +478,9 @@ class PipelineService:
                 "load_count": self.model_load_count,
             },
             "timing": timing,
-            "fp32_fallback": False if silence else separation.fallback_attempted,
+            "fp32_fallback": (
+                False if separation is None else separation.fallback_attempted
+            ),
             "pre_separation_silence": silence,
             "gpu_memory": {
                 "device_used_mib": gpu_device,
@@ -700,6 +773,13 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--port", type=int, default=8787)
     parser.add_argument("--whisper-model", choices=STT_MODEL_CHOICES, default=DEFAULT_STT_MODEL,
                         help="Multilingual STT model; use base to reproduce the previous baseline")
+    parser.add_argument(
+        "--processing-profile",
+        type=SpeakerMode,
+        choices=tuple(SpeakerMode),
+        default=SpeakerMode.SINGLE,
+        help="single bypasses MossFormer2; overlap preserves two-speaker separation",
+    )
     parser.add_argument("--no-warmup", action="store_true", help="Disable startup warm-up for cold-start benchmarks")
     return parser
 
@@ -708,10 +788,15 @@ def main() -> int:
     args = build_argument_parser().parse_args()
 
     print("Loading GPU pipeline models once at server startup...", flush=True)
-    service = PipelineService(args.whisper_model, warm_up=not args.no_warmup)
+    service = PipelineService(
+        args.whisper_model,
+        args.processing_profile,
+        warm_up=not args.no_warmup,
+    )
     server = ProcessingHTTPServer((args.host, args.port), service)
     print(
         f"GPU processing server ready: http://{args.host}:{args.port}; "
+        f"processing_profile={service.processing_profile.value}; "
         f"model_load_count={service.model_load_count}; load_seconds={service.load_times}; "
         f"memory={service.memory}",
         flush=True,

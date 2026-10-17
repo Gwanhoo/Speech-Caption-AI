@@ -24,14 +24,81 @@ from remote_gpu_protocol import BINARY_RESPONSE_MEDIA_TYPE, decode_binary_result
 class FasterWhisperModelSourceTests(TestCase):
     def test_production_default_is_large_v3_turbo(self):
         self.assertEqual(server.DEFAULT_STT_MODEL, "large-v3-turbo")
-        self.assertEqual(
-            server.build_argument_parser().parse_args([]).whisper_model,
-            "large-v3-turbo",
-        )
+        args = server.build_argument_parser().parse_args([])
+        self.assertEqual(args.whisper_model, "large-v3-turbo")
+        self.assertIs(args.processing_profile, server.SpeakerMode.SINGLE)
 
     def test_whisper_model_cli_override_is_preserved(self):
         args = server.build_argument_parser().parse_args(["--whisper-model", "small"])
         self.assertEqual(args.whisper_model, "small")
+
+    def test_overlap_profile_cli_override_is_preserved(self):
+        args = server.build_argument_parser().parse_args(
+            ["--processing-profile", "overlap"]
+        )
+        self.assertIs(args.processing_profile, server.SpeakerMode.OVERLAP)
+
+    def test_single_profile_does_not_load_mossformer2(self):
+        whisper = Mock()
+        with patch.object(server, "query_gpu_memory", return_value=(700, 600)), \
+                patch.object(server, "load_separator") as load_separator, \
+                patch.object(server, "WhisperModel", return_value=whisper), \
+                patch.object(server, "load_silero_vad", return_value=Mock()):
+            service = server.PipelineService(warm_up=False)
+            try:
+                status, health = service.health()
+            finally:
+                service.close()
+        load_separator.assert_not_called()
+        self.assertIsNone(service.models.separator)
+        self.assertIsNone(service.models.separation_device)
+        self.assertEqual(status, server.HTTPStatus.OK)
+        self.assertEqual(health["processing_profile"], "single")
+        self.assertFalse(health["model_status"]["mossformer2_loaded"])
+        self.assertEqual(health["model_load_seconds"]["mossformer2_seconds"], 0.0)
+
+    def test_overlap_profile_still_loads_mossformer2(self):
+        separator, device, whisper, vad = Mock(), Mock(), Mock(), Mock()
+        with patch.object(server, "query_gpu_memory", return_value=(700, 600)), \
+                patch.object(
+                    server, "load_separator", return_value=(separator, device)
+                ) as load_separator, \
+                patch.object(server, "WhisperModel", return_value=whisper), \
+                patch.object(server, "load_silero_vad", return_value=vad):
+            service = server.PipelineService(
+                processing_profile=server.SpeakerMode.OVERLAP,
+                warm_up=False,
+            )
+            try:
+                _, health = service.health()
+            finally:
+                service.close()
+        load_separator.assert_called_once_with()
+        self.assertIs(service.models.separator, separator)
+        self.assertIs(service.models.separation_device, device)
+        self.assertEqual(health["processing_profile"], "overlap")
+        self.assertTrue(health["model_status"]["mossformer2_loaded"])
+
+    def test_single_warmup_skips_separator(self):
+        models = server.LoadedModels(None, None, Mock(), Mock())
+        vad = {
+            "speech_detected": False,
+            "speech_duration_ms": 0.0,
+            "speech_ratio": 0.0,
+            "rms": 0.0,
+            "peak": 0.0,
+            "processing_seconds": 0.0,
+            "timestamps": [],
+            "audio_duration_ms": 3000.0,
+        }
+        with patch.object(server.PipelineService, "_load_models", return_value=models), \
+                patch.object(server, "separate_amp") as separate, \
+                patch.object(server, "detect_speech_activity", return_value=vad) as detect, \
+                patch.object(server, "transcribe_base", return_value=Mock()):
+            service = server.PipelineService()
+            service.close()
+        separate.assert_not_called()
+        detect.assert_called_once()
 
     def test_uses_base_model_name_when_project_checkpoint_is_missing(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -117,7 +184,10 @@ class ServerLatencyDiagnosticsTests(TestCase):
                 patch.object(server, "detect_speech_activity", side_effect=detect), \
                 patch.object(server, "transcribe_base", side_effect=[
                     Mock(text=text, elapsed_seconds=.01) for text in metadata["raw_transcripts"]]):
-            service = server.PipelineService(warm_up=False)
+            service = server.PipelineService(
+                processing_profile=server.SpeakerMode.OVERLAP,
+                warm_up=False,
+            )
             try:
                 result = service.process("fixture", mixture, 3.)
             finally:
@@ -137,6 +207,7 @@ class ServerLatencyDiagnosticsTests(TestCase):
         service = object.__new__(server.PipelineService)
         service.started_at = 0.0
         service.ready = True
+        service.processing_profile = server.SpeakerMode.SINGLE
         service.load_error = None
         service.model_load_count = 1
         service.requests_completed = 0
@@ -200,6 +271,65 @@ class ServerLatencyDiagnosticsTests(TestCase):
             diagnostic_result["timing"]["server_inference_thread_id"],
             threading.get_ident(),
         )
+
+    def test_single_process_uses_original_audio_and_preserves_two_slot_contract(self):
+        audio = np.linspace(-0.2, 0.2, 16000, dtype=np.float32)
+        whisper = Mock()
+        whisper.model.device = "cuda"
+        whisper.model.compute_type = "float16"
+        models = server.LoadedModels(None, None, whisper, Mock())
+        primary_vad = {
+            "speech_detected": True,
+            "speech_duration_ms": 1000.0,
+            "speech_ratio": 1.0,
+            "rms": float(np.sqrt(np.mean(audio * audio))),
+            "peak": float(np.max(np.abs(audio))),
+            "processing_seconds": 0.001,
+            "timestamps": [{"start": 0, "end": len(audio)}],
+            "audio_duration_ms": 1000.0,
+        }
+        with patch.object(server.PipelineService, "_load_models", return_value=models), \
+                patch.object(server, "separate_amp") as separate, \
+                patch.object(
+                    server, "detect_speech_activity", return_value=primary_vad
+                ) as detect, \
+                patch.object(
+                    server,
+                    "transcribe_base",
+                    return_value=Mock(text="단일 음성 자막", elapsed_seconds=0.02),
+                ) as transcribe:
+            service = server.PipelineService(warm_up=False)
+            try:
+                result = service.process("single", audio, 1.0)
+            finally:
+                service.close()
+        separate.assert_not_called()
+        detect.assert_called_once()
+        transcribe.assert_called_once()
+        np.testing.assert_array_equal(transcribe.call_args.args[1], audio)
+        self.assertEqual(result["schema_version"], 1)
+        self.assertEqual(result["processing_profile"], "single")
+        self.assertEqual(len(result["speakers"]), 2)
+        self.assertEqual(result["speakers"][0]["raw_transcript"], "단일 음성 자막")
+        self.assertEqual(result["speakers"][1]["raw_transcript"], "")
+        self.assertFalse(result["speakers"][1]["vad"]["speech_detected"])
+        self.assertFalse(result["models"]["mossformer2"]["loaded"])
+        primary = np.frombuffer(
+            result["speakers"][0]["waveform"]["data"], dtype="<f4"
+        )
+        secondary = np.frombuffer(
+            result["speakers"][1]["waveform"]["data"], dtype="<f4"
+        )
+        np.testing.assert_array_equal(primary, audio)
+        np.testing.assert_array_equal(secondary, np.zeros_like(audio))
+
+        result["window_index"] = 0
+        parsed = decode_binary_result(server.encode_binary_result(result))
+        from remote_gpu_client import parse_result
+
+        remote = parse_result(parsed, "single", 0, len(audio), 0.1)
+        np.testing.assert_array_equal(remote.raw_speakers[0], audio)
+        np.testing.assert_array_equal(remote.raw_speakers[1], np.zeros_like(audio))
 
     def test_http_handler_returns_server_diagnostics_without_loading_models(self):
         class FakeService:
