@@ -1,6 +1,7 @@
 """Headless tests for the Windows GUI. No WASAPI or RunPod calls are made."""
 from __future__ import annotations
 
+import gc
 import os
 import logging
 import sys
@@ -31,7 +32,8 @@ from phase5.live_caption_controller import (
 )
 from remote_gpu_client import RemoteConnectionError, RemoteTimeoutError
 from PySide6.QtWidgets import QApplication, QLabel
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication, QEvent, Qt
+from PySide6.QtGui import QColor
 from typing_extensions import Self as TypingExtensionsSelf
 
 
@@ -97,6 +99,14 @@ class GuiTests(unittest.TestCase):
         self.app.processEvents()
         self.assertTrue(condition(), "condition did not become true before timeout")
 
+    def tearDown(self) -> None:
+        # Headless tests do not run QApplication.exec(), so Qt's deferred
+        # deletes must be drained explicitly.  Collect Python wrapper cycles
+        # here on the GUI thread instead of letting a later worker thread do it.
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        self.app.processEvents()
+        gc.collect()
+
     @staticmethod
     def event(
         speaker: str,
@@ -125,6 +135,7 @@ class GuiTests(unittest.TestCase):
         window = MainWindow()
         try:
             self.assertEqual(window.windowTitle(), "AI 실시간 자막")
+            self.assertTrue(window.testAttribute(Qt.WidgetAttribute.WA_DeleteOnClose))
             self.assertTrue(window.start_button.isEnabled())
             self.assertFalse(window.stop_button.isEnabled())
             self.assertEqual(window.speaker_mode_combo.currentData(), "single")
@@ -463,6 +474,59 @@ class GuiTests(unittest.TestCase):
             self.assertEqual(overlay.style_config.background_opacity, 55)
             self.assertFalse(overlay.style_config.bold)
             self.assertEqual(overlay.style_config.text_color, "#FDE047")
+        finally:
+            window.close()
+
+    def test_custom_overlay_color_updates_visible_partial_and_final_without_recreation(self) -> None:
+        window = MainWindow()
+        overlay = window._ensure_overlay()
+        try:
+            window.overlay_font_size.setValue(34)
+            window.overlay_opacity.setValue(55)
+            window.overlay_bold_checkbox.setChecked(False)
+            window.apply_subtitle_event(
+                self.event("speaker_0", 1, 1, "확정 자막", "final")
+            )
+            window.apply_subtitle_event(self.event("speaker_0", 2, 2, "진행 중 자막"))
+
+            with patch(
+                "phase5.gui_app.QColorDialog.getColor", return_value=QColor("#1234ab")
+            ) as get_color:
+                window.overlay_custom_color_button.click()
+
+            self.assertIs(window.overlay, overlay)
+            self.assertEqual(window.overlay_text_color_combo.currentText(), "사용자 지정 색상")
+            self.assertEqual(window.overlay_text_color_combo.currentData(), "#1234AB")
+            self.assertEqual(overlay.style_config.text_color, "#1234AB")
+            self.assertEqual(overlay.style_config.font_size, 34)
+            self.assertEqual(overlay.style_config.background_opacity, 55)
+            self.assertFalse(overlay.style_config.bold)
+            self.assertEqual(get_color.call_args.args[0].name().upper(), "#FFFFFF")
+            self.assertEqual(get_color.call_args.args[2], "자막 글자 색상 선택")
+
+            final_label, partial_label = overlay._labels[:2]
+            self.assertIn("18, 52, 171, 255", final_label.styleSheet())
+            self.assertIn("18, 52, 171, 210", partial_label.styleSheet())
+        finally:
+            window.close()
+
+    def test_canceling_custom_overlay_color_keeps_current_color(self) -> None:
+        window = MainWindow()
+        overlay = window._ensure_overlay()
+        try:
+            window.overlay_text_color_combo.setCurrentIndex(
+                window.overlay_text_color_combo.findData("#FDE047")
+            )
+            previous_color = overlay.style_config.text_color
+            previous_index = window.overlay_text_color_combo.currentIndex()
+
+            with patch(
+                "phase5.gui_app.QColorDialog.getColor", return_value=QColor()
+            ):
+                window.overlay_custom_color_button.click()
+
+            self.assertEqual(window.overlay_text_color_combo.currentIndex(), previous_index)
+            self.assertEqual(overlay.style_config.text_color, previous_color)
         finally:
             window.close()
 

@@ -7,12 +7,13 @@ from typing import Any
 from typing_extensions import Self as _TypingExtensionsSelf  # noqa: F401
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex, QSize, Qt, QTimer, Signal, Slot
-from PySide6.QtGui import QCloseEvent, QFont
+from PySide6.QtGui import QCloseEvent, QColor, QFont
 from PySide6.QtWidgets import (
     QApplication,
     QAbstractItemView,
     QCheckBox,
     QComboBox,
+    QColorDialog,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -215,6 +216,12 @@ class MainWindow(QMainWindow):
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
+        # A closed top-level widget is hidden by default, leaving its active
+        # child timers reachable until Python's cyclic GC runs.  GC may run on
+        # a caption worker thread, where destroying GUI-thread Qt objects is
+        # unsafe.  Let Qt delete the complete object tree on the GUI thread as
+        # soon as an accepted close finishes.
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.controller = controller or LiveCaptionController()
         self._close_when_finished = False
         self.overlay: SubtitleOverlay | None = None
@@ -335,6 +342,8 @@ class MainWindow(QMainWindow):
         self.overlay_text_color_combo.addItem("흰색", "#FFFFFF")
         self.overlay_text_color_combo.addItem("노란색", "#FDE047")
         self.overlay_text_color_combo.addItem("연두색", "#A7F3D0")
+        self.overlay_custom_color_button = QPushButton("사용자 지정 색상")
+        self.overlay_custom_color_button.setObjectName("overlayCustomColor")
         overlay_layout.addWidget(self.overlay_visible_checkbox)
         overlay_layout.addWidget(QLabel("글자 크기"))
         overlay_layout.addWidget(self.overlay_font_size)
@@ -343,6 +352,7 @@ class MainWindow(QMainWindow):
         overlay_layout.addWidget(self.overlay_bold_checkbox)
         overlay_layout.addWidget(QLabel("글자 색상"))
         overlay_layout.addWidget(self.overlay_text_color_combo)
+        overlay_layout.addWidget(self.overlay_custom_color_button)
         root.addWidget(overlay_card)
 
         subtitle_card = QFrame()
@@ -386,6 +396,7 @@ class MainWindow(QMainWindow):
         self.overlay_opacity.valueChanged.connect(self.apply_overlay_style)
         self.overlay_bold_checkbox.toggled.connect(self.apply_overlay_style)
         self.overlay_text_color_combo.currentIndexChanged.connect(self.apply_overlay_style)
+        self.overlay_custom_color_button.clicked.connect(self.select_custom_overlay_color)
 
         self.apply_controller_state(self.controller.state)
         self.setStyleSheet(APP_STYLE)
@@ -446,6 +457,31 @@ class MainWindow(QMainWindow):
     def apply_overlay_style(self, *_args: object) -> None:
         if self.overlay is not None:
             self.overlay.apply_style(self._overlay_style())
+
+    @Slot()
+    def select_custom_overlay_color(self) -> None:
+        """Apply a user-selected color through the existing overlay-style path."""
+        color = QColorDialog.getColor(
+            QColor(str(self.overlay_text_color_combo.currentData())),
+            self,
+            "자막 글자 색상 선택",
+        )
+        if not color.isValid():
+            return
+
+        color_name = color.name().upper()
+        custom_index = self.overlay_text_color_combo.findText("사용자 지정 색상")
+        if custom_index < 0:
+            self.overlay_text_color_combo.addItem("사용자 지정 색상", color_name)
+            custom_index = self.overlay_text_color_combo.count() - 1
+        else:
+            self.overlay_text_color_combo.setItemData(custom_index, color_name)
+        if self.overlay_text_color_combo.currentIndex() != custom_index:
+            self.overlay_text_color_combo.setCurrentIndex(custom_index)
+        else:
+            # Updating an existing custom entry does not emit a selection signal.
+            # Refresh visible PARTIAL and FINAL rows immediately in that case.
+            self.apply_overlay_style()
 
     def _overlay_style(self) -> OverlayStyle:
         return OverlayStyle(
