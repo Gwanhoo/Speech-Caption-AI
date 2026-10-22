@@ -36,7 +36,8 @@ class PipelineTests(TestCase):
     def run_pipeline(self, remote, fail_first=False, failure=None, fail_all=False,
                      latency_diagnostics=False, runtime_hooks=None,
                      response_factory=None, duration=5, websocket=True, capture_factory=None,
-                     reference_paths=None, speaker_mode="overlap", output_device_id=None):
+                     reference_paths=None, speaker_mode="overlap", output_device_id=None,
+                     evidence=False):
         speaker = Mock(name="speaker")
         speaker.id = output_device_id or "{default-endpoint}"
         players = []
@@ -79,6 +80,7 @@ class PipelineTests(TestCase):
             return SeparationRecoveryResult(np.stack([audio, -audio])[:, None, :], finite_audio_stats(audio), .01, 0., False, False, False)
         with tempfile.TemporaryDirectory() as directory, ExitStack() as stack:
             output = Path(directory) / "result.json"
+            evidence_dir = Path(directory) / "evidence"
             argv = ["run_overlap_pipeline", "--duration", str(duration), "--assemble", "--json-output", str(output)]
             argv += ["--speaker-mode", speaker_mode]
             if output_device_id is not None:
@@ -93,6 +95,7 @@ class PipelineTests(TestCase):
                 if websocket:
                     argv += ["--websocket", "--ws-port", "0"]
             if latency_diagnostics: argv += ["--latency-diagnostics"]
+            if evidence: argv += ["--evidence-dir", str(evidence_dir)]
             stack.enter_context(patch.object(pipeline.sys, "argv", argv))
             stdout_buffer = io.StringIO()
             stdout = Mock(wraps=stdout_buffer); stdout.reconfigure = Mock()
@@ -116,6 +119,19 @@ class PipelineTests(TestCase):
             if remote:
                 client.close.assert_called_once()
             result = json.loads(output.read_text())
+            if evidence:
+                self.last_evidence_records = [
+                    json.loads(line)
+                    for line in (evidence_dir / "timeline.jsonl").read_text(
+                        encoding="utf-8"
+                    ).splitlines()
+                ]
+                self.last_evidence_audio_info = pipeline.sf.info(
+                    evidence_dir / "original.wav"
+                )
+                self.last_evidence_wavs = sorted(
+                    path.name for path in (evidence_dir / "windows").glob("*.wav")
+                )
             if latency_diagnostics:
                 self.assertTrue(result["latency_diagnostics"]["enabled"])
                 self.assertTrue(all("latency_diagnostics" in row for row in result["windows"]))
@@ -214,6 +230,7 @@ class PipelineTests(TestCase):
         self.assertEqual(result["websocket"]["dropped_oldest"], 0)
         self.assertEqual(delivered, result["subtitle_events"])
         self.assertEqual(result["websocket"]["published"], len(delivered))
+        self.assertFalse(result["evidence_capture"]["enabled"])
         logged_admissions = [json.loads(line[line.index("{"):])
                              for line in self.last_stdout.splitlines()
                              if line.startswith("[SUBTITLE ADMISSION]")]
@@ -232,6 +249,52 @@ class PipelineTests(TestCase):
         self.assertEqual(logged_updates, [event["support_update"] for event in partials])
         self.assertTrue(all(update["reason"] == "current_source_covers_unretained_text"
                             for update in logged_updates))
+
+    def test_explicit_evidence_dir_links_original_raw_stt_and_final_subtitles(self):
+        code, result = self.run_pipeline(
+            True,
+            evidence=True,
+            speaker_mode="single",
+        )
+        self.assertEqual(code, 0)
+        evidence = result["evidence_capture"]
+        self.assertTrue(evidence["enabled"])
+        self.assertEqual(evidence["sample_rate"], 16000)
+        self.assertEqual(evidence["channels"], 1)
+        self.assertEqual(evidence["sample_count"], 5 * 16000)
+        self.assertEqual(self.last_evidence_audio_info.samplerate, 16000)
+        self.assertEqual(self.last_evidence_audio_info.channels, 1)
+        self.assertEqual(self.last_evidence_audio_info.frames, 5 * 16000)
+        self.assertEqual(self.last_evidence_audio_info.subtype, "FLOAT")
+
+        session = self.last_evidence_records[0]
+        windows = [
+            record for record in self.last_evidence_records
+            if record["record_type"] == "window"
+        ]
+        subtitles = [
+            record for record in self.last_evidence_records
+            if record["record_type"] == "subtitle_event"
+        ]
+        self.assertEqual(session["record_type"], "session")
+        self.assertEqual(session["audio"]["path"], "original.wav")
+        self.assertEqual([record["window_id"] for record in windows], [0, 1])
+        self.assertEqual(windows[0]["audio"]["sample_start"], 0)
+        self.assertEqual(windows[0]["audio"]["sample_end"], 3 * 16000)
+        self.assertEqual(windows[1]["audio"]["sample_start"], 2 * 16000)
+        self.assertEqual(windows[1]["audio"]["sample_end"], 5 * 16000)
+        self.assertEqual(
+            windows[0]["raw_stt"]["remote_raw_slots"],
+            ["화자 0 테스트 문장입니다", "화자 1 테스트 문장입니다"],
+        )
+        self.assertTrue(subtitles)
+        self.assertEqual(
+            [record["event"] for record in subtitles], result["subtitle_events"]
+        )
+        self.assertTrue(all(record["window_id"] in {0, 1} for record in subtitles))
+        self.assertEqual(len(self.last_evidence_wavs), 14)
+        self.assertIn("window_000_mixed.wav", self.last_evidence_wavs)
+        self.assertIn("window_001_logical_speaker_1.wav", self.last_evidence_wavs)
 
     def test_explicit_output_device_id_reaches_loopback_capture(self):
         selected_id = "{selected-output-endpoint}"

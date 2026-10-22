@@ -151,6 +151,54 @@ Client-local CUDA counters are zero in remote mode; the server memory is reporte
 separately. Timing is measured on each host with its own monotonic clock; stream
 timestamps are client-owned. Windows queue latency includes HTTP/VAD/STT together.
 
+## Original audio / STT / subtitle evidence capture
+
+`--evidence-dir PATH` explicitly enables an analysis bundle. It is disabled by
+default and does not change STT, VAD, speaker selection, assembler decisions, or
+the remote API. Use a new directory for each run.
+
+The bundle contains:
+
+- `original.wav`: continuous Windows loopback capture after the existing channel
+  selection and 48 kHz to 16 kHz resample. It is mono 16 kHz FLOAT WAV.
+- `windows/window_NNN_mixed.wav`: the exact overlapping input window sent for
+  processing.
+- `windows/window_NNN_raw_slot_0.wav` and `_1.wav`: server separation slots.
+- `windows/window_NNN_logical_speaker_0.wav` and `_1.wav`: the slots after the
+  existing speaker mapping. The legacy `_speaker_0.wav` and `_speaker_1.wav`
+  aliases are also retained.
+- `timeline.jsonl`: UTF-8, one JSON object per line. The first `session` record
+  describes the WAV clock. Each `window` record contains `window_id`, capture
+  timestamp, stream seconds, exact sample range in `original.wav`, RAW STT before
+  subtitle policy, admitted STT, VAD, raw-to-logical mapping, assembler events,
+  and subtitle-state events. Each `subtitle_event` record contains the actual
+  published event and its utterance sample range in `original.wav`.
+
+Join records by `window_id`. For sample-accurate listening, extract
+`original.wav[sample_start:sample_end]`. `raw_stt.logical_speakers` is the STT
+text before artifact/single-speaker/admission policy. In remote mode,
+`raw_stt.remote_raw_slots` additionally preserves the server's raw slot order.
+Compare that with `admitted_stt`, then with `subtitle_event.event.text` and
+`subtitle_event.event.assembled_text` to locate inference errors, policy
+suppression, assembler changes, or published ghost text.
+
+For a 5-second silence, 30-second Korean news, 5-second silence run on Windows:
+
+```powershell
+$env:GPU_SERVER_URL = "https://YOUR-RUNPOD-8787.proxy.runpod.net"
+$run = "phase3/output/evidence/news_" + (Get-Date -Format "yyyyMMdd_HHmmss")
+python phase3/run_overlap_pipeline.py `
+  --live --duration 40 `
+  --processing-mode remote --remote-server-url "$env:GPU_SERVER_URL" `
+  --assemble --websocket --latency-diagnostics `
+  --evidence-dir "$run" --json-output "$run/run.json"
+```
+
+Start with system output silent, play exactly 30 seconds of the Korean news
+source after five seconds, then leave system output silent for the final five
+seconds. Preserve the whole run directory; `run.json` retains aggregate and
+failure/drop diagnostics while the JSONL is the direct audio/STT/subtitle join.
+
 ## Tests and recorded validation
 
 ```bash

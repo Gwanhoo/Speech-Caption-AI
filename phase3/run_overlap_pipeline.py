@@ -86,6 +86,7 @@ DEFAULT_OUTPUT = ROOT / "phase3" / "output" / "overlap_3s_2s.json"
 DEBUG_OUTPUT_DIR = ROOT / "phase3" / "output" / "overlap_debug"
 DIAGNOSTIC_OUTPUT_DIR = ROOT / "phase3" / "output" / "diagnostic"
 DIAGNOSTIC_WINDOW_OUTPUT_DIR = ROOT / "phase3" / "output" / "diagnostic_windows"
+EVIDENCE_SCHEMA_VERSION = 1
 
 
 @dataclass
@@ -364,6 +365,144 @@ def build_diagnostic_audio_window_record(item: dict[str, Any]) -> dict[str, Any]
     }
 
 
+def build_evidence_timeline_records(
+    results: list[dict[str, Any]],
+    subtitle_events: list[dict[str, Any]],
+    *,
+    original_sample_count: int,
+    window_seconds: int,
+    stride_seconds: int,
+    processing_mode: str,
+    speaker_mode: str,
+) -> list[dict[str, Any]]:
+    """Build analysis records on the captured-audio clock without changing decisions."""
+    records: list[dict[str, Any]] = [
+        {
+            "record_type": "session",
+            "schema_version": EVIDENCE_SCHEMA_VERSION,
+            "processing_mode": processing_mode,
+            "speaker_mode": speaker_mode,
+            "audio": {
+                "path": "original.wav",
+                "format": "WAV FLOAT",
+                "sample_rate": SAMPLE_RATE,
+                "channels": 1,
+                "sample_count": original_sample_count,
+                "duration_seconds": original_sample_count / SAMPLE_RATE,
+            },
+            "window_seconds": window_seconds,
+            "stride_seconds": stride_seconds,
+            "window_wav_directory": "windows",
+        }
+    ]
+    for item in sorted(results, key=lambda row: row["window"]):
+        window_id = item["window"]
+        stream_start = item["stream_start_seconds"]
+        stream_end = item["stream_end_seconds"]
+        raw_transcripts = item.get("raw_transcripts")
+        if raw_transcripts is None:
+            raw_mapping = item.get("secondary_leakage_diagnostic", {}).get(
+                "raw_transcripts", {}
+            )
+            raw_transcripts = [
+                raw_mapping.get("speaker_0", ""),
+                raw_mapping.get("speaker_1", ""),
+            ]
+        records.append(
+            {
+                "record_type": "window",
+                "schema_version": EVIDENCE_SCHEMA_VERSION,
+                "window_id": window_id,
+                "capture_completed_timestamp": item["capture_completed_timestamp"],
+                "audio": {
+                    "source": "original.wav",
+                    "stream_start_seconds": stream_start,
+                    "stream_end_seconds": stream_end,
+                    "sample_start": round(stream_start * SAMPLE_RATE),
+                    "sample_end": round(stream_end * SAMPLE_RATE),
+                    "mixed_window_wav": f"windows/window_{window_id:03d}_mixed.wav",
+                },
+                "raw_stt": {
+                    "logical_speakers": raw_transcripts,
+                    "remote_raw_slots": item.get("remote_raw_slot_transcripts"),
+                },
+                "admitted_stt": item["transcripts"],
+                "vad": item["vad"],
+                "raw_to_logical_mapping": item["raw_to_logical_mapping"],
+                "assembly_events": item["assembly_events"],
+                "subtitle_state_events": item["subtitle_state_events"],
+            }
+        )
+    for event in sorted(subtitle_events, key=lambda row: row["sequence"]):
+        start_seconds = event["start_ms"] / 1000
+        end_seconds = event["end_ms"] / 1000
+        records.append(
+            {
+                "record_type": "subtitle_event",
+                "schema_version": EVIDENCE_SCHEMA_VERSION,
+                "window_id": event["window_index"],
+                "audio": {
+                    "source": "original.wav",
+                    "stream_start_seconds": start_seconds,
+                    "stream_end_seconds": end_seconds,
+                    "sample_start": round(start_seconds * SAMPLE_RATE),
+                    "sample_end": round(end_seconds * SAMPLE_RATE),
+                },
+                "event": event,
+            }
+        )
+    return records
+
+
+def write_evidence_bundle(
+    output_dir: Path,
+    original_parts: list[np.ndarray],
+    results: list[dict[str, Any]],
+    subtitle_events: list[dict[str, Any]],
+    *,
+    window_seconds: int,
+    stride_seconds: int,
+    processing_mode: str,
+    speaker_mode: str,
+) -> dict[str, Any]:
+    if not original_parts:
+        raise ValueError("Evidence capture contains no original audio")
+    original = np.concatenate(original_parts).astype(np.float32, copy=False)
+    if not len(original) or not np.isfinite(original).all():
+        raise ValueError("Evidence capture original audio is empty or non-finite")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    original_path = output_dir / "original.wav"
+    timeline_path = output_dir / "timeline.jsonl"
+    sf.write(original_path, original, SAMPLE_RATE, subtype="FLOAT")
+    records = build_evidence_timeline_records(
+        results,
+        subtitle_events,
+        original_sample_count=len(original),
+        window_seconds=window_seconds,
+        stride_seconds=stride_seconds,
+        processing_mode=processing_mode,
+        speaker_mode=speaker_mode,
+    )
+    timeline_path.write_text(
+        "".join(json.dumps(record, ensure_ascii=False) + "\n" for record in records),
+        encoding="utf-8",
+    )
+    return {
+        "enabled": True,
+        "schema_version": EVIDENCE_SCHEMA_VERSION,
+        "directory": str(output_dir),
+        "original_wav": str(original_path),
+        "timeline_jsonl": str(timeline_path),
+        "window_wav_directory": str(output_dir / "windows"),
+        "sample_rate": SAMPLE_RATE,
+        "channels": 1,
+        "sample_count": len(original),
+        "duration_seconds": len(original) / SAMPLE_RATE,
+        "window_records": len(results),
+        "subtitle_event_records": len(subtitle_events),
+    }
+
+
 def main(
     argv: Sequence[str] | None = None,
     runtime_hooks: LivePipelineHooks | None = None,
@@ -411,6 +550,14 @@ def main(
     parser.add_argument("--json-output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--save-wav", action="store_true")
     parser.add_argument(
+        "--evidence-dir",
+        type=Path,
+        help=(
+            "Explicitly enable analysis evidence: continuous original WAV, per-window "
+            "WAVs, and a RAW-STT/final-subtitle JSONL timeline"
+        ),
+    )
+    parser.add_argument(
         "--output-device-id",
         help="Windows output endpoint WASAPI ID; omit to use the current default output device",
     )
@@ -436,6 +583,10 @@ def main(
     parser.add_argument("--subtitle-event-queue-size", type=int, default=32)
     args = parser.parse_args(argv)
     remote = args.processing_mode == "remote"
+    evidence_enabled = args.evidence_dir is not None
+    window_wav_output_dir = (
+        args.evidence_dir / "windows" if evidence_enabled else DEBUG_OUTPUT_DIR
+    )
     audio_queue_maxsize_for_run = audio_queue_maxsize(args.processing_mode)
     separated_queue_maxsize = QUEUE_MAXSIZE
     if remote:
@@ -504,6 +655,7 @@ def main(
     diagnostic_logical_speaker_windows: list[dict[int, np.ndarray]] = [{}, {}]
     diagnostic_state = {"window_count": 0}
     diagnostic_summary: dict[str, Any] = {"enabled": args.diagnostic_audio}
+    evidence_summary: dict[str, Any] = {"enabled": evidence_enabled}
     speaker_tracker = PersistentSpeakerTracker(
         overlap_samples=(args.window_seconds - args.stride_seconds) * SAMPLE_RATE
     )
@@ -1029,8 +1181,9 @@ def main(
                             )
                             index += 1
                             continue
-                        if args.diagnostic_audio:
+                        if args.diagnostic_audio or evidence_enabled:
                             diagnostic_original_parts.append(new_audio.copy())
+                        if args.diagnostic_audio:
                             diagnostic_state["window_count"] = index + 1
                         if index == 0:
                             audio = np.ascontiguousarray(new_audio, dtype=np.float32)
@@ -1063,10 +1216,10 @@ def main(
                                 else {}
                             ),
                         )
-                        if args.save_wav:
-                            DEBUG_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+                        if args.save_wav or evidence_enabled:
+                            window_wav_output_dir.mkdir(parents=True, exist_ok=True)
                             sf.write(
-                                DEBUG_OUTPUT_DIR / f"window_{index:03d}_mixed.wav",
+                                window_wav_output_dir / f"window_{index:03d}_mixed.wav",
                                 audio,
                                 SAMPLE_RATE,
                                 subtype="FLOAT",
@@ -1109,7 +1262,7 @@ def main(
                         remainder = capture_duration - captured_audio_seconds
                         if remainder > 0:
                             raw_remainder = recorder.record(numframes=remainder * base.CAPTURE_SAMPLE_RATE)
-                            if args.diagnostic_audio:
+                            if args.diagnostic_audio or evidence_enabled:
                                 remainder_audio = base._resample(
                                     select_capture_channel(raw_remainder, args.capture_channel),
                                     base.CAPTURE_SAMPLE_RATE,
@@ -1327,15 +1480,15 @@ def main(
                                     f"Invalid separated audio: window={item.index}, "
                                     f"raw_slot={source}, RMS={raw_speaker_rms[source]}"
                                 )
-                            if args.save_wav:
+                            if args.save_wav or evidence_enabled:
                                 sf.write(
-                                    DEBUG_OUTPUT_DIR / f"window_{item.index:03d}_speaker_{source}.wav",
+                                    window_wav_output_dir / f"window_{item.index:03d}_speaker_{source}.wav",
                                     audio,
                                     SAMPLE_RATE,
                                     subtype="FLOAT",
                                 )
                                 sf.write(
-                                    DEBUG_OUTPUT_DIR / f"window_{item.index:03d}_raw_slot_{source}.wav",
+                                    window_wav_output_dir / f"window_{item.index:03d}_raw_slot_{source}.wav",
                                     audio,
                                     SAMPLE_RATE,
                                     subtype="FLOAT",
@@ -1356,9 +1509,9 @@ def main(
                             float(np.max(np.abs(audio))) for audio in speakers
                         )
                         for logical_speaker, audio in enumerate(speakers):
-                            if args.save_wav:
+                            if args.save_wav or evidence_enabled:
                                 sf.write(
-                                    DEBUG_OUTPUT_DIR
+                                    window_wav_output_dir
                                     / f"window_{item.index:03d}_logical_speaker_{logical_speaker}.wav",
                                     audio,
                                     SAMPLE_RATE,
@@ -2056,6 +2209,12 @@ def main(
                             "reference_scores": item.reference_scores,
                             "pair_correlation": item.pair_correlation,
                             "speaker_mapping": item.speaker_mapping,
+                            "raw_transcripts": raw_transcripts,
+                            "remote_raw_slot_transcripts": (
+                                [slot["raw_transcript"] for slot in item.remote_result.slots]
+                                if item.remote_result is not None
+                                else None
+                            ),
                             "transcripts": transcripts,
                             "secondary_leakage_diagnostic": secondary_leakage,
                             "assembly_events": window_assembly_events,
@@ -2191,6 +2350,25 @@ def main(
                 }
                 errors.append(("diagnostic-stt", exc))
         results.sort(key=lambda item: item["window"])
+        if evidence_enabled:
+            assert args.evidence_dir is not None
+            try:
+                evidence_summary = write_evidence_bundle(
+                    args.evidence_dir,
+                    diagnostic_original_parts,
+                    results,
+                    subtitle_events,
+                    window_seconds=args.window_seconds,
+                    stride_seconds=args.stride_seconds,
+                    processing_mode=args.processing_mode,
+                    speaker_mode=args.speaker_mode.value,
+                )
+            except BaseException as exc:
+                evidence_summary = {
+                    "enabled": True,
+                    "error": {"type": type(exc).__name__, "message": str(exc)},
+                }
+                errors.append(("evidence-capture", exc))
 
         performance: dict[str, Any] = {}
         quality: dict[str, Any] = {}
@@ -2691,6 +2869,7 @@ def main(
             "separation_recovery": separation_recovery_summary,
             "websocket": websocket_stats,
             "diagnostic_audio": diagnostic_summary,
+            "evidence_capture": evidence_summary,
             "subtitle_events": subtitle_events,
             "subtitle_state_events": subtitle_state_events,
             "separation_quality": separation_quality,
