@@ -302,6 +302,156 @@ class FuzzyContinuationSafetyRegressions(unittest.TestCase):
             self.assertEqual(assembler.last_window, 2)
 
 
+class ReplacementSafetyRegressions(unittest.TestCase):
+    def test_recorded_deletion_only_revision_keeps_observed_words_and_new_suffix(self) -> None:
+        fixture = json.loads((LOGGED_WINDOW_FIXTURE.parent /
+            "news_20261022_160827_replacement_windows.json").read_text(encoding="utf-8"))
+        records = {r["window"]: r for r in fixture["windows"]}
+        self.assertEqual(records[11]["raw"], "이번 사태 파급력이 큰 건")
+        self.assertEqual(records[12]["raw"], "사급력이 큰 건 PHP가 인터넷 정보...")
+        self.assertEqual(records[12]["logged_assembly"]["match_type"], "fuzzy_replace")
+        self.assertEqual(records[12]["logged_assembly"]["utterance_hypothesis"],
+                         "이번 사급력이 큰 건 PHP가 인터넷 정보...")
+        self.assertTrue(records[12]["overlap"]["supported_tail_revision"])
+        self.assertEqual(records[12]["overlap"]["continuous_tail_coverage"], 0.998)
+        replay = LoggedWindowReplay()
+        replay.process(records[11])
+        event, partials = replay.process(records[12])
+        expected = records[11]["raw"] + " PHP가 인터넷 정보..."
+        self.assertEqual(event.utterance_hypothesis, expected)
+        self.assertEqual(event.match_type, "fuzzy")
+        self.assertEqual(event.new_fragment, "PHP가 인터넷 정보...")
+        self.assertEqual(partials[-1].publication_text, expected)
+        _, following = replay.process(records[13])
+        self.assertEqual(following[0].status, "final")
+        self.assertEqual(following[0].publication_text, expected)
+        self.assertEqual(following[-1].publication_text, records[13]["raw"])
+
+    def test_deletion_only_revision_and_repetition_do_not_grant_support(self) -> None:
+        # Synthetic support/duplicate variations of the recorded pair above.
+        for support in (False, True):
+            for confirmed in (False, True):
+                with self.subTest(support=support, confirmed=confirmed):
+                    assembler = SubtitleAssembler(0)
+                    old = "이번 사태 파급력이 큰 건"
+                    raw = "사급력이 큰 건 PHP가 인터넷 정보"
+                    assembler.process(9, old)
+                    if confirmed:
+                        assembler.process(10, old)
+                    first = assembler.process(11 if confirmed else 10, raw,
+                        shared_speech=True, supported_tail_revision=support)
+                    self.assertEqual(first.utterance_hypothesis, old + " PHP가 인터넷 정보")
+                    self.assertEqual(first.confirmed_prefix_length,
+                                     len(normalize_for_matching(old)) if confirmed else 0)
+                    duplicate = assembler.process(first.window + 1, raw,
+                        shared_speech=True, supported_tail_revision=support)
+                    self.assertTrue(duplicate.duplicate_only)
+                    self.assertEqual(duplicate.utterance_hypothesis, first.utterance_hypothesis)
+
+    def test_supported_tail_revision_cannot_delete_text_before_previous_raw(self) -> None:
+        assembler = SubtitleAssembler(0)
+        older = "별도 앞부분 "
+        previous = "제 손은 그냥과와 높아지는"
+        assembler.process(0, older + previous)
+        established = assembler.process(1, previous)
+        self.assertEqual(established.confirmed_prefix_length, 0)
+        raw = "분양가와 높아지는 청약문턱에 지친 세대가"
+        event = assembler.process(2, raw, shared_speech=True, supported_tail_revision=True)
+        self.assertEqual(event.match_type, "supported_tail_replace")
+        self.assertEqual(event.utterance_hypothesis, older + raw)
+
+    def test_confirmed_fuzzy_substitution_is_retained_but_new_speech_is_appended(self) -> None:
+        assembler = SubtitleAssembler(0)
+        old = "오늘은 익스트림 모두"
+        assembler.process(0, old)
+        confirmed = assembler.process(1, old)
+        event = assembler.process(2, "익스트림 모드 실행합니다", shared_speech=True,
+                                  supported_tail_revision=True)
+        self.assertEqual(event.utterance_hypothesis, old + " 실행합니다")
+        self.assertEqual(event.confirmed_prefix_length, confirmed.confirmed_prefix_length)
+        self.assertEqual(event.match_type, "fuzzy")
+        self.assertEqual(event.new_fragment, "실행합니다")
+
+    def test_confirmed_tail_is_not_duplicated_by_supported_replacement(self) -> None:
+        assembler = SubtitleAssembler(0)
+        old = "네, 현재까지 큰 교육을"
+        assembler.process(0, old)
+        confirmed = assembler.process(1, old)
+        event = assembler.process(2, "현재까지 큰 교통 혼잡은 발생하지 않았습니다.",
+                                  shared_speech=True, supported_tail_revision=True)
+        self.assertEqual(event.utterance_hypothesis, old + " 혼잡은 발생하지 않았습니다.")
+        self.assertEqual(event.confirmed_prefix_length, confirmed.confirmed_prefix_length)
+        self.assertEqual(event.match_type, "fuzzy")
+        self.assertEqual(event.new_fragment, "혼잡은 발생하지 않았습니다.")
+
+    def test_supported_substitution_of_unconfirmed_tail_still_reaches_final(self) -> None:
+        for old, raw, match_type, expected in (
+            ("제 손은 그냥과와 높아지는", "분양가와 높아지는 청약문턱에 지친 세대가",
+             "supported_tail_replace", "분양가와 높아지는 청약문턱에 지친 세대가"),
+            ("오늘은 익스트림 모두", "익스트림 모드 실행합니다",
+             "fuzzy_replace", "오늘은 익스트림 모드 실행합니다"),
+        ):
+            with self.subTest(old=old):
+                assembler = SubtitleAssembler(0)
+                state = SpeakerSubtitleState(0, require_final_support=True)
+                for window, text in enumerate((old, raw)):
+                    event = assembler.process(window, text, shared_speech=True,
+                                              supported_tail_revision=True)
+                    partial = state.process(window, event.utterance_hypothesis, True,
+                        3 + 2 * window, confirmed_prefix_length=event.confirmed_prefix_length,
+                        source_supported=True, source_text=production_source_fragment(event))[0]
+                self.assertEqual(event.match_type, match_type)
+                self.assertEqual(partial.publication_text, expected)
+                self.assertEqual(state.flush(1, 5).publication_text, expected)
+
+    def test_matching_confirmed_anchor_still_allows_supported_tail_correction(self) -> None:
+        for prefix in ("네, 현재까지", "네, 현재까지 큰 교"):
+            with self.subTest(prefix=prefix):
+                assembler = SubtitleAssembler(0)
+                assembler.process(0, prefix)
+                confirmed = assembler.process(1, "네, 현재까지 큰 교육을")
+                raw = "현재까지 큰 교통 혼잡은 발생하지 않았습니다."
+                event = assembler.process(2, raw, shared_speech=True,
+                                          supported_tail_revision=True)
+                self.assertEqual(event.utterance_hypothesis, "네, " + raw)
+                self.assertEqual(event.match_type, "supported_tail_replace")
+                self.assertEqual(event.confirmed_prefix_length, confirmed.confirmed_prefix_length)
+
+    def test_supported_sentence_revision_cannot_lower_confirmed_prefix(self) -> None:
+        assembler = SubtitleAssembler(0, enable_sentence_lifecycle=True)
+        state = SpeakerSubtitleState(0, require_final_support=True)
+        old = "오전에는 비교적 맑은 날씨가 이어졌습니다."
+        raw = "날씨가 이어졌지만 오후부터는 일부 지역에"
+        for window, text in enumerate((old[:-1], old, raw)):
+            event = assembler.process(window, text, shared_speech=True,
+                                      supported_tail_revision=True)
+            partial = state.process(window, event.utterance_hypothesis, True,
+                3 + 2 * window, confirmed_prefix_length=event.confirmed_prefix_length,
+                source_supported=True, source_text=production_source_fragment(event))[0]
+            if window == 1:
+                protected = event.confirmed_prefix_length
+        expected = old + " 오후부터는 일부 지역에"
+        self.assertEqual(event.confirmed_prefix_length, protected)
+        self.assertEqual(event.utterance_hypothesis, expected)
+        self.assertEqual(partial.publication_text, expected)
+        self.assertEqual(state.flush(2, 7).publication_text, expected)
+
+    def test_retained_words_do_not_grant_acoustic_support_to_new_suffix(self) -> None:
+        assembler = SubtitleAssembler(0)
+        state = SpeakerSubtitleState(0, require_final_support=True)
+        old = "이번 사태 파급력이 큰 건"
+        for window, text in enumerate((old, "사급력이 큰 건 PHP가 인터넷 정보")):
+            event = assembler.process(window, text, shared_speech=True,
+                                      supported_tail_revision=True)
+            partial = state.process(window, event.utterance_hypothesis, True,
+                3 + 2 * window, confirmed_prefix_length=event.confirmed_prefix_length,
+                source_supported=window == 0, source_text=production_source_fragment(event))[0]
+        self.assertEqual(event.new_fragment, "PHP가 인터넷 정보")
+        self.assertEqual(partial.text, old + " PHP가 인터넷 정보")
+        self.assertEqual(partial.publication_text, old)
+        self.assertEqual(state.flush(1, 5).publication_text, old)
+
+
 class ProductionEvidenceRegressions(unittest.TestCase):
     def test_logged_windows_4_to_7_keep_prefix_and_defer_final(self) -> None:
         records = logged_windows()

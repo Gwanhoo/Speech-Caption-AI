@@ -1,0 +1,211 @@
+{
+  "source": "phase3/output/evidence/news_20261022_160827/timeline.jsonl",
+  "source_sha256": "a53803fdf0498c145c4c96c7cbfa94550a0e7baa83e448610dbdfd0614131766",
+  "note": "Verbatim recorded primary-stream data. No human transcript or word-level alignment; neither STT version is asserted as acoustic ground truth.",
+  "windows": [
+    {
+      "window": 11,
+      "raw": "이번 사태 파급력이 큰 건",
+      "raw_stt": "이번 사태 파급력이 큰 건",
+      "stream_end_seconds": 25,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 2388.0,
+        "speech_ratio": 0.796,
+        "rms": 0.07255304604768753,
+        "peak": 0.8034295439720154,
+        "processing_seconds": 0.08015802901354618,
+        "timestamps": [
+          {
+            "start": 0,
+            "end": 11232
+          },
+          {
+            "start": 21024,
+            "end": 48000
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          11488
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          11232
+        ],
+        "shared_tail_interval": [
+          0,
+          11232
+        ],
+        "continuous_tail_coverage": 0.9777158774373259,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "logged_assembly": {
+        "previous": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "match_type": "none",
+        "overlap": "",
+        "new": "이번 사태 파급력이 큰 건",
+        "utterance_hypothesis": "이번 사태 파급력이 큰 건",
+        "confirmed_prefix_length": 0
+      },
+      "logged_state": [
+        {
+          "status": "final",
+          "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "source_supported": false
+        },
+        {
+          "status": "partial",
+          "text": "이번 사태 파급력이 큰 건",
+          "publication_text": "이번 사태 파급력이 큰 건",
+          "source_supported": true
+        }
+      ]
+    },
+    {
+      "window": 12,
+      "raw": "사급력이 큰 건 PHP가 인터넷 정보...",
+      "raw_stt": "사급력이 큰 건 PHP가 인터넷 정보...",
+      "stream_end_seconds": 27,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 2734.0,
+        "speech_ratio": 0.9113333333333333,
+        "rms": 0.08471004664897919,
+        "peak": 0.6728341579437256,
+        "processing_seconds": 0.08067496999865398,
+        "timestamps": [
+          {
+            "start": 32,
+            "end": 17888
+          },
+          {
+            "start": 20000,
+            "end": 35296
+          },
+          {
+            "start": 37408,
+            "end": 48000
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "logged_assembly": {
+        "previous": "이번 사태 파급력이 큰 건",
+        "match_type": "fuzzy_replace",
+        "overlap": "사급력이 큰 건",
+        "new": "PHP가 인터넷 정보...",
+        "utterance_hypothesis": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+        "confirmed_prefix_length": 0
+      },
+      "logged_state": [
+        {
+          "status": "partial",
+          "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "publication_text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "source_supported": true
+        }
+      ]
+    },
+    {
+      "window": 13,
+      "raw": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+      "raw_stt": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+      "stream_end_seconds": 29,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 2646.0,
+        "speech_ratio": 0.882,
+        "rms": 0.08811774849891663,
+        "peak": 0.6878306865692139,
+        "processing_seconds": 0.08091705001424998,
+        "timestamps": [
+          {
+            "start": 5664,
+            "end": 48000
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": true,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          5408,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          5664,
+          16000
+        ],
+        "shared_tail_interval": [
+          5664,
+          16000
+        ],
+        "continuous_tail_coverage": 0.9758308157099698,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "logged_assembly": {
+        "previous": "사급력이 큰 건 PHP가 인터넷 정보...",
+        "match_type": "none",
+        "overlap": "",
+        "new": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+        "utterance_hypothesis": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+        "confirmed_prefix_length": 0
+      },
+      "logged_state": [
+        {
+          "status": "final",
+          "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "publication_text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "source_supported": false
+        },
+        {
+          "status": "partial",
+          "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "publication_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "source_supported": true
+        }
+      ]
+    }
+  ]
+}

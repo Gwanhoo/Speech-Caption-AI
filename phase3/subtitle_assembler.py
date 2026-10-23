@@ -247,6 +247,27 @@ def corrected_suffix_prefix(previous: str, current: str) -> tuple[int, int, floa
     return best
 
 
+def is_internal_deletion_revision(previous: str, current: str) -> bool:
+    """Internal omissions alone do not justify erasing an established seam.
+
+    Shared speech proves an overlap, not that omitted syllables were wrong.
+    Compare only the aligned seam; genuinely new speech follows that seam.
+    Missing window-edge syllables remain eligible for the existing correction
+    policy (e.g. ``챔피언쇠`` -> ``챔피언``), unlike an omission bounded by
+    matching text on both sides (``사태파급력`` -> ``사급력``).
+    """
+    left = normalize_for_matching(previous)
+    right = normalize_for_matching(current)
+    if not right or len(right) >= len(left):
+        return False
+    edits = SequenceMatcher(None, left, right, autojunk=False).get_opcodes()
+    return (
+        all(tag in {"equal", "delete"} for tag, *_ in edits)
+        and any(tag == "delete" and 0 < start < end < len(left)
+                for tag, start, end, *_ in edits)
+    )
+
+
 def anchored_prefix_revision(previous: str, current: str) -> tuple[int, int, float] | None:
     """Revise a short modifier before a shared word, with external timing support.
 
@@ -676,8 +697,20 @@ class SubtitleAssembler:
             if normalize_for_matching(self.utterance_hypothesis).endswith(old_suffix):
                 _, positions = normalize_with_positions(self.utterance_hypothesis)
                 cut = positions[len(positions) - old_length]
-                self.utterance_hypothesis = self.utterance_hypothesis[:cut] + raw
-                match_type = "fuzzy_replace"
+                revised = self.utterance_hypothesis[:cut] + raw
+                if (
+                    is_internal_deletion_revision(old_suffix, raw[:new_cut])
+                    or normalized_common_prefix_length(before_hypothesis, revised)
+                    < self.confirmed_prefix_length
+                ):
+                    # The alignment can still remove repeated input without
+                    # granting permission to erase old or confirmed words.
+                    correction = None
+                    match_type = "fuzzy"
+                    fuzzy_token_continuation = False
+                else:
+                    self.utterance_hypothesis = revised
+                    match_type = "fuzzy_replace"
                 overlap = raw[:new_cut].strip()
                 normalized_overlap_length = len(normalize_for_matching(overlap))
                 new_text = raw[new_cut:]
@@ -712,6 +745,12 @@ class SubtitleAssembler:
             sentence_revision = reconcile_supported_sentence_revision(
                 self.utterance_hypothesis, raw, self.minimum_characters
             )
+            if (
+                sentence_revision is not None
+                and normalized_common_prefix_length(before_hypothesis, sentence_revision[0])
+                < self.confirmed_prefix_length
+            ):
+                sentence_revision = None
             if sentence_revision is not None:
                 revised, overlap, similarity = sentence_revision
                 self.utterance_hypothesis = revised
@@ -753,12 +792,12 @@ class SubtitleAssembler:
             ):
                 tail_revision = None
             else:
-                protected_length = min(self.confirmed_prefix_length, len(normalized_active))
+                previous_start = len(normalized_active) - len(normalized_previous)
+                protected_length = previous_start
                 anchor_start, anchor_end, similarity, unobserved_previous_prefix = (
                     tail_revision
                 )
                 if unobserved_previous_prefix:
-                    previous_start = len(normalized_active) - len(normalized_previous)
                     protected_length = max(
                         protected_length,
                         previous_start + unobserved_previous_prefix,
@@ -775,11 +814,36 @@ class SubtitleAssembler:
                     ):
                         protected_cut += 1
                 protected_prefix = self.utterance_hypothesis[:protected_cut].rstrip()
-                self.utterance_hypothesis = append_preserving_text(protected_prefix, raw)
-                match_type = "supported_tail_replace"
-                overlap = raw[anchor_start:anchor_end].strip()
+                revised = append_preserving_text(protected_prefix, raw)
+                anchor = normalize_for_matching(raw[anchor_start:anchor_end])
+                old_anchor_start = previous_start + normalized_previous.rfind(anchor)
+                conflicts_with_confirmed = (
+                    normalized_common_prefix_length(before_hypothesis, revised)
+                    < self.confirmed_prefix_length
+                )
+                if conflicts_with_confirmed and self.confirmed_prefix_length > old_anchor_start:
+                    # Replaying the whole RAW after a protected anchor would
+                    # duplicate confirmed speech. Keep it and append only the
+                    # suffix beyond a complete current token.
+                    new_cut = complete_fuzzy_overlap_token(raw, anchor_end)
+                    tail_revision = None
+                    match_type = "fuzzy"
+                    fuzzy_token_continuation = False
+                    overlap = raw[:new_cut].strip()
+                    new_text = raw[new_cut:]
+                else:
+                    if conflicts_with_confirmed:
+                        # The confirmed prefix precedes the shared anchor and
+                        # was not observed by this correction. Retain it too.
+                        protected_cut = positions[self.confirmed_prefix_length - 1] + 1
+                        revised = append_preserving_text(
+                            self.utterance_hypothesis[:protected_cut], raw
+                        )
+                    self.utterance_hypothesis = revised
+                    match_type = "supported_tail_replace"
+                    overlap = raw[anchor_start:anchor_end].strip()
+                    new_text = raw
                 normalized_overlap_length = len(normalize_for_matching(overlap))
-                new_text = raw
         new_text = LEADING_SEPARATOR_PATTERN.sub("", new_text).strip()
         if correction is None and tail_revision is None and sentence_revision is None:
             # Rebuild exact seams from the current display text. Appending a
