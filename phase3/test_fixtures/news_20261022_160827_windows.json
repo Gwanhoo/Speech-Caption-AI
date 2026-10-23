@@ -1,0 +1,473 @@
+{
+  "source": "phase3/output/evidence/news_20261022_160827/timeline.jsonl",
+  "source_sha256": "a53803fdf0498c145c4c96c7cbfa94550a0e7baa83e448610dbdfd0614131766",
+  "note": "Verbatim primary-stream text, VAD and overlap flags; no audio inference or synthetic evidence.",
+  "windows": [
+    {
+      "window": 0,
+      "raw": "",
+      "raw_stt": "",
+      "stream_end_seconds": 3,
+      "vad": {
+        "speech_detected": false,
+        "speech_duration_ms": 0.0,
+        "speech_ratio": 0.0,
+        "rms": 0.0,
+        "peak": 0.0,
+        "processing_seconds": 0.06648929699440487,
+        "timestamps": [],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {},
+      "logged_assembly": {
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "",
+        "utterance_hypothesis": "",
+        "confirmed_prefix_length": 0
+      }
+    },
+    {
+      "window": 1,
+      "raw": "",
+      "raw_stt": "",
+      "stream_end_seconds": 5,
+      "vad": {
+        "speech_detected": false,
+        "speech_duration_ms": 0.0,
+        "speech_ratio": 0.0,
+        "rms": 0.0,
+        "peak": 0.0,
+        "processing_seconds": 0.042210922023514286,
+        "timestamps": [],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "logged_assembly": {
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "",
+        "utterance_hypothesis": "",
+        "confirmed_prefix_length": 0
+      }
+    },
+    {
+      "window": 2,
+      "raw": "",
+      "raw_stt": "",
+      "stream_end_seconds": 7,
+      "vad": {
+        "speech_detected": false,
+        "speech_duration_ms": 0.0,
+        "speech_ratio": 0.0,
+        "rms": 0.0,
+        "peak": 0.0,
+        "processing_seconds": 0.04205133899813518,
+        "timestamps": [],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "logged_assembly": {
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "",
+        "utterance_hypothesis": "",
+        "confirmed_prefix_length": 0
+      }
+    },
+    {
+      "window": 3,
+      "raw": "",
+      "raw_stt": "",
+      "stream_end_seconds": 9,
+      "vad": {
+        "speech_detected": false,
+        "speech_duration_ms": 0.0,
+        "speech_ratio": 0.0,
+        "rms": 0.0010436662705615163,
+        "peak": 0.023965075612068176,
+        "processing_seconds": 0.07802621100563556,
+        "timestamps": [],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "logged_assembly": {
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "",
+        "utterance_hypothesis": "",
+        "confirmed_prefix_length": 0
+      }
+    },
+    {
+      "window": 4,
+      "raw": "웹사이트 개발의 논리",
+      "raw_stt": "웹사이트 개발의 논리",
+      "stream_end_seconds": 11,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 1394.0,
+        "speech_ratio": 0.4646666666666667,
+        "rms": 0.07711358368396759,
+        "peak": 0.5428699254989624,
+        "processing_seconds": 0.042129297013161704,
+        "timestamps": [
+          {
+            "start": 15392,
+            "end": 22496
+          },
+          {
+            "start": 32800,
+            "end": 48000
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "logged_assembly": {
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "웹사이트 개발의 논리",
+        "utterance_hypothesis": "웹사이트 개발의 논리",
+        "confirmed_prefix_length": 0
+      }
+    },
+    {
+      "window": 5,
+      "raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+      "raw_stt": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+      "stream_end_seconds": 13,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 2966.0,
+        "speech_ratio": 0.9886666666666667,
+        "rms": 0.10128374397754669,
+        "peak": 0.5428699254989624,
+        "processing_seconds": 0.08015088501269929,
+        "timestamps": [
+          {
+            "start": 544,
+            "end": 48000
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": true,
+        "tail_covered_by_current_prefix": true,
+        "previous_tail_overlap_interval": [
+          800,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          544,
+          16000
+        ],
+        "shared_tail_interval": [
+          800,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": "tail_started_in_overlap"
+      },
+      "logged_assembly": {
+        "previous": "웹사이트 개발의 논리",
+        "match_type": "supported_tail_replace",
+        "overlap": "이트 개발의",
+        "new": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+        "confirmed_prefix_length": 0
+      }
+    },
+    {
+      "window": 6,
+      "raw": "언어 PHP에서 발견된 취약점은",
+      "raw_stt": "언어 PHP에서 발견된 취약점은",
+      "stream_end_seconds": 15,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 2750.0,
+        "speech_ratio": 0.9166666666666666,
+        "rms": 0.08962428569793701,
+        "peak": 0.5703287720680237,
+        "processing_seconds": 0.07958413902088068,
+        "timestamps": [
+          {
+            "start": 0,
+            "end": 44000
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "logged_assembly": {
+        "previous": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+        "match_type": "boundary_exact",
+        "overlap": "언어 PHP",
+        "new": "에서 발견된 취약점은",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+        "confirmed_prefix_length": 0
+      }
+    },
+    {
+      "window": 7,
+      "raw": "최악점은 해커가 로그인이나 인증 없이",
+      "raw_stt": "최악점은 해커가 로그인이나 인증 없이",
+      "stream_end_seconds": 17,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 2740.0,
+        "speech_ratio": 0.9133333333333333,
+        "rms": 0.09751347452402115,
+        "peak": 0.8096173405647278,
+        "processing_seconds": 0.07977551300427876,
+        "timestamps": [
+          {
+            "start": 0,
+            "end": 12256
+          },
+          {
+            "start": 16416,
+            "end": 48000
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          12000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          12256
+        ],
+        "shared_tail_interval": [
+          0,
+          12000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "logged_assembly": {
+        "previous": "언어 PHP에서 발견된 취약점은",
+        "match_type": "none",
+        "overlap": "",
+        "new": "최악점은 해커가 로그인이나 인증 없이",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+        "confirmed_prefix_length": 0
+      }
+    },
+    {
+      "window": 8,
+      "raw": "인증 없이 외부에서 임의로 코드를 실행...",
+      "raw_stt": "인증 없이 외부에서 임의로 코드를 실행...",
+      "stream_end_seconds": 19,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 3000.0,
+        "speech_ratio": 1.0,
+        "rms": 0.10204397141933441,
+        "peak": 0.5551171898841858,
+        "processing_seconds": 0.07994405200588517,
+        "timestamps": [
+          {
+            "start": 0,
+            "end": 48000
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "logged_assembly": {
+        "previous": "최악점은 해커가 로그인이나 인증 없이",
+        "match_type": "boundary_exact",
+        "overlap": "인증 없이",
+        "new": "외부에서 임의로 코드를 실행...",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+        "confirmed_prefix_length": 0
+      }
+    },
+    {
+      "window": 9,
+      "raw": "의미로 코드를 실행하거나 시스템을 장악할 수",
+      "raw_stt": "의미로 코드를 실행하거나 시스템을 장악할 수",
+      "stream_end_seconds": 21,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 2868.0,
+        "speech_ratio": 0.956,
+        "rms": 0.09706255048513412,
+        "peak": 0.7033205628395081,
+        "processing_seconds": 0.07992091900086962,
+        "timestamps": [
+          {
+            "start": 0,
+            "end": 29152
+          },
+          {
+            "start": 31264,
+            "end": 48000
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "logged_assembly": {
+        "previous": "인증 없이 외부에서 임의로 코드를 실행...",
+        "match_type": "fuzzy",
+        "overlap": "의미로 코드를 실행하거나",
+        "new": "시스템을 장악할 수",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+        "confirmed_prefix_length": 0
+      }
+    },
+    {
+      "window": 10,
+      "raw": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "raw_stt": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "stream_end_seconds": 23,
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 2684.0,
+        "speech_ratio": 0.8946666666666667,
+        "rms": 0.08639095723628998,
+        "peak": 0.7033205628395081,
+        "processing_seconds": 0.04831250701681711,
+        "timestamps": [
+          {
+            "start": 544,
+            "end": 43488
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          544,
+          16000
+        ],
+        "shared_tail_interval": [
+          544,
+          16000
+        ],
+        "continuous_tail_coverage": 0.966,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "logged_assembly": {
+        "previous": "의미로 코드를 실행하거나 시스템을 장악할 수",
+        "match_type": "token_exact",
+        "overlap": "시스템을 장악할 수",
+        "new": "있는 결함으로 알려졌습니다.",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "confirmed_prefix_length": 0
+      }
+    }
+  ]
+}

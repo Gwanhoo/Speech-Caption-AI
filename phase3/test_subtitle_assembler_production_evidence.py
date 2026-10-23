@@ -4,7 +4,10 @@ import json
 import unittest
 from pathlib import Path
 
-from subtitle_assembler import SpeakerSubtitleState, SubtitleAssembler, normalize_for_matching
+from subtitle_assembler import (
+    SpeakerSubtitleState, SubtitleAssembler, complete_fuzzy_overlap_token, fuzzy_suffix_prefix,
+    normalize_for_matching,
+)
 
 
 LOGGED_WINDOW_FIXTURE = (
@@ -44,9 +47,9 @@ class LoggedWindowReplay:
         assembly = self.assembler.process(
             record["window"],
             record["raw"],
-            shared_speech=overlap["shared_speech"],
+            shared_speech=overlap.get("shared_speech"),
             supported_tail_revision=(
-                overlap["supported_tail_revision"]
+                overlap.get("supported_tail_revision", False)
                 if supported_tail_revision is None
                 else supported_tail_revision
             ),
@@ -72,6 +75,231 @@ class LoggedWindowReplay:
             )
         )
         return assembly, events
+
+
+class NewsFuzzyEndingRegressions(unittest.TestCase):
+    def test_recorded_window_9_preserves_ending_through_assembly_and_publication(self) -> None:
+        fixture = json.loads((LOGGED_WINDOW_FIXTURE.parent /
+            "news_20261022_160827_windows.json").read_text(encoding="utf-8"))
+        records = {row["window"]: row for row in fixture["windows"]}
+        previous = records[8]
+        current = records[9]
+        self.assertEqual(previous["raw_stt"], "인증 없이 외부에서 임의로 코드를 실행...")
+        self.assertEqual(current["raw_stt"], "의미로 코드를 실행하거나 시스템을 장악할 수")
+        self.assertEqual(current["raw"], current["raw_stt"])
+        score, cut = fuzzy_suffix_prefix(previous["raw"], current["raw"], 6)
+        self.assertAlmostEqual(score, 14 / 15)
+        self.assertEqual(cut, 10)
+        self.assertEqual(current["raw"][:cut], "의미로 코드를 실행")
+        self.assertEqual(current["logged_assembly"]["overlap"], "의미로 코드를 실행하거나")
+
+        replay = LoggedWindowReplay()
+        for window in range(9):
+            assembly, _ = replay.process(records[window])
+            self.assertEqual(assembly.utterance_hypothesis,
+                             records[window]["logged_assembly"]["utterance_hypothesis"])
+        prefix = assembly.utterance_hypothesis.removesuffix("실행...")
+        event, partials = replay.process(current)
+        expected = prefix + "실행하거나 시스템을 장악할 수"
+        self.assertEqual(event.previous, previous["raw"])
+        self.assertEqual(event.raw, current["raw_stt"])
+        self.assertEqual(event.match_type, "fuzzy")
+        self.assertEqual(event.overlap, current["raw"][:cut])
+        self.assertEqual(event.new_fragment, current["raw"][cut:])
+        self.assertEqual(event.utterance_hypothesis, expected)
+        self.assertEqual(event.session_text, expected)
+        self.assertEqual(event.confirmed_prefix_length, assembly.confirmed_prefix_length)
+        self.assertEqual(event.rollover_text, "")
+        self.assertFalse(event.duplicate_only)
+        self.assertEqual(partials[-1].publication_text, expected)
+
+        following, partials = replay.process(records[10])
+        expected += " 있는 결함으로 알려졌습니다."
+        self.assertEqual(following.match_type, "token_exact")
+        self.assertEqual(following.utterance_hypothesis, expected)
+        self.assertEqual(partials[-1].publication_text, expected)
+        self.assertEqual(replay.state.flush(10, 23).publication_text, expected)
+
+    def test_exact_terminal_stem_extension_is_not_duplicated_or_split(self) -> None:
+        # Synthetic variants, separate from the recorded news fixture above.
+        for ending in ("하거나", "하면서", "하고", "하면"):
+            for punctuation in ("", "...", "."):
+                with self.subTest(ending=ending, punctuation=punctuation):
+                    assembler = SubtitleAssembler(0, enable_sentence_lifecycle=True)
+                    assembler.process(8, "인증 없이 외부에서 임의로 코드를 실행" + punctuation)
+                    raw = "의미로 코드를 실행" + ending + " 시스템을 확인합니다"
+                    event = assembler.process(9, raw, shared_speech=True)
+                    expected = "인증 없이 외부에서 임의로 코드를 실행" + ending + " 시스템을 확인합니다"
+                    self.assertEqual(event.utterance_hypothesis, expected)
+                    self.assertEqual(event.new_fragment, ending + " 시스템을 확인합니다")
+                    duplicate = assembler.process(10, raw, shared_speech=True)
+                    self.assertTrue(duplicate.duplicate_only)
+                    self.assertEqual(duplicate.new_fragment, "")
+                    self.assertEqual(duplicate.utterance_hypothesis, expected)
+
+    def test_gap_or_no_shared_speech_does_not_join_stems(self) -> None:
+        previous = "인증 없이 외부에서 임의로 코드를 실행"
+        raw = "의미로 코드를 실행하거나 시스템을 장악할 수"
+        for window, shared in ((10, True), (9, False)):
+            with self.subTest(window=window, shared=shared):
+                assembler = SubtitleAssembler(0)
+                assembler.process(8, previous)
+                event = assembler.process(window, raw, shared_speech=shared)
+                self.assertEqual(event.match_type, "none")
+                self.assertEqual(event.new_fragment, raw)
+                self.assertEqual(event.utterance_hypothesis, previous + " " + raw)
+
+    def test_changed_or_unobserved_terminal_token_keeps_boundary_guard(self) -> None:
+        # These are synthetic boundary guards, not additional news observations.
+        for previous, active, current, cut, expected in (
+            ("도로상환", "도로상환", "도로 상황을 확인하며", 4, 6),
+            ("실행", "실현", "실행하거나", 2, 5),
+            ("실현", "실행", "실행하거나", 2, 5),
+            ("재실행", "재실행", "실행하거나", 2, 5),
+            ("실행", "실행", "실행A", 2, 3),
+            ("하", "하", "하면서", 1, 3),
+        ):
+            with self.subTest(previous=previous, active=active, current=current):
+                self.assertEqual(complete_fuzzy_overlap_token(
+                    current, cut, previous=previous, active=active), expected)
+
+        assembler = SubtitleAssembler(0)
+        previous = "시민들은 대중교통을 이용하거나 도로상환"
+        assembler.process(8, previous)
+        event = assembler.process(9, "하거나 도로 상황을 확인하며 이동하고 있습니다.")
+        self.assertEqual(event.match_type, "fuzzy")
+        self.assertEqual(event.new_fragment, "확인하며 이동하고 있습니다.")
+        self.assertEqual(event.utterance_hypothesis,
+                         previous + " 확인하며 이동하고 있습니다.")
+
+    def test_stem_extension_preserves_independently_confirmed_prefix(self) -> None:
+        assembler = SubtitleAssembler(0)
+        previous = "인증 없이 외부에서 임의로 코드를 실행..."
+        assembler.process(7, previous)
+        confirmed = assembler.process(8, previous)
+        self.assertGreater(confirmed.confirmed_prefix_length, 0)
+        event = assembler.process(9, "의미로 코드를 실행하거나 시스템을 장악할 수")
+        self.assertEqual(event.utterance_hypothesis,
+                         "인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수")
+        self.assertEqual(event.confirmed_prefix_length, confirmed.confirmed_prefix_length)
+
+
+class FuzzyContinuationSafetyRegressions(unittest.TestCase):
+    def test_confirmed_stem_keeps_raw_word_boundary_through_publication_and_final(self) -> None:
+        # Synthetic safety cases. The recorded news fixture is unchanged.
+        previous = "외부에서 임의로 코드를 실행"
+        for suffix in ("하거나", "하면서", "파일을", "중지를"):
+            for punctuation in ("", "...", ",", "?", "…"):
+                for confirmed in ("외부에서 임의로 코드를", previous[:-1], previous):
+                    with self.subTest(suffix=suffix, punctuation=punctuation, confirmed=confirmed):
+                        assembler = SubtitleAssembler(0, enable_sentence_lifecycle=True)
+                        state = SpeakerSubtitleState(0, require_final_support=True)
+                        raw = "의미로 코드를 실행" + suffix + " 확인합니다"
+                        for window, text in enumerate((confirmed, previous + punctuation, raw)):
+                            event = assembler.process(window, text, shared_speech=True)
+                            partial = state.process(
+                                window, event.utterance_hypothesis, True, 3 + 2 * window,
+                                confirmed_prefix_length=event.confirmed_prefix_length,
+                                source_supported=True, source_text=production_source_fragment(event),
+                            )[0]
+                            if window == 1:
+                                protected = event.confirmed_prefix_length
+                                protected_text = normalize_for_matching(event.utterance_hypothesis)[:protected]
+                        expected = previous + suffix + " 확인합니다"
+                        self.assertGreater(protected, 0)
+                        self.assertEqual(event.match_type, "fuzzy")
+                        self.assertEqual(event.utterance_hypothesis, expected)
+                        self.assertEqual(event.confirmed_prefix_length, protected)
+                        self.assertEqual(normalize_for_matching(partial.stable_text), protected_text)
+                        self.assertEqual(partial.text, expected)
+                        self.assertEqual(partial.publication_text, expected)
+                        self.assertEqual(event.rollover_text, "")
+                        final = state.flush(2, 7)
+                        self.assertEqual(final.text, expected)
+                        self.assertEqual(final.publication_text, expected)
+
+    def test_distinct_raw_and_active_tail_never_uses_fuzzy_continuation(self) -> None:
+        # A prior approximate overlap can leave the old spelling in active text.
+        assembler = SubtitleAssembler(0)
+        assembler.process(0, "시민들은 대중교통을 이용하거나 도로상환")
+        mismatch = assembler.process(1, "이용하거나 도로 상황을")
+        self.assertEqual(mismatch.match_type, "fuzzy")
+        self.assertEqual(assembler.previous, "이용하거나 도로 상황을")
+        self.assertTrue(assembler.utterance_hypothesis.endswith("도로상환"))
+        event = assembler.process(2, "이용하거니 도로 상황을보고 이동합니다")
+        self.assertEqual(event.match_type, "fuzzy")
+        self.assertEqual(event.new_fragment, "이동합니다")
+        self.assertEqual(event.utterance_hypothesis,
+                         "시민들은 대중교통을 이용하거나 도로상환 이동합니다")
+
+    def test_spaces_and_punctuation_remain_real_word_boundaries(self) -> None:
+        previous = "외부에서 임의로 코드를 실행"
+        for separator in (" ", "  ", "\t", "\n", ", ", ". "):
+            with self.subTest(separator=separator):
+                assembler = SubtitleAssembler(0)
+                assembler.process(0, previous)
+                event = assembler.process(1, "의미로 코드를 실행" + separator + "파일을 확인합니다")
+                self.assertEqual(event.match_type, "fuzzy")
+                self.assertEqual(event.new_fragment, "파일을 확인합니다")
+                self.assertEqual(event.utterance_hypothesis, previous + " 파일을 확인합니다")
+
+    def test_continuous_extensions_and_duplicate_keep_one_supported_word(self) -> None:
+        assembler = SubtitleAssembler(0)
+        state = SpeakerSubtitleState(0, require_final_support=True)
+        previous = "외부에서 임의로 코드를 실행"
+        raws = (previous, previous, "의미로 코드를 실행하거나",
+                "의미로 코드를 실행하거나 시스템을 확인합니다",
+                "의미로 코드를 실행하거나 시스템을 확인합니다")
+        for window, raw in enumerate(raws):
+            event = assembler.process(window, raw, shared_speech=True)
+            partial = state.process(
+                window, event.utterance_hypothesis, True, 3 + 2 * window,
+                confirmed_prefix_length=event.confirmed_prefix_length,
+                source_supported=True, source_text=production_source_fragment(event),
+            )[0]
+            self.assertEqual(partial.publication_text, event.utterance_hypothesis)
+        expected = previous + "하거나 시스템을 확인합니다"
+        self.assertTrue(event.duplicate_only)
+        self.assertEqual(event.new_fragment, "")
+        self.assertEqual(event.utterance_hypothesis, expected)
+        self.assertEqual(state.flush(4, 11).publication_text, expected)
+
+    def test_unsupported_extension_is_not_promoted_or_published(self) -> None:
+        assembler = SubtitleAssembler(0)
+        state = SpeakerSubtitleState(0, require_final_support=True)
+        previous = "외부에서 임의로 코드를 실행"
+        for window, raw in enumerate((previous, previous, "의미로 코드를 실행하거나")):
+            event = assembler.process(window, raw, shared_speech=True)
+            partial = state.process(
+                window, event.utterance_hypothesis, True, 3 + 2 * window,
+                confirmed_prefix_length=event.confirmed_prefix_length,
+                source_supported=window < 2, source_text=production_source_fragment(event),
+            )[0]
+        self.assertEqual(event.utterance_hypothesis, previous + "하거나")
+        self.assertEqual(partial.stable_text, previous)
+        self.assertEqual(partial.tentative_text, "하거나")
+        self.assertEqual(partial.text, previous + "하거나")
+        self.assertEqual(partial.publication_text, previous)
+        self.assertEqual(state.flush(2, 7).publication_text, previous)
+
+    def test_finalized_session_and_rejected_window_order_are_unchanged(self) -> None:
+        assembler = SubtitleAssembler(0)
+        finalized = "앞서 확정한 안내입니다."
+        assembler.process(0, finalized)
+        assembler.reset_utterance(final_text=finalized)
+        previous = "외부에서 임의로 코드를 실행"
+        assembler.process(1, previous)
+        raw = "의미로 코드를 실행하거나 시스템을 확인합니다"
+        event = assembler.process(2, raw, shared_speech=True)
+        expected = previous + "하거나 시스템을 확인합니다"
+        self.assertEqual(event.utterance_hypothesis, expected)
+        self.assertEqual(event.session_text, finalized + " " + expected)
+        for window in (2, 1):
+            with self.subTest(window=window), self.assertRaises(ValueError):
+                assembler.process(window, raw)
+            self.assertEqual(assembler.utterance_hypothesis, expected)
+            self.assertEqual(assembler.assembled, event.session_text)
+            self.assertEqual(assembler.last_window, 2)
 
 
 class ProductionEvidenceRegressions(unittest.TestCase):

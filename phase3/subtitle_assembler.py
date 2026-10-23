@@ -173,16 +173,29 @@ def fuzzy_suffix_prefix(
     return best_similarity, best_cut
 
 
-def complete_fuzzy_overlap_token(current: str, cut: int) -> int:
+def complete_fuzzy_overlap_token(
+    current: str, cut: int, *, previous: str = "", active: str = "",
+) -> int:
     """Do not expose the unmatched tail of a partially matched current token.
 
     Approximate Korean seams can align through the first syllable of a changed
     eojeol.  Appending the remainder would manufacture a hybrid such as
     ``도로상환 황을`` from ``도로상환`` / ``도로 상황을``.  The old hypothesis is
     retained; this only moves the start of genuinely new text to the next token.
+    An exact terminal Korean stem is different: ``실행...`` / ``실행하거나``
+    extends the old token. Preserve that suffix only when both the adjacent raw
+    window and the active hypothesis end in the complete matched stem. The
+    caller must join it without an inserted space or stale trailing punctuation.
     """
     for token in TOKEN_PATTERN.finditer(current):
         if token.start() < cut < token.end():
+            stem = current[token.start():cut]
+            if re.fullmatch(r"[가-힣]{2,}", stem) and re.match(r"[가-힣]", current[cut]):
+                terminal_stem = re.compile(
+                    r"(?:^|\s)" + re.escape(stem) + r"[,.;:!?，。！？…]*$"
+                )
+                if terminal_stem.search(previous) and terminal_stem.search(active):
+                    return cut
             return token.end()
     return cut
 
@@ -558,6 +571,7 @@ class SubtitleAssembler:
         new_text = raw
         normalized_overlap_length = 0
         similarity: float | None = None
+        fuzzy_token_continuation = False
 
         if previous and raw:
             token_overlap_length = longest_token_suffix_prefix(
@@ -608,7 +622,11 @@ class SubtitleAssembler:
                                     previous, raw, self.minimum_characters
                                 )
                                 if fuzzy_cut:
-                                    fuzzy_cut = complete_fuzzy_overlap_token(raw, fuzzy_cut)
+                                    fuzzy_cut = complete_fuzzy_overlap_token(
+                                        raw, fuzzy_cut, previous=previous,
+                                        active=self.utterance_hypothesis,
+                                    )
+                                    fuzzy_token_continuation = not is_boundary_after(raw, fuzzy_cut)
                                     match_type = "fuzzy"
                                     overlap = raw[:fuzzy_cut].strip()
                                     normalized_overlap_length = len(normalize_for_matching(overlap))
@@ -769,7 +787,13 @@ class SubtitleAssembler:
             normalized_active, positions = normalize_with_positions(self.utterance_hypothesis)
             exact = match_type in {"token_exact", "raw_exact", "normalized_exact", "boundary_exact"}
             normalized_overlap = normalize_for_matching(overlap)
-            if exact and normalized_active.endswith(normalized_overlap):
+            if match_type == "fuzzy" and fuzzy_token_continuation:
+                # Only the identical terminal stem was independently checked;
+                # keep the older fuzzy prefix and extend that stem in place.
+                self.utterance_hypothesis = (
+                    self.utterance_hypothesis[:positions[-1] + 1] + new_text
+                )
+            elif exact and normalized_active.endswith(normalized_overlap):
                 seam_start = len(positions) - len(normalized_overlap)
                 cut = positions[seam_start]
                 if seam_start <= self.confirmed_prefix_length:
@@ -1090,7 +1114,11 @@ class SpeakerSubtitleState:
             ),
         }
 
-    def _display_text(self) -> str:
+    def _display_text(self, hypothesis: str) -> str:
+        # A confirmed prefix can end inside an eojeol (실행 / 하거나).
+        # Preserve an observed unspaced seam without promoting its suffix.
+        if self.stable_text + self.tentative_text == hypothesis:
+            return hypothesis
         return append_preserving_text(self.stable_text, self.tentative_text)
 
     def _publication_text(self) -> str:
@@ -1212,7 +1240,7 @@ class SpeakerSubtitleState:
                 "independent_window_support" if self.stable_text
                 else "awaiting_independent_support"
             )
-        self.partial_text = self._display_text()
+        self.partial_text = self._display_text(hypothesis)
         # Only an explicit adjacent-window acoustic confirmation can release a
         # deferred candidate. Both observations must be independently supported,
         # and the ENTIRE previous hypothesis must be in the withheld buffer.
