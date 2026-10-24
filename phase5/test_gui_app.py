@@ -18,6 +18,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from phase5.gui_app import MainWindow, main as gui_main
 from phase5.subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState
+from phase5.replay_overlay_timeline import DEFAULT_TIMELINE, TimelineReplay, load_events
 from phase5.live_caption_controller import (
     EnvironmentInfo,
     LOGGER,
@@ -130,6 +131,138 @@ class GuiTests(unittest.TestCase):
             window.subtitle_model.entry_at(row).text
             for row in range(window.subtitle_model.rowCount())
         ]
+
+    def test_recorded_window_13_14_final_and_partial_keep_display_order(self) -> None:
+        events = load_events(DEFAULT_TIMELINE)
+        original = load_events(DEFAULT_TIMELINE)
+        replay = TimelineReplay(events)
+        replay.overlay.show()
+        expected = {
+            11: [(2, "final")],
+            12: [(2, "final"), (3, "partial")],
+            13: [(2, "final"), (3, "final")],
+            14: [(2, "final"), (3, "final"), (4, "partial")],
+        }
+        try:
+            for index, event in enumerate(events[:14]):
+                replay.advance(replay.offsets[index], through_sequence=event["sequence"])
+                self.app.processEvents()
+                if event["sequence"] in expected:
+                    self.assertEqual(
+                        [(entry.utterance_id, entry.status) for entry in replay.model.entries],
+                        expected[event["sequence"]],
+                    )
+                    self.assertEqual(replay.overlay.entries, replay.model.entries)
+                    for entry, label in zip(replay.overlay.entries, replay.overlay._labels):
+                        self.assertEqual(label.text(), entry.text)
+                        self.assertGreaterEqual(label.height(), label.heightForWidth(label.width()))
+            self.assertEqual(replay.accepted_sequences, list(range(1, 15)))
+            self.assertEqual(events, original)  # Wire timestamps/text/order untouched.
+            self.assertAlmostEqual(replay.now, 19.469)
+        finally:
+            replay.close()
+
+    def test_recorded_final_expiry_uses_arrival_intervals_not_stream_end(self) -> None:
+        replay = TimelineReplay(load_events(DEFAULT_TIMELINE))
+        try:
+            replay.advance(19.469)
+            replay.advance(22.199)
+            self.assertEqual([e.utterance_id for e in replay.model.entries], [2, 3, 4])
+            replay.advance(22.201)
+            self.assertEqual([e.utterance_id for e in replay.model.entries], [3, 4])
+            # At the next recorded pair, the previous FINAL has only 95ms left.
+            replay.advance(23.373)
+            self.assertEqual([(e.utterance_id, e.status) for e in replay.model.entries],
+                             [(3, "final"), (4, "final"), (5, "partial")])
+            replay.advance(23.469)
+            self.assertEqual([e.utterance_id for e in replay.model.entries], [4, 5])
+            replay.advance(31.895)
+            self.assertEqual([e.utterance_id for e in replay.model.entries], [6])
+            replay.advance(31.897)
+            self.assertEqual(replay.model.entries, ())
+            self.assertEqual(replay.overlay.entries, ())
+            self.assertTrue(replay.overlay._card.isHidden())
+            self.assertEqual(replay.overlay.height(), replay.overlay.EMPTY_HEIGHT)
+            self.assertEqual(replay.accepted_sequences, list(range(1, 22)))
+        finally:
+            replay.close()
+
+    def test_recorded_final_duplicate_does_not_renew_deadline_or_reappear(self) -> None:
+        replay = TimelineReplay(load_events(DEFAULT_TIMELINE))
+        final = replay.events[10]  # Recorded window 13 FINAL, sequence 11.
+        try:
+            replay.advance(19.469)
+            self.assertFalse(replay.model.upsert_event(dict(final)))
+            # Synthetic duplicate delivery with a newer sequence is also invalid.
+            self.assertFalse(replay.model.upsert_event(dict(final, sequence=100)))
+            replay.advance(22.201)
+            self.assertNotIn(2, [e.utterance_id for e in replay.model.entries])
+            self.assertFalse(replay.model.upsert_event(dict(final, sequence=101)))
+            replay.advance(31.897)
+            self.assertEqual(replay.accepted_sequences, list(range(1, 22)))
+            self.assertEqual(replay.model.entries, ())
+        finally:
+            replay.close()
+
+    def test_real_qt_timer_removes_expired_recorded_final_without_new_event(self) -> None:
+        window = MainWindow()
+        now = [0.0]
+        window.subtitle_model._presentation = SubtitlePresentationState(clock=lambda: now[0])
+        overlay = window._ensure_overlay()
+        try:
+            window.apply_subtitle_event(load_events(DEFAULT_TIMELINE)[10])
+            self.assertEqual(len(overlay.entries), 1)
+            now[0] = 4.001
+            # Process the real 100ms Qt timer, rather than emitting timeout by hand.
+            self.pump_until(lambda: not overlay.entries)
+            self.assertEqual(window.subtitle_model.entries, ())
+            self.assertTrue(overlay._card.isHidden())
+        finally:
+            window.close()
+
+    def test_recorded_overlay_flags_and_initial_geometry(self) -> None:
+        replay = TimelineReplay(load_events(DEFAULT_TIMELINE))
+        overlay = replay.overlay
+        try:
+            replay.advance(19.469)
+            overlay.show()
+            self.app.processEvents()
+            available = self.app.primaryScreen().availableGeometry()
+            self.assertTrue(available.contains(overlay.geometry()))
+            self.assertTrue(overlay.windowFlags() & Qt.WindowType.WindowStaysOnTopHint)
+            self.assertTrue(overlay.windowFlags() & Qt.WindowType.FramelessWindowHint)
+            self.assertTrue(overlay.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground))
+            self.assertTrue(overlay.testAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating))
+            self.assertEqual(overlay.style_config.background_opacity, 72)
+            self.assertIn("rgba(10, 15, 25, 184)", overlay._card.styleSheet())
+        finally:
+            replay.close()
+
+    def test_overlay_regrows_after_empty_and_preserves_bottom_or_drag_anchor(self) -> None:
+        window = MainWindow()
+        overlay = window._ensure_overlay()
+        entries = tuple(SubtitleFeedEntry("speaker_0", i, i, "partial", f"자막 {i}")
+                        for i in range(1, 4))
+        try:
+            overlay.show()
+            self.app.processEvents()
+            bottom = overlay.geometry().bottom()
+            for count in (3, 2, 1, 0, 1, 2, 3):
+                overlay.set_entries(entries[:count])
+                self.app.processEvents()
+                self.assertEqual(overlay.height(), overlay.layout_metrics.required_height)
+                self.assertEqual(overlay.geometry().bottom(), bottom)
+            # Simulate the state established by dragging; resizing must keep it.
+            overlay.move(100, 100)
+            overlay._was_dragged = True
+            for count in (1, 0, 3):
+                overlay.set_entries(entries[:count])
+                self.app.processEvents()
+                self.assertEqual(overlay.pos().x(), 100)
+                self.assertEqual(overlay.pos().y(), 100)
+                self.assertEqual(overlay.height(), overlay.layout_metrics.required_height)
+        finally:
+            window.close()
 
     def test_gui_import_and_main_window_creation(self) -> None:
         window = MainWindow()

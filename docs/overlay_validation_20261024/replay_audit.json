@@ -1,0 +1,2751 @@
+{
+  "source": "phase3\\output\\evidence\\news_20261022_160827\\timeline.jsonl",
+  "sha256": "a53803fdf0498c145c4c96c7cbfa94550a0e7baa83e448610dbdfd0614131766",
+  "platform": "windows",
+  "screen_available": [
+    0,
+    0,
+    2560,
+    1400
+  ],
+  "dpi": 96.0,
+  "time_mode": "Virtual relative timestamp; file order retained; first subtitle arrival=0; expire before each arrival. Native QWidget layout after processEvents, not desktop composition capture.",
+  "runs": [
+    {
+      "font_size": 28,
+      "samples": [
+        {
+          "sequence": 1,
+          "window": 4,
+          "timestamp": 1792652924762,
+          "offset_seconds": 0.0,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 1,
+              "status": "partial",
+              "text": "웹사이트 개발의 논리",
+              "timestamp": 1792652924762
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 1,
+              "status": "partial",
+              "text": "웹사이트 개발의 논리",
+              "timestamp": 1792652924762
+            }
+          ],
+          "geometry": [
+            230,
+            1277,
+            2099,
+            67
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 67,
+            "maximum_height": 420,
+            "window_height": 67
+          },
+          "labels": [
+            {
+              "text": "웹사이트 개발의 논리",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 2,
+          "window": 5,
+          "timestamp": 1792652926262,
+          "offset_seconds": 1.5,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 2,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+              "timestamp": 1792652926262
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 2,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+              "timestamp": 1792652926262
+            }
+          ],
+          "geometry": [
+            230,
+            1277,
+            2099,
+            67
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 67,
+            "maximum_height": 420,
+            "window_height": 67
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 3,
+          "window": 6,
+          "timestamp": 1792652928365,
+          "offset_seconds": 3.603,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 3,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+              "timestamp": 1792652928365
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 3,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+              "timestamp": 1792652928365
+            }
+          ],
+          "geometry": [
+            230,
+            1277,
+            2099,
+            67
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 67,
+            "maximum_height": 420,
+            "window_height": 67
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 4,
+          "window": 7,
+          "timestamp": 1792652930214,
+          "offset_seconds": 5.452,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 4,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+              "timestamp": 1792652930214
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 4,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+              "timestamp": 1792652930214
+            }
+          ],
+          "geometry": [
+            230,
+            1277,
+            2099,
+            67
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 67,
+            "maximum_height": 420,
+            "window_height": 67
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 5,
+          "window": 8,
+          "timestamp": 1792652932213,
+          "offset_seconds": 7.451,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 5,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+              "timestamp": 1792652932213
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 5,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+              "timestamp": 1792652932213
+            }
+          ],
+          "geometry": [
+            230,
+            1228,
+            2099,
+            116
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 116,
+            "maximum_height": 420,
+            "window_height": 116
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+              "width": 2057,
+              "height": 98,
+              "height_for_width": 98
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 6,
+          "window": 9,
+          "timestamp": 1792652934217,
+          "offset_seconds": 9.455,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 6,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+              "timestamp": 1792652934217
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 6,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+              "timestamp": 1792652934217
+            }
+          ],
+          "geometry": [
+            230,
+            1228,
+            2099,
+            116
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 116,
+            "maximum_height": 420,
+            "window_height": 116
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+              "width": 2057,
+              "height": 98,
+              "height_for_width": 98
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 7,
+          "window": 10,
+          "timestamp": 1792652936210,
+          "offset_seconds": 11.448,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 7,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652936210
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 7,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652936210
+            }
+          ],
+          "geometry": [
+            230,
+            1228,
+            2099,
+            116
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 116,
+            "maximum_height": 420,
+            "window_height": 116
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "width": 2057,
+              "height": 98,
+              "height_for_width": 98
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 8,
+          "window": 11,
+          "timestamp": 1792652938190,
+          "offset_seconds": 13.428,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            }
+          ],
+          "geometry": [
+            230,
+            1228,
+            2099,
+            116
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 116,
+            "maximum_height": 420,
+            "window_height": 116
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "width": 2057,
+              "height": 98,
+              "height_for_width": 98
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 9,
+          "window": 11,
+          "timestamp": 1792652938191,
+          "offset_seconds": 13.429,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 9,
+              "status": "partial",
+              "text": "이번 사태 파급력이 큰 건",
+              "timestamp": 1792652938191
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 9,
+              "status": "partial",
+              "text": "이번 사태 파급력이 큰 건",
+              "timestamp": 1792652938191
+            }
+          ],
+          "geometry": [
+            230,
+            1177,
+            2099,
+            167
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 167,
+            "maximum_height": 420,
+            "window_height": 167
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "width": 2057,
+              "height": 98,
+              "height_for_width": 98
+            },
+            {
+              "text": "이번 사태 파급력이 큰 건",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 10,
+          "window": 12,
+          "timestamp": 1792652942060,
+          "offset_seconds": 17.298,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 10,
+              "status": "partial",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942060
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 10,
+              "status": "partial",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942060
+            }
+          ],
+          "geometry": [
+            230,
+            1177,
+            2099,
+            167
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 167,
+            "maximum_height": 420,
+            "window_height": 167
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "width": 2057,
+              "height": 98,
+              "height_for_width": 98
+            },
+            {
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 11,
+          "window": 13,
+          "timestamp": 1792652942962,
+          "offset_seconds": 18.2,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            }
+          ],
+          "geometry": [
+            230,
+            1277,
+            2099,
+            67
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 67,
+            "maximum_height": 420,
+            "window_height": 67
+          },
+          "labels": [
+            {
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 12,
+          "window": 13,
+          "timestamp": 1792652942963,
+          "offset_seconds": 18.201,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 12,
+              "status": "partial",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652942963
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 12,
+              "status": "partial",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652942963
+            }
+          ],
+          "geometry": [
+            230,
+            1226,
+            2099,
+            118
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 118,
+            "maximum_height": 420,
+            "window_height": 118
+          },
+          "labels": [
+            {
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 13,
+          "window": 14,
+          "timestamp": 1792652944230,
+          "offset_seconds": 19.468,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            }
+          ],
+          "geometry": [
+            230,
+            1226,
+            2099,
+            118
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 118,
+            "maximum_height": 420,
+            "window_height": 118
+          },
+          "labels": [
+            {
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 14,
+          "window": 14,
+          "timestamp": 1792652944231,
+          "offset_seconds": 19.469,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 14,
+              "status": "partial",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652944231
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 14,
+              "status": "partial",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652944231
+            }
+          ],
+          "geometry": [
+            230,
+            1175,
+            2099,
+            169
+          ],
+          "metrics": {
+            "source_rows": 3,
+            "visible_rows": 3,
+            "required_height": 169,
+            "maximum_height": 420,
+            "window_height": 169
+          },
+          "labels": [
+            {
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 15,
+          "window": 15,
+          "timestamp": 1792652948135,
+          "offset_seconds": 23.373,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            }
+          ],
+          "geometry": [
+            230,
+            1226,
+            2099,
+            118
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 118,
+            "maximum_height": 420,
+            "window_height": 118
+          },
+          "labels": [
+            {
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 16,
+          "window": 15,
+          "timestamp": 1792652948135,
+          "offset_seconds": 23.373,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 16,
+              "status": "partial",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652948135
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 16,
+              "status": "partial",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652948135
+            }
+          ],
+          "geometry": [
+            230,
+            1175,
+            2099,
+            169
+          ],
+          "metrics": {
+            "source_rows": 3,
+            "visible_rows": 3,
+            "required_height": 169,
+            "maximum_height": 420,
+            "window_height": 169
+          },
+          "labels": [
+            {
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 17,
+          "window": 16,
+          "timestamp": 1792652949980,
+          "offset_seconds": 25.218,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            }
+          ],
+          "geometry": [
+            230,
+            1226,
+            2099,
+            118
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 118,
+            "maximum_height": 420,
+            "window_height": 118
+          },
+          "labels": [
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 18,
+          "window": 16,
+          "timestamp": 1792652949981,
+          "offset_seconds": 25.219,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 18,
+              "status": "partial",
+              "text": "웹사이트에 75%가",
+              "timestamp": 1792652949981
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 18,
+              "status": "partial",
+              "text": "웹사이트에 75%가",
+              "timestamp": 1792652949981
+            }
+          ],
+          "geometry": [
+            230,
+            1175,
+            2099,
+            169
+          ],
+          "metrics": {
+            "source_rows": 3,
+            "visible_rows": 3,
+            "required_height": 169,
+            "maximum_height": 420,
+            "window_height": 169
+          },
+          "labels": [
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "웹사이트에 75%가",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 19,
+          "window": 17,
+          "timestamp": 1792652950811,
+          "offset_seconds": 26.049,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 19,
+              "status": "partial",
+              "text": "웹사이트에 75%가 PHP를 쓰고",
+              "timestamp": 1792652950811
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 19,
+              "status": "partial",
+              "text": "웹사이트에 75%가 PHP를 쓰고",
+              "timestamp": 1792652950811
+            }
+          ],
+          "geometry": [
+            230,
+            1175,
+            2099,
+            169
+          ],
+          "metrics": {
+            "source_rows": 3,
+            "visible_rows": 3,
+            "required_height": 169,
+            "maximum_height": 420,
+            "window_height": 169
+          },
+          "labels": [
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "웹사이트에 75%가 PHP를 쓰고",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 20,
+          "window": 18,
+          "timestamp": 1792652952658,
+          "offset_seconds": 27.896,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 20,
+              "status": "partial",
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "timestamp": 1792652952658
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 20,
+              "status": "partial",
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "timestamp": 1792652952658
+            }
+          ],
+          "geometry": [
+            230,
+            1226,
+            2099,
+            118
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 118,
+            "maximum_height": 420,
+            "window_height": 118
+          },
+          "labels": [
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 21,
+          "window": 18,
+          "timestamp": 1792652952658,
+          "offset_seconds": 27.896,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 21,
+              "status": "final",
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "timestamp": 1792652952658
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 21,
+              "status": "final",
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "timestamp": 1792652952658
+            }
+          ],
+          "geometry": [
+            230,
+            1226,
+            2099,
+            118
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 118,
+            "maximum_height": 420,
+            "window_height": 118
+          },
+          "labels": [
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            },
+            {
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "width": 2057,
+              "height": 49,
+              "height_for_width": 49
+            }
+          ],
+          "clipped": false
+        }
+      ],
+      "expired_empty": true,
+      "card_hidden": true,
+      "empty_height": 1
+    },
+    {
+      "font_size": 52,
+      "samples": [
+        {
+          "sequence": 1,
+          "window": 4,
+          "timestamp": 1792652924762,
+          "offset_seconds": 0.0,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 1,
+              "status": "partial",
+              "text": "웹사이트 개발의 논리",
+              "timestamp": 1792652924762
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 1,
+              "status": "partial",
+              "text": "웹사이트 개발의 논리",
+              "timestamp": 1792652924762
+            }
+          ],
+          "geometry": [
+            230,
+            1234,
+            2099,
+            110
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 110,
+            "maximum_height": 420,
+            "window_height": 110
+          },
+          "labels": [
+            {
+              "text": "웹사이트 개발의 논리",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 2,
+          "window": 5,
+          "timestamp": 1792652926262,
+          "offset_seconds": 1.5,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 2,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+              "timestamp": 1792652926262
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 2,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+              "timestamp": 1792652926262
+            }
+          ],
+          "geometry": [
+            230,
+            1234,
+            2099,
+            110
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 110,
+            "maximum_height": 420,
+            "window_height": 110
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 3,
+          "window": 6,
+          "timestamp": 1792652928365,
+          "offset_seconds": 3.603,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 3,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+              "timestamp": 1792652928365
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 3,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+              "timestamp": 1792652928365
+            }
+          ],
+          "geometry": [
+            230,
+            1142,
+            2099,
+            202
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 202,
+            "maximum_height": 420,
+            "window_height": 202
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+              "width": 2057,
+              "height": 184,
+              "height_for_width": 184
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 4,
+          "window": 7,
+          "timestamp": 1792652930214,
+          "offset_seconds": 5.452,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 4,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+              "timestamp": 1792652930214
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 4,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+              "timestamp": 1792652930214
+            }
+          ],
+          "geometry": [
+            230,
+            1142,
+            2099,
+            202
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 202,
+            "maximum_height": 420,
+            "window_height": 202
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+              "width": 2057,
+              "height": 184,
+              "height_for_width": 184
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 5,
+          "window": 8,
+          "timestamp": 1792652932213,
+          "offset_seconds": 7.451,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 5,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+              "timestamp": 1792652932213
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 5,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+              "timestamp": 1792652932213
+            }
+          ],
+          "geometry": [
+            230,
+            1050,
+            2099,
+            294
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 294,
+            "maximum_height": 420,
+            "window_height": 294
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+              "width": 2057,
+              "height": 276,
+              "height_for_width": 276
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 6,
+          "window": 9,
+          "timestamp": 1792652934217,
+          "offset_seconds": 9.455,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 6,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+              "timestamp": 1792652934217
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 6,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+              "timestamp": 1792652934217
+            }
+          ],
+          "geometry": [
+            230,
+            1050,
+            2099,
+            294
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 294,
+            "maximum_height": 420,
+            "window_height": 294
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+              "width": 2057,
+              "height": 276,
+              "height_for_width": 276
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 7,
+          "window": 10,
+          "timestamp": 1792652936210,
+          "offset_seconds": 11.448,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 7,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652936210
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 7,
+              "status": "partial",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652936210
+            }
+          ],
+          "geometry": [
+            230,
+            1050,
+            2099,
+            294
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 294,
+            "maximum_height": 420,
+            "window_height": 294
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "width": 2057,
+              "height": 276,
+              "height_for_width": 276
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 8,
+          "window": 11,
+          "timestamp": 1792652938190,
+          "offset_seconds": 13.428,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            }
+          ],
+          "geometry": [
+            230,
+            1050,
+            2099,
+            294
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 294,
+            "maximum_height": 420,
+            "window_height": 294
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "width": 2057,
+              "height": 276,
+              "height_for_width": 276
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 9,
+          "window": 11,
+          "timestamp": 1792652938191,
+          "offset_seconds": 13.429,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 9,
+              "status": "partial",
+              "text": "이번 사태 파급력이 큰 건",
+              "timestamp": 1792652938191
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 9,
+              "status": "partial",
+              "text": "이번 사태 파급력이 큰 건",
+              "timestamp": 1792652938191
+            }
+          ],
+          "geometry": [
+            230,
+            956,
+            2099,
+            388
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 388,
+            "maximum_height": 420,
+            "window_height": 388
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "width": 2057,
+              "height": 276,
+              "height_for_width": 276
+            },
+            {
+              "text": "이번 사태 파급력이 큰 건",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 10,
+          "window": 12,
+          "timestamp": 1792652942060,
+          "offset_seconds": 17.298,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 10,
+              "status": "partial",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942060
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 1,
+              "sequence": 8,
+              "status": "final",
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "timestamp": 1792652938190
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 10,
+              "status": "partial",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942060
+            }
+          ],
+          "geometry": [
+            230,
+            956,
+            2099,
+            388
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 388,
+            "maximum_height": 420,
+            "window_height": 388
+          },
+          "labels": [
+            {
+              "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+              "width": 2057,
+              "height": 276,
+              "height_for_width": 276
+            },
+            {
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 11,
+          "window": 13,
+          "timestamp": 1792652942962,
+          "offset_seconds": 18.2,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            }
+          ],
+          "geometry": [
+            230,
+            1234,
+            2099,
+            110
+          ],
+          "metrics": {
+            "source_rows": 1,
+            "visible_rows": 1,
+            "required_height": 110,
+            "maximum_height": 420,
+            "window_height": 110
+          },
+          "labels": [
+            {
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 12,
+          "window": 13,
+          "timestamp": 1792652942963,
+          "offset_seconds": 18.201,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 12,
+              "status": "partial",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652942963
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 12,
+              "status": "partial",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652942963
+            }
+          ],
+          "geometry": [
+            230,
+            1140,
+            2099,
+            204
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 204,
+            "maximum_height": 420,
+            "window_height": 204
+          },
+          "labels": [
+            {
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 13,
+          "window": 14,
+          "timestamp": 1792652944230,
+          "offset_seconds": 19.468,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            }
+          ],
+          "geometry": [
+            230,
+            1140,
+            2099,
+            204
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 204,
+            "maximum_height": 420,
+            "window_height": 204
+          },
+          "labels": [
+            {
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 14,
+          "window": 14,
+          "timestamp": 1792652944231,
+          "offset_seconds": 19.469,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 14,
+              "status": "partial",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652944231
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 2,
+              "sequence": 11,
+              "status": "final",
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "timestamp": 1792652942962
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 14,
+              "status": "partial",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652944231
+            }
+          ],
+          "geometry": [
+            230,
+            1046,
+            2099,
+            298
+          ],
+          "metrics": {
+            "source_rows": 3,
+            "visible_rows": 3,
+            "required_height": 298,
+            "maximum_height": 420,
+            "window_height": 298
+          },
+          "labels": [
+            {
+              "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 15,
+          "window": 15,
+          "timestamp": 1792652948135,
+          "offset_seconds": 23.373,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            }
+          ],
+          "geometry": [
+            230,
+            1140,
+            2099,
+            204
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 204,
+            "maximum_height": 420,
+            "window_height": 204
+          },
+          "labels": [
+            {
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 16,
+          "window": 15,
+          "timestamp": 1792652948135,
+          "offset_seconds": 23.373,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 16,
+              "status": "partial",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652948135
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 3,
+              "sequence": 13,
+              "status": "final",
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "timestamp": 1792652944230
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 16,
+              "status": "partial",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652948135
+            }
+          ],
+          "geometry": [
+            230,
+            1046,
+            2099,
+            298
+          ],
+          "metrics": {
+            "source_rows": 3,
+            "visible_rows": 3,
+            "required_height": 298,
+            "maximum_height": 420,
+            "window_height": 298
+          },
+          "labels": [
+            {
+              "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 17,
+          "window": 16,
+          "timestamp": 1792652949980,
+          "offset_seconds": 25.218,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            }
+          ],
+          "geometry": [
+            230,
+            1140,
+            2099,
+            204
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 204,
+            "maximum_height": 420,
+            "window_height": 204
+          },
+          "labels": [
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 18,
+          "window": 16,
+          "timestamp": 1792652949981,
+          "offset_seconds": 25.219,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 18,
+              "status": "partial",
+              "text": "웹사이트에 75%가",
+              "timestamp": 1792652949981
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 18,
+              "status": "partial",
+              "text": "웹사이트에 75%가",
+              "timestamp": 1792652949981
+            }
+          ],
+          "geometry": [
+            230,
+            1046,
+            2099,
+            298
+          ],
+          "metrics": {
+            "source_rows": 3,
+            "visible_rows": 3,
+            "required_height": 298,
+            "maximum_height": 420,
+            "window_height": 298
+          },
+          "labels": [
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "웹사이트에 75%가",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 19,
+          "window": 17,
+          "timestamp": 1792652950811,
+          "offset_seconds": 26.049,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 19,
+              "status": "partial",
+              "text": "웹사이트에 75%가 PHP를 쓰고",
+              "timestamp": 1792652950811
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 4,
+              "sequence": 15,
+              "status": "final",
+              "text": "기술이기 때문입니다.",
+              "timestamp": 1792652948135
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 19,
+              "status": "partial",
+              "text": "웹사이트에 75%가 PHP를 쓰고",
+              "timestamp": 1792652950811
+            }
+          ],
+          "geometry": [
+            230,
+            1046,
+            2099,
+            298
+          ],
+          "metrics": {
+            "source_rows": 3,
+            "visible_rows": 3,
+            "required_height": 298,
+            "maximum_height": 420,
+            "window_height": 298
+          },
+          "labels": [
+            {
+              "text": "기술이기 때문입니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "웹사이트에 75%가 PHP를 쓰고",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 20,
+          "window": 18,
+          "timestamp": 1792652952658,
+          "offset_seconds": 27.896,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 20,
+              "status": "partial",
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "timestamp": 1792652952658
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 20,
+              "status": "partial",
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "timestamp": 1792652952658
+            }
+          ],
+          "geometry": [
+            230,
+            1140,
+            2099,
+            204
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 204,
+            "maximum_height": 420,
+            "window_height": 204
+          },
+          "labels": [
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        },
+        {
+          "sequence": 21,
+          "window": 18,
+          "timestamp": 1792652952658,
+          "offset_seconds": 27.896,
+          "model": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 21,
+              "status": "final",
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "timestamp": 1792652952658
+            }
+          ],
+          "overlay": [
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 5,
+              "sequence": 17,
+              "status": "final",
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "timestamp": 1792652949980
+            },
+            {
+              "speaker_id": "speaker_0",
+              "utterance_id": 6,
+              "sequence": 21,
+              "status": "final",
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "timestamp": 1792652952658
+            }
+          ],
+          "geometry": [
+            230,
+            1140,
+            2099,
+            204
+          ],
+          "metrics": {
+            "source_rows": 2,
+            "visible_rows": 2,
+            "required_height": 204,
+            "maximum_height": 420,
+            "window_height": 204
+          },
+          "labels": [
+            {
+              "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            },
+            {
+              "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+              "width": 2057,
+              "height": 92,
+              "height_for_width": 92
+            }
+          ],
+          "clipped": false
+        }
+      ],
+      "expired_empty": true,
+      "card_hidden": true,
+      "empty_height": 1
+    }
+  ]
+}

@@ -207,7 +207,13 @@ class SubtitleOverlay(QWidget):
         self._set_window_height(height)
 
     def _set_window_height(self, height: int) -> None:
-        if height == self.height():
+        height_changed = height != self.height()
+        # On Windows, an unconstrained native tool window can retain the OS
+        # minimum tracking height (118px here) when a row needs only 67px.
+        # This frameless bar already owns its height; enforce that computed
+        # height for both shrink and growth, including the empty 1px state.
+        self.setFixedHeight(height)
+        if not height_changed:
             return
         if self._was_dragged:
             self.resize(self.width(), height)
