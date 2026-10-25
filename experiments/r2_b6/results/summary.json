@@ -1,0 +1,1135 @@
+[
+  {
+    "name": "baseline",
+    "text_identical_across_repeats": true,
+    "runs": [
+      {
+        "name": "baseline",
+        "repeat": 0,
+        "window": 3,
+        "stride": 2,
+        "window_count": 19,
+        "covered_end": 39.0,
+        "tail_seconds": 1.0,
+        "submitted_audio_seconds": 57,
+        "stt_calls": 15,
+        "stt_total_seconds": 2.720758103998378,
+        "server_processing_total_seconds": 5.8327680238871835,
+        "stt_per_call_seconds": {
+          "mean": 0.18138387359989186,
+          "median": 0.18000866298098117,
+          "p95": 0.1983317932812497,
+          "max": 0.19973504898371175
+        },
+        "service_seconds": {
+          "mean": 0.3434328318935035,
+          "median": 0.3811025180038996,
+          "p95": 0.43958372703636994,
+          "max": 0.44925470399903134
+        },
+        "server_processing_seconds": {
+          "mean": 0.3069877907309044,
+          "median": 0.348334897949826,
+          "p95": 0.3836699715349822,
+          "max": 0.4288057410158217
+        },
+        "simulated_window_start_latency": {
+          "mean": 3.3434328318935034,
+          "median": 3.3811025180038996,
+          "p95": 3.43958372703637,
+          "max": 3.4492547039990313
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 2.396064410840872,
+          "median": 2.3854997790185735,
+          "p95": 2.51133767000283,
+          "max": 3.0700843640370294
+        },
+        "first_publication_simulated_seconds": 11.376682056987192,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 프레밍 언어를 식별할 수 있는 웹사이트의 75% 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 11,
+          "boundary_exact": 5,
+          "token_exact": 2,
+          "supported_tail_replace": 1
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      },
+      {
+        "name": "baseline",
+        "repeat": 1,
+        "window": 3,
+        "stride": 2,
+        "window_count": 19,
+        "covered_end": 39.0,
+        "tail_seconds": 1.0,
+        "submitted_audio_seconds": 57,
+        "stt_calls": 15,
+        "stt_total_seconds": 2.74509523389861,
+        "server_processing_total_seconds": 5.638222148059867,
+        "stt_per_call_seconds": {
+          "mean": 0.183006348926574,
+          "median": 0.1831626349594444,
+          "p95": 0.19802610261249357,
+          "max": 0.19971253699623048
+        },
+        "service_seconds": {
+          "mean": 0.33804831889727593,
+          "median": 0.39135488303145394,
+          "p95": 0.40479706298792734,
+          "max": 0.40743769000982866
+        },
+        "server_processing_seconds": {
+          "mean": 0.29674853410841406,
+          "median": 0.33906123001361266,
+          "p95": 0.3777961548999883,
+          "max": 0.3813549969927408
+        },
+        "simulated_window_start_latency": {
+          "mean": 3.338048318897276,
+          "median": 3.391354883031454,
+          "p95": 3.404797062987927,
+          "max": 3.4074376900098287
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 2.3906798978446444,
+          "median": 2.39159060199745,
+          "p95": 2.473812361707677,
+          "max": 3.0711844069883227
+        },
+        "first_publication_simulated_seconds": 11.368523315933999,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 프레밍 언어를 식별할 수 있는 웹사이트의 75% 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 11,
+          "boundary_exact": 5,
+          "token_exact": 2,
+          "supported_tail_replace": 1
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      },
+      {
+        "name": "baseline",
+        "repeat": 2,
+        "window": 3,
+        "stride": 2,
+        "window_count": 19,
+        "covered_end": 39.0,
+        "tail_seconds": 1.0,
+        "submitted_audio_seconds": 57,
+        "stt_calls": 15,
+        "stt_total_seconds": 2.6872482868493535,
+        "server_processing_total_seconds": 5.208896026830189,
+        "stt_per_call_seconds": {
+          "mean": 0.1791498857899569,
+          "median": 0.18205452000256628,
+          "p95": 0.19585705848876386,
+          "max": 0.20446268696105108
+        },
+        "service_seconds": {
+          "mean": 0.3312769651682557,
+          "median": 0.36999200301943347,
+          "p95": 0.4267056901997419,
+          "max": 0.5037096199812368
+        },
+        "server_processing_seconds": {
+          "mean": 0.2741524224647468,
+          "median": 0.287131231976673,
+          "p95": 0.38745525986305435,
+          "max": 0.39168882300145924
+        },
+        "simulated_window_start_latency": {
+          "mean": 3.331276965168256,
+          "median": 3.3699920030194335,
+          "p95": 3.426705690199742,
+          "max": 3.5037096199812368
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 2.383908544115624,
+          "median": 2.3969247980276123,
+          "p95": 2.5600714568921816,
+          "max": 3.0673279890906997
+        },
+        "first_publication_simulated_seconds": 11.369992003019433,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 프레밍 언어를 식별할 수 있는 웹사이트의 75% 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 11,
+          "boundary_exact": 5,
+          "token_exact": 2,
+          "supported_tail_replace": 1
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      }
+    ],
+    "stt_total_seconds": {
+      "mean": 2.7177005415821136,
+      "median": 2.720758103998378,
+      "p95": 2.7426615209085865,
+      "max": 2.74509523389861
+    },
+    "suspicions": [
+      {
+        "window": 11,
+        "start": 22.0,
+        "end": 25.0,
+        "reasons": [
+          "previous_raw_ngrams_absent_from_session"
+        ],
+        "previous": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "raw": "이번 사태 파급력이 큰 건",
+        "assembled": "이번 사태 파급력이 큰 건",
+        "absent_ngrams": [
+          "결함으로알려",
+          "는결함으로알",
+          "로알려졌습니",
+          "수있는결함으",
+          "스템을장악할",
+          "시스템을장악",
+          "악할수있는결",
+          "알려졌습니다",
+          "으로알려졌습",
+          "을장악할수있",
+          "있는결함으로",
+          "장악할수있는",
+          "템을장악할수",
+          "할수있는결함",
+          "함으로알려졌"
+        ]
+      },
+      {
+        "window": 12,
+        "start": 24.0,
+        "end": 27.0,
+        "reasons": [
+          "overlap_at_minimum_threshold",
+          "assembler_suspicious_deletion"
+        ],
+        "previous": "이번 사태 파급력이 큰 건",
+        "raw": "파급력이 큰 건 php가 인터넷 전문",
+        "assembled": "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 php가 인터넷 전문",
+        "absent_ngrams": []
+      },
+      {
+        "window": 13,
+        "start": 26.0,
+        "end": 29.0,
+        "reasons": [
+          "unmerged_fuzzy_boundary_candidate"
+        ],
+        "previous": "파급력이 큰 건 php가 인터넷 전문",
+        "raw": "인터넷 전반에 광범위하게 쓰이는 핵심",
+        "assembled": "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심",
+        "absent_ngrams": []
+      },
+      {
+        "window": 15,
+        "start": 30.0,
+        "end": 33.0,
+        "reasons": [
+          "previous_raw_ngrams_absent_from_session"
+        ],
+        "previous": "쓰이는 핵심 기술이기 때문입니다.",
+        "raw": "사용된 프로그래밍 언어를 식별하며",
+        "assembled": "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 사용된 프로그래밍 언어를 식별하며",
+        "absent_ngrams": [
+          "기때문입니다",
+          "기술이기때문",
+          "는핵심기술이",
+          "술이기때문입",
+          "심기술이기때",
+          "쓰이는핵심기",
+          "이기때문입니",
+          "이는핵심기술",
+          "핵심기술이기"
+        ]
+      },
+      {
+        "window": 16,
+        "start": 32.0,
+        "end": 35.0,
+        "reasons": [
+          "overlap_at_minimum_threshold",
+          "assembler_suspicious_deletion",
+          "previous_raw_ngrams_absent_from_session"
+        ],
+        "previous": "사용된 프로그래밍 언어를 식별하며",
+        "raw": "프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+        "assembled": "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+        "absent_ngrams": [
+          "그래밍언어를",
+          "된프로그래밍",
+          "래밍언어를식",
+          "사용된프로그",
+          "어를식별하며",
+          "언어를식별하",
+          "용된프로그래"
+        ]
+      },
+      {
+        "window": 18,
+        "start": 36.0,
+        "end": 39.0,
+        "reasons": [
+          "overlap_consumes_at_least_80_percent",
+          "assembler_suspicious_deletion"
+        ],
+        "previous": "75%가 php를 쓰고",
+        "raw": "를 쓰고",
+        "assembled": "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 프레밍 언어를 식별할 수 있는 웹사이트의 75% 75%가 php를 쓰고",
+        "absent_ngrams": []
+      }
+    ]
+  },
+  {
+    "name": "A",
+    "text_identical_across_repeats": true,
+    "runs": [
+      {
+        "name": "A",
+        "repeat": 0,
+        "window": 4,
+        "stride": 2,
+        "window_count": 19,
+        "covered_end": 40.0,
+        "tail_seconds": 0.0,
+        "submitted_audio_seconds": 76,
+        "stt_calls": 16,
+        "stt_total_seconds": 2.900823280971963,
+        "server_processing_total_seconds": 4.991247245110571,
+        "stt_per_call_seconds": {
+          "mean": 0.18130145506074768,
+          "median": 0.19014272699132562,
+          "p95": 0.19819458977144677,
+          "max": 0.2006283689988777
+        },
+        "service_seconds": {
+          "mean": 0.36861978603624984,
+          "median": 0.39737028401577845,
+          "p95": 0.4973543222760782,
+          "max": 0.4976411100360565
+        },
+        "server_processing_seconds": {
+          "mean": 0.2626972234268722,
+          "median": 0.26618171302834526,
+          "p95": 0.3619318162323906,
+          "max": 0.3920820790226571
+        },
+        "simulated_window_start_latency": {
+          "mean": 4.36861978603625,
+          "median": 4.3973702840157785,
+          "p95": 4.497354322276078,
+          "max": 4.4976411100360565
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 2.473882943930987,
+          "median": 2.3992793840006925,
+          "p95": 2.657412866433148,
+          "max": 4.095358674007002
+        },
+        "first_publication_simulated_seconds": 12.362784840981476,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 8,
+          "boundary_exact": 3,
+          "token_exact": 6,
+          "fuzzy_replace": 2
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      },
+      {
+        "name": "A",
+        "repeat": 1,
+        "window": 4,
+        "stride": 2,
+        "window_count": 19,
+        "covered_end": 40.0,
+        "tail_seconds": 0.0,
+        "submitted_audio_seconds": 76,
+        "stt_calls": 16,
+        "stt_total_seconds": 2.9343847400159575,
+        "server_processing_total_seconds": 4.659154908033088,
+        "stt_per_call_seconds": {
+          "mean": 0.18339904625099734,
+          "median": 0.1849640454747714,
+          "p95": 0.20260526628408115,
+          "max": 0.20534080197103322
+        },
+        "service_seconds": {
+          "mean": 0.3533976235806844,
+          "median": 0.3961174629512243,
+          "p95": 0.4895630014652852,
+          "max": 0.4912750489311293
+        },
+        "server_processing_seconds": {
+          "mean": 0.2452186793701625,
+          "median": 0.25900293001905084,
+          "p95": 0.32208334879833267,
+          "max": 0.3607382479822263
+        },
+        "simulated_window_start_latency": {
+          "mean": 4.353397623580684,
+          "median": 4.396117462951224,
+          "p95": 4.489563001465285,
+          "max": 4.491275048931129
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 2.4586607814754213,
+          "median": 2.3971320019918494,
+          "p95": 2.6517044674430474,
+          "max": 4.095569234050345
+        },
+        "first_publication_simulated_seconds": 12.367040447948966,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 8,
+          "boundary_exact": 3,
+          "token_exact": 6,
+          "fuzzy_replace": 2
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      },
+      {
+        "name": "A",
+        "repeat": 2,
+        "window": 4,
+        "stride": 2,
+        "window_count": 19,
+        "covered_end": 40.0,
+        "tail_seconds": 0.0,
+        "submitted_audio_seconds": 76,
+        "stt_calls": 16,
+        "stt_total_seconds": 2.911149223044049,
+        "server_processing_total_seconds": 4.57507228187751,
+        "stt_per_call_seconds": {
+          "mean": 0.18194682644025306,
+          "median": 0.18303335501695983,
+          "p95": 0.20523258874891326,
+          "max": 0.20573665999108925
+        },
+        "service_seconds": {
+          "mean": 0.3545634883094432,
+          "median": 0.39917612401768565,
+          "p95": 0.49318877161713315,
+          "max": 0.500058026984334
+        },
+        "server_processing_seconds": {
+          "mean": 0.24079327799355318,
+          "median": 0.2569144029985182,
+          "p95": 0.349147400620859,
+          "max": 0.37598377699032426
+        },
+        "simulated_window_start_latency": {
+          "mean": 4.354563488309443,
+          "median": 4.399176124017686,
+          "p95": 4.493188771617133,
+          "max": 4.500058026984334
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 2.45982664620418,
+          "median": 2.3995494580012746,
+          "p95": 2.659205018787176,
+          "max": 4.0915279450127855
+        },
+        "first_publication_simulated_seconds": 12.402561695955228,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 8,
+          "boundary_exact": 3,
+          "token_exact": 6,
+          "fuzzy_replace": 2
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      }
+    ],
+    "stt_total_seconds": {
+      "mean": 2.9154524146773233,
+      "median": 2.911149223044049,
+      "p95": 2.932061188318767,
+      "max": 2.9343847400159575
+    },
+    "suspicions": [
+      {
+        "window": 7,
+        "start": 14.0,
+        "end": 18.0,
+        "reasons": [
+          "unmerged_fuzzy_boundary_candidate"
+        ],
+        "previous": "언어 PHP에서 발견된 취약점은 해커가 로그인",
+        "raw": "최악점은 해커가 로그인이나 인증 없이 외부에서",
+        "assembled": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서",
+        "absent_ngrams": []
+      },
+      {
+        "window": 10,
+        "start": 20.0,
+        "end": 24.0,
+        "reasons": [
+          "overlap_consumes_at_least_80_percent",
+          "assembler_suspicious_deletion",
+          "previous_raw_ngrams_absent_from_session"
+        ],
+        "previous": "임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다.",
+        "raw": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "assembled": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "absent_ngrams": [
+          "로알려줍니다",
+          "으로알려줍니",
+          "함으로알려줍"
+        ]
+      },
+      {
+        "window": 11,
+        "start": 22.0,
+        "end": 26.0,
+        "reasons": [
+          "previous_raw_ngrams_absent_from_session"
+        ],
+        "previous": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "raw": "이번 사태 파급력이 큰 건 PHP가",
+        "assembled": "이번 사태 파급력이 큰 건 PHP가",
+        "absent_ngrams": [
+          "결함으로알려",
+          "는결함으로알",
+          "로알려졌습니",
+          "수있는결함으",
+          "스템을장악할",
+          "시스템을장악",
+          "악할수있는결",
+          "알려졌습니다",
+          "으로알려졌습",
+          "을장악할수있",
+          "있는결함으로",
+          "장악할수있는",
+          "템을장악할수",
+          "할수있는결함",
+          "함으로알려졌"
+        ]
+      },
+      {
+        "window": 14,
+        "start": 28.0,
+        "end": 32.0,
+        "reasons": [
+          "previous_raw_ngrams_absent_from_session"
+        ],
+        "previous": "인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다.",
+        "raw": "쓰이는 핵심 기술이기 때문입니다. 사용된 프로그램은",
+        "assembled": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 사용된 프로그램은",
+        "absent_ngrams": [
+          "게쓰이는핵심",
+          "광범위하게쓰",
+          "기때문입니다",
+          "기술이기때문",
+          "넷전반에광범",
+          "는핵심기술이",
+          "반에광범위하",
+          "범위하게쓰이",
+          "술이기때문입",
+          "심기술이기때",
+          "쓰이는핵심기",
+          "에광범위하게",
+          "위하게쓰이는",
+          "이기때문입니",
+          "이는핵심기술",
+          "인터넷전반에",
+          "전반에광범위",
+          "터넷전반에광",
+          "하게쓰이는핵",
+          "핵심기술이기"
+        ]
+      },
+      {
+        "window": 15,
+        "start": 30.0,
+        "end": 34.0,
+        "reasons": [
+          "unmerged_fuzzy_boundary_candidate"
+        ],
+        "previous": "사용된 프로그램은",
+        "raw": "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트",
+        "assembled": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그램은 사용된 프로그래밍 언어를 식별할 수 있는 웹사이트",
+        "absent_ngrams": []
+      },
+      {
+        "window": 16,
+        "start": 32.0,
+        "end": 36.0,
+        "reasons": [
+          "previous_raw_ngrams_absent_from_session"
+        ],
+        "previous": "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트",
+        "raw": "프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php",
+        "assembled": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php",
+        "absent_ngrams": [
+          "그래밍언어를",
+          "된프로그래밍",
+          "래밍언어를식",
+          "용된프로그래"
+        ]
+      },
+      {
+        "window": 17,
+        "start": 34.0,
+        "end": 38.0,
+        "reasons": [
+          "overlap_at_minimum_threshold",
+          "assembler_suspicious_deletion"
+        ],
+        "previous": "프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php",
+        "raw": "75%가 php를 쓰고",
+        "assembled": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "absent_ngrams": []
+      },
+      {
+        "window": 18,
+        "start": 36.0,
+        "end": 40.0,
+        "reasons": [
+          "overlap_consumes_at_least_80_percent",
+          "assembler_suspicious_deletion"
+        ],
+        "previous": "75%가 php를 쓰고",
+        "raw": "를 쓰고",
+        "assembled": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "absent_ngrams": []
+      }
+    ]
+  },
+  {
+    "name": "B",
+    "text_identical_across_repeats": true,
+    "runs": [
+      {
+        "name": "B",
+        "repeat": 0,
+        "window": 4,
+        "stride": 3,
+        "window_count": 13,
+        "covered_end": 40.0,
+        "tail_seconds": 0.0,
+        "submitted_audio_seconds": 52,
+        "stt_calls": 11,
+        "stt_total_seconds": 1.9830728379893117,
+        "server_processing_total_seconds": 3.824696331983432,
+        "stt_per_call_seconds": {
+          "mean": 0.18027934890811925,
+          "median": 0.18194935598876327,
+          "p95": 0.19419351100805216,
+          "max": 0.19450218201382086
+        },
+        "service_seconds": {
+          "mean": 0.3576175194690362,
+          "median": 0.39770587102975696,
+          "p95": 0.4593270950252189,
+          "max": 0.5021158040035516
+        },
+        "server_processing_seconds": {
+          "mean": 0.2942074101525717,
+          "median": 0.32822376501280814,
+          "p95": 0.3815156637923792,
+          "max": 0.3821704210131429
+        },
+        "simulated_window_start_latency": {
+          "mean": 4.357617519469036,
+          "median": 4.397705871029757,
+          "p95": 4.459327095025219,
+          "max": 4.502115804003552
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 3.434540596392113,
+          "median": 3.3994644939666614,
+          "p95": 3.735213564010336,
+          "max": 4.084860204020515
+        },
+        "first_publication_simulated_seconds": 13.275706558022648,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 6,
+          "supported_sentence_revision": 1,
+          "boundary_exact": 4,
+          "token_exact": 2
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      },
+      {
+        "name": "B",
+        "repeat": 1,
+        "window": 4,
+        "stride": 3,
+        "window_count": 13,
+        "covered_end": 40.0,
+        "tail_seconds": 0.0,
+        "submitted_audio_seconds": 52,
+        "stt_calls": 11,
+        "stt_total_seconds": 1.9501290440093726,
+        "server_processing_total_seconds": 3.624287703074515,
+        "stt_per_call_seconds": {
+          "mean": 0.1772844585463066,
+          "median": 0.18110317597165704,
+          "p95": 0.19803723102086224,
+          "max": 0.20280232903314754
+        },
+        "service_seconds": {
+          "mean": 0.35498329137828055,
+          "median": 0.39554843702353537,
+          "p95": 0.4575457197963259,
+          "max": 0.4985921769984998
+        },
+        "server_processing_seconds": {
+          "mean": 0.27879136177496266,
+          "median": 0.2732840640237555,
+          "p95": 0.36877116223331535,
+          "max": 0.3869156980072148
+        },
+        "simulated_window_start_latency": {
+          "mean": 4.35498329137828,
+          "median": 4.395548437023535,
+          "p95": 4.457545719796326,
+          "max": 4.4985921769985
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 3.4319063683013575,
+          "median": 3.3973277719924226,
+          "p95": 3.7344219921738833,
+          "max": 4.0881667149369605
+        },
+        "first_publication_simulated_seconds": 13.365926383936312,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 6,
+          "supported_sentence_revision": 1,
+          "boundary_exact": 4,
+          "token_exact": 2
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      },
+      {
+        "name": "B",
+        "repeat": 2,
+        "window": 4,
+        "stride": 3,
+        "window_count": 13,
+        "covered_end": 40.0,
+        "tail_seconds": 0.0,
+        "submitted_audio_seconds": 52,
+        "stt_calls": 11,
+        "stt_total_seconds": 1.9918612420442514,
+        "server_processing_total_seconds": 4.09337913611671,
+        "stt_per_call_seconds": {
+          "mean": 0.18107829473129558,
+          "median": 0.1835172509890981,
+          "p95": 0.1973764960130211,
+          "max": 0.20236152299912646
+        },
+        "service_seconds": {
+          "mean": 0.3604560533063844,
+          "median": 0.39782320201629773,
+          "p95": 0.4430448852013796,
+          "max": 0.47679956996580586
+        },
+        "server_processing_seconds": {
+          "mean": 0.3148753181628238,
+          "median": 0.35006750898901373,
+          "p95": 0.3660290807951242,
+          "max": 0.3674778689746745
+        },
+        "simulated_window_start_latency": {
+          "mean": 4.360456053306384,
+          "median": 4.397823202016298,
+          "p95": 4.443044885201379,
+          "max": 4.476799569965806
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 3.4373791302294614,
+          "median": 3.3982632370316423,
+          "p95": 3.7230520715820594,
+          "max": 4.092430824006442
+        },
+        "first_publication_simulated_seconds": 13.476799569965806,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 6,
+          "supported_sentence_revision": 1,
+          "boundary_exact": 4,
+          "token_exact": 2
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      }
+    ],
+    "stt_total_seconds": {
+      "mean": 1.9750210413476452,
+      "median": 1.9830728379893117,
+      "p95": 1.9909824016387574,
+      "max": 1.9918612420442514
+    },
+    "suspicions": [
+      {
+        "window": 5,
+        "start": 15.0,
+        "end": 19.0,
+        "reasons": [
+          "overlap_at_minimum_threshold",
+          "assembler_suspicious_deletion"
+        ],
+        "previous": "언어 PHP에서 발견된 취약점은 해커가 로그인",
+        "raw": "해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행",
+        "assembled": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행",
+        "absent_ngrams": []
+      },
+      {
+        "window": 7,
+        "start": 21.0,
+        "end": 25.0,
+        "reasons": [
+          "previous_raw_ngrams_absent_from_session"
+        ],
+        "previous": "임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다.",
+        "raw": "이번 사태 파급력이 큰 건",
+        "assembled": "이번 사태 파급력이 큰 건",
+        "absent_ngrams": [
+          "거나시스템을",
+          "결함으로알려",
+          "나시스템을장",
+          "는결함으로알",
+          "드를실행하거",
+          "로알려줍니다",
+          "로코드를실행",
+          "를실행하거나",
+          "수있는결함으",
+          "스템을장악할",
+          "시스템을장악",
+          "실행하거나시",
+          "악할수있는결",
+          "으로알려줍니",
+          "을장악할수있",
+          "의로코드를실",
+          "임의로코드를",
+          "있는결함으로",
+          "장악할수있는",
+          "코드를실행하",
+          "템을장악할수",
+          "하거나시스템",
+          "할수있는결함",
+          "함으로알려줍",
+          "행하거나시스"
+        ]
+      },
+      {
+        "window": 8,
+        "start": 24.0,
+        "end": 28.0,
+        "reasons": [
+          "overlap_at_minimum_threshold",
+          "assembler_suspicious_deletion"
+        ],
+        "previous": "이번 사태 파급력이 큰 건",
+        "raw": "파급력이 큰 건 PHP가 인터넷 전반에 광범위하게",
+        "assembled": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게",
+        "absent_ngrams": []
+      },
+      {
+        "window": 10,
+        "start": 30.0,
+        "end": 34.0,
+        "reasons": [
+          "previous_raw_ngrams_absent_from_session"
+        ],
+        "previous": "전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다.",
+        "raw": "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트",
+        "assembled": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다. 사용된 프로그래밍 언어를 식별할 수 있는 웹사이트",
+        "absent_ngrams": [
+          "게쓰이는핵심",
+          "광범위하게쓰",
+          "기때문입니다",
+          "기술이기때문",
+          "는핵심기술이",
+          "반에광범위하",
+          "범위하게쓰이",
+          "술이기때문입",
+          "심기술이기때",
+          "쓰이는핵심기",
+          "에광범위하게",
+          "위하게쓰이는",
+          "이기때문입니",
+          "이는핵심기술",
+          "전반에광범위",
+          "하게쓰이는핵",
+          "핵심기술이기"
+        ]
+      },
+      {
+        "window": 12,
+        "start": 36.0,
+        "end": 40.0,
+        "reasons": [
+          "overlap_consumes_at_least_80_percent",
+          "assembler_suspicious_deletion"
+        ],
+        "previous": "수 있는 웹사이트의 75%가 php를 쓰고",
+        "raw": "를 쓰고",
+        "assembled": "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "absent_ngrams": []
+      }
+    ]
+  },
+  {
+    "name": "C",
+    "text_identical_across_repeats": true,
+    "runs": [
+      {
+        "name": "C",
+        "repeat": 0,
+        "window": 5,
+        "stride": 3,
+        "window_count": 12,
+        "covered_end": 38.0,
+        "tail_seconds": 2.0,
+        "submitted_audio_seconds": 60,
+        "stt_calls": 10,
+        "stt_total_seconds": 1.8425327890436165,
+        "server_processing_total_seconds": 3.4472281490452588,
+        "stt_per_call_seconds": {
+          "mean": 0.18425327890436166,
+          "median": 0.18495633653947152,
+          "p95": 0.20753115479892584,
+          "max": 0.2142323729931377
+        },
+        "service_seconds": {
+          "mean": 0.36061032474875293,
+          "median": 0.39961071498692036,
+          "p95": 0.4954536908073351,
+          "max": 0.49851433298317716
+        },
+        "server_processing_seconds": {
+          "mean": 0.28726901242043823,
+          "median": 0.3077891835127957,
+          "p95": 0.37443696970294693,
+          "max": 0.3797579479869455
+        },
+        "simulated_window_start_latency": {
+          "mean": 5.360610324748753,
+          "median": 5.39961071498692,
+          "p95": 5.495453690807335,
+          "max": 5.498514332983177
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 3.5272769914154196,
+          "median": 3.4006659779988695,
+          "p95": 4.219779801412368,
+          "max": 5.101326485048048
+        },
+        "first_publication_simulated_seconds": 11.35365483298665,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발의 논리 웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 6,
+          "token_exact": 5,
+          "normalized_exact": 1
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      },
+      {
+        "name": "C",
+        "repeat": 1,
+        "window": 5,
+        "stride": 3,
+        "window_count": 12,
+        "covered_end": 38.0,
+        "tail_seconds": 2.0,
+        "submitted_audio_seconds": 60,
+        "stt_calls": 10,
+        "stt_total_seconds": 1.7844038720359094,
+        "server_processing_total_seconds": 3.207209196873009,
+        "stt_per_call_seconds": {
+          "mean": 0.17844038720359096,
+          "median": 0.17711606703232974,
+          "p95": 0.19399675128806848,
+          "max": 0.1944546650047414
+        },
+        "service_seconds": {
+          "mean": 0.3568720738306486,
+          "median": 0.39477195643121377,
+          "p95": 0.48720451185363345,
+          "max": 0.49391905101947486
+        },
+        "server_processing_seconds": {
+          "mean": 0.26726743307275075,
+          "median": 0.27551782349473797,
+          "p95": 0.3599378669343423,
+          "max": 0.3651334809837863
+        },
+        "simulated_window_start_latency": {
+          "mean": 5.356872073830648,
+          "median": 5.394771956431214,
+          "p95": 5.4872045118536334,
+          "max": 5.493919051019475
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 3.5235387404973153,
+          "median": 3.3977619574288838,
+          "p95": 4.217085024210973,
+          "max": 5.100954547000583
+        },
+        "first_publication_simulated_seconds": 11.357792770024389,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발의 논리 웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 6,
+          "token_exact": 5,
+          "normalized_exact": 1
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      },
+      {
+        "name": "C",
+        "repeat": 2,
+        "window": 5,
+        "stride": 3,
+        "window_count": 12,
+        "covered_end": 38.0,
+        "tail_seconds": 2.0,
+        "submitted_audio_seconds": 60,
+        "stt_calls": 10,
+        "stt_total_seconds": 1.7801108340499923,
+        "server_processing_total_seconds": 3.3829942988813855,
+        "stt_per_call_seconds": {
+          "mean": 0.17801108340499922,
+          "median": 0.17912421800429001,
+          "p95": 0.19693571941170376,
+          "max": 0.1991903490270488
+        },
+        "service_seconds": {
+          "mean": 0.37790707825236797,
+          "median": 0.3963629009667784,
+          "p95": 0.547019040811574,
+          "max": 0.6008720290265046
+        },
+        "server_processing_seconds": {
+          "mean": 0.28191619157344877,
+          "median": 0.30102300900034606,
+          "p95": 0.36184116039366926,
+          "max": 0.3628098269691691
+        },
+        "simulated_window_start_latency": {
+          "mean": 5.377907078252368,
+          "median": 5.396362900966778,
+          "p95": 5.547019040811574,
+          "max": 5.600872029026505
+        },
+        "simulated_oldest_new_audio_latency": {
+          "mean": 3.5445737449190347,
+          "median": 3.3992053289839532,
+          "p95": 4.271273659478173,
+          "max": 5.0906534300302155
+        },
+        "first_publication_simulated_seconds": 11.34448234696174,
+        "max_simulated_queue_wait": 0.0,
+        "final_count": 3,
+        "final_text": "웹사이트 개발의 논리 웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+        "assembly_match_counts": {
+          "none": 6,
+          "token_exact": 5,
+          "normalized_exact": 1
+        },
+        "source_sha256": "6424daf1e0715411794ccb2e66b258a698f64fbfa7a665a16f477c6431a3964f"
+      }
+    ],
+    "stt_total_seconds": {
+      "mean": 1.8023491650431727,
+      "median": 1.7844038720359094,
+      "p95": 1.8367198973428458,
+      "max": 1.8425327890436165
+    },
+    "suspicions": [
+      {
+        "window": 7,
+        "start": 21.0,
+        "end": 26.0,
+        "reasons": [
+          "previous_raw_ngrams_absent_from_session"
+        ],
+        "previous": "임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "raw": "이번 사태 파급력이 큰 건 PHP가",
+        "assembled": "이번 사태 파급력이 큰 건 PHP가",
+        "absent_ngrams": [
+          "거나시스템을",
+          "결함으로알려",
+          "나시스템을장",
+          "는결함으로알",
+          "드를실행하거",
+          "로알려졌습니",
+          "로코드를실행",
+          "를실행하거나",
+          "수있는결함으",
+          "스템을장악할",
+          "시스템을장악",
+          "실행하거나시",
+          "악할수있는결",
+          "알려졌습니다",
+          "으로알려졌습",
+          "을장악할수있",
+          "의로코드를실",
+          "임의로코드를",
+          "있는결함으로",
+          "장악할수있는",
+          "코드를실행하",
+          "템을장악할수",
+          "하거나시스템",
+          "할수있는결함",
+          "함으로알려졌",
+          "행하거나시스"
+        ]
+      },
+      {
+        "window": 10,
+        "start": 30.0,
+        "end": 35.0,
+        "reasons": [
+          "previous_raw_ngrams_absent_from_session"
+        ],
+        "previous": "전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다.",
+        "raw": "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%",
+        "assembled": "웹사이트 개발의 논리 웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%",
+        "absent_ngrams": [
+          "게쓰이는핵심",
+          "광범위하게쓰",
+          "기때문입니다",
+          "기술이기때문",
+          "는핵심기술이",
+          "반에광범위하",
+          "범위하게쓰이",
+          "술이기때문입",
+          "심기술이기때",
+          "쓰이는핵심기",
+          "에광범위하게",
+          "위하게쓰이는",
+          "이기때문입니",
+          "이는핵심기술",
+          "전반에광범위",
+          "하게쓰이는핵",
+          "핵심기술이기"
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "config": "baseline",
+    "windows": 19,
+    "events": 18,
+    "assembly_and_state_equal": true,
+    "published_final_count": 3
+  },
+  {
+    "config": "A",
+    "windows": 19,
+    "events": 20,
+    "assembly_and_state_equal": true,
+    "published_final_count": 3
+  },
+  {
+    "config": "B",
+    "windows": 13,
+    "events": 15,
+    "assembly_and_state_equal": true,
+    "published_final_count": 3
+  },
+  {
+    "config": "C",
+    "windows": 12,
+    "events": 13,
+    "assembly_and_state_equal": true,
+    "published_final_count": 3
+  }
+]

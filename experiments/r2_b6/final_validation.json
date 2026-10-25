@@ -1,0 +1,15 @@
+{
+  "syntax_and_whitespace_checked": [
+    "experiments/r2_b6/compare_windows.py",
+    "experiments/r2_b6/run_checks.py",
+    "experiments/r2_b6/summarize_results.py",
+    "experiments/r2_b6/test_compare_windows.py",
+    "experiments/r2_b6/verify_pipeline_parity.py"
+  ],
+  "source_unchanged": true,
+  "source_file_count": 136,
+  "production_parity_configs": 4,
+  "measured_windows": 189,
+  "request_count_including_warmup": 193,
+  "all_checks_passed": true
+}

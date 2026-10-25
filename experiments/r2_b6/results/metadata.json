@@ -1,0 +1,118 @@
+{
+  "git_head": "1d306bd49401610201db61254c433d25d9be0fb2",
+  "health_before": {
+    "status": "ready",
+    "gpu_ready": true,
+    "models_loaded": true,
+    "processing_profile": "single",
+    "model_status": {
+      "mossformer2_loaded": false,
+      "faster_whisper_loaded": true,
+      "silero_vad_loaded": true
+    },
+    "model_load_count": 1,
+    "model_load_seconds": {
+      "mossformer2_seconds": 0.0,
+      "faster_whisper_seconds": 5.153770425007679,
+      "silero_vad_seconds": 0.05946661997586489,
+      "warm_up_seconds": 0.6323288299608976
+    },
+    "gpu_memory": {
+      "device_used_mib": 2311,
+      "process_used_mib": 2302
+    },
+    "requests": {
+      "completed": 147,
+      "failed": 0,
+      "waiting": 0
+    },
+    "uptime_seconds": 1081.3147504329681,
+    "load_error": null,
+    "stt_model": "large-v3-turbo",
+    "stt_options": {
+      "language": "ko",
+      "beam_size": 5,
+      "condition_on_previous_text": false
+    }
+  },
+  "options": {
+    "language": "ko",
+    "beam_size": 5,
+    "condition_on_previous_text": false
+  },
+  "initial_prompt": null,
+  "transcribe_signature": "(self, audio: Union[str, BinaryIO, numpy.ndarray], language: Optional[str] = None, task: str = 'transcribe', log_progress: bool = False, beam_size: int = 5, best_of: int = 5, patience: float = 1, length_penalty: float = 1, repetition_penalty: float = 1, no_repeat_ngram_size: int = 0, temperature: Union[float, List[float], Tuple[float, ...]] = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0], compression_ratio_threshold: Optional[float] = 2.4, log_prob_threshold: Optional[float] = -1.0, no_speech_threshold: Optional[float] = 0.6, condition_on_previous_text: bool = True, prompt_reset_on_temperature: float = 0.5, initial_prompt: Union[str, Iterable[int], NoneType] = None, prefix: Optional[str] = None, suppress_blank: bool = True, suppress_tokens: Optional[List[int]] = [-1], without_timestamps: bool = False, max_initial_timestamp: float = 1.0, word_timestamps: bool = False, prepend_punctuations: str = '\"\\'“¿([{-', append_punctuations: str = '\"\\'.。,，!！?？:：”)]}、', multilingual: bool = False, vad_filter: bool = False, vad_parameters: Union[dict, faster_whisper.vad.VadOptions, NoneType] = None, max_new_tokens: Optional[int] = None, chunk_length: Optional[int] = None, clip_timestamps: Union[str, List[float]] = '0', hallucination_silence_threshold: Optional[float] = None, hotwords: Optional[str] = None, language_detection_threshold: Optional[float] = 0.5, language_detection_segments: int = 1) -> Tuple[Iterable[faster_whisper.transcribe.Segment], faster_whisper.transcribe.TranscriptionInfo]",
+  "versions": {
+    "faster-whisper": "1.2.1",
+    "ctranslate2": "4.8.3",
+    "numpy": "1.26.4",
+    "soundfile": "0.12.1",
+    "silero-vad": "6.2.3"
+  },
+  "clock": "perf_counter; actual loopback HTTP; simulated capture timeline, serial no-drop queue",
+  "code_hashes": {
+    "experiments/r2_b6/compare_windows.py": "2e17dacbb135c020ccdb608fa32b0ba1448c3ef779b2563265b4cf94ba007086",
+    "phase3/run_overlap_pipeline.py": "cf33233149345dcbaa203c05b1830466f7d5b6b62a7c95291250a48dac82ce6c",
+    "phase3/subtitle_assembler.py": "5154e262107c40c9d0dafd8a260ed71a66ca910a74aeb21a611170dd4a3274c5",
+    "phase3/stt_context.py": "e27868b350e7320e90c18809b1296b25caf36ca183de1388084f15a68ee63617",
+    "phase4/gpu_processing_server.py": "0f25bff8246916addb61f5031dd60de9f78a9239ad317f297b6b2822df3790d1"
+  },
+  "orders": [
+    [
+      "C",
+      "B",
+      "baseline",
+      "A"
+    ],
+    [
+      "A",
+      "baseline",
+      "B",
+      "C"
+    ],
+    [
+      "B",
+      "A",
+      "C",
+      "baseline"
+    ]
+  ],
+  "warmup_requests": 4,
+  "health_after": {
+    "status": "ready",
+    "gpu_ready": true,
+    "models_loaded": true,
+    "processing_profile": "single",
+    "model_status": {
+      "mossformer2_loaded": false,
+      "faster_whisper_loaded": true,
+      "silero_vad_loaded": true
+    },
+    "model_load_count": 1,
+    "model_load_seconds": {
+      "mossformer2_seconds": 0.0,
+      "faster_whisper_seconds": 5.153770425007679,
+      "silero_vad_seconds": 0.05946661997586489,
+      "warm_up_seconds": 0.6323288299608976
+    },
+    "gpu_memory": {
+      "device_used_mib": 2311,
+      "process_used_mib": 2302
+    },
+    "requests": {
+      "completed": 340,
+      "failed": 0,
+      "waiting": 0
+    },
+    "uptime_seconds": 1153.0168099403381,
+    "load_error": null,
+    "stt_model": "large-v3-turbo",
+    "stt_options": {
+      "language": "ko",
+      "beam_size": 5,
+      "condition_on_previous_text": false
+    }
+  },
+  "expected_requests": 193,
+  "observed_completed_delta": 193
+}
