@@ -1,0 +1,105 @@
+[
+  {
+    "name": "baseline_phase4",
+    "command": "QT_QPA_PLATFORM=offscreen PYTHONPATH=phase3:phase4:. python -m unittest discover -s phase4 -p \"test_*.py\"",
+    "tests": 67,
+    "seconds": 21.558,
+    "outcome": "PASS",
+    "failures": [],
+    "summary": "----------------------------------------------------------------------\nRan 67 tests in 21.558s\n\nOK"
+  },
+  {
+    "name": "reproduction_before_fix",
+    "command": "PYTHONPATH=phase3:phase4:. python -m unittest test_remote_overlap_pipeline.PipelineTests.test_diagnostics_survive_consumer_running_before_enqueue_returns test_remote_overlap_pipeline.PipelineTests.test_stop_does_not_send_queued_windows_and_restart_is_clean",
+    "tests": 2,
+    "seconds": 1.839,
+    "outcome": "FAIL",
+    "failures": [
+      "FAIL: test_diagnostics_survive_consumer_running_before_enqueue_returns (test_remote_overlap_pipeline.PipelineTests.test_diagnostics_survive_consumer_running_before_enqueue_returns)",
+      "FAIL: test_stop_does_not_send_queued_windows_and_restart_is_clean (test_remote_overlap_pipeline.PipelineTests.test_stop_does_not_send_queued_windows_and_restart_is_clean)"
+    ],
+    "summary": "----------------------------------------------------------------------\nRan 2 tests in 1.839s\n\nFAILED (failures=2)"
+  },
+  {
+    "name": "intermediate_phase4_fixture_initialization_failure",
+    "command": "PYTHONPATH=phase3:phase4:. python -m unittest discover -s phase4 -p \"test_*.py\"",
+    "tests": 69,
+    "seconds": 22.803,
+    "outcome": "FAIL",
+    "failures": [
+      "ERROR: test_process_uses_cached_gpu_memory_without_nvidia_smi (test_gpu_processing_server.ServerLatencyDiagnosticsTests.test_process_uses_cached_gpu_memory_without_nvidia_smi)"
+    ],
+    "summary": "----------------------------------------------------------------------\nRan 69 tests in 22.803s\n\nFAILED (errors=1)"
+  },
+  {
+    "name": "intermediate_phase4_transient_failure",
+    "command": "PYTHONPATH=phase3:phase4:. python -m unittest discover -s phase4 -p \"test_*.py\"",
+    "tests": 76,
+    "seconds": 25.966,
+    "outcome": "FAIL",
+    "failures": [
+      "FAIL: test_new_stream_admission_in_real_workers_with_permutation (test_remote_overlap_pipeline.PipelineTests.test_new_stream_admission_in_real_workers_with_permutation) (kind='residual')"
+    ],
+    "summary": "----------------------------------------------------------------------\nRan 76 tests in 25.966s\n\nFAILED (failures=1)"
+  },
+  {
+    "name": "phase4_before_server_log_change",
+    "command": "QT_QPA_PLATFORM=offscreen PYTHONPATH=phase3:phase4:. python -m unittest discover -s phase4 -p \"test_*.py\"",
+    "tests": 78,
+    "seconds": 26.376,
+    "outcome": "PASS",
+    "failures": [],
+    "summary": "----------------------------------------------------------------------\nRan 78 tests in 26.376s\n\nOK"
+  },
+  {
+    "name": "phase4_final",
+    "command": "QT_QPA_PLATFORM=offscreen PYTHONPATH=phase3:phase4:. python -m unittest discover -s phase4 -p \"test_*.py\"",
+    "tests": 78,
+    "seconds": 25.828,
+    "outcome": "PASS",
+    "failures": [],
+    "summary": "----------------------------------------------------------------------\nRan 78 tests in 25.828s\n\nOK"
+  },
+  {
+    "name": "phase3_subtitles",
+    "command": "PYTHONPATH=phase3:phase4:. python -m unittest discover -s phase3 -p \"test_subtitle*.py\"",
+    "tests": 62,
+    "seconds": 0.601,
+    "outcome": "PASS",
+    "failures": [],
+    "summary": "----------------------------------------------------------------------\nRan 62 tests in 0.601s\n\nOK"
+  },
+  {
+    "name": "phase3_regressions",
+    "command": "PYTHONPATH=phase3:phase4:. python -m unittest test_pre_separation_silence_gate test_single_speaker_mode test_general_subtitle_lifecycle test_live_caption_continuity test_live_evidence_regressions test_input_residual_speech_admission",
+    "tests": 45,
+    "seconds": 3.921,
+    "outcome": "PASS",
+    "failures": [],
+    "summary": "----------------------------------------------------------------------\nRan 45 tests in 3.921s\n\nOK"
+  },
+  {
+    "name": "gui_offscreen",
+    "command": "QT_QPA_PLATFORM=offscreen PYTHONPATH=phase3:phase4:. python -m unittest discover -s phase5 -p \"test_*.py\"",
+    "tests": 72,
+    "seconds": 3.787,
+    "outcome": "FAIL",
+    "failures": [
+      "ERROR: test_real_qt_timer_removes_expired_recorded_final_without_new_event (test_gui_app.GuiTests.test_real_qt_timer_removes_expired_recorded_final_without_new_event)",
+      "ERROR: test_recorded_final_duplicate_does_not_renew_deadline_or_reappear (test_gui_app.GuiTests.test_recorded_final_duplicate_does_not_renew_deadline_or_reappear)",
+      "ERROR: test_recorded_final_expiry_uses_arrival_intervals_not_stream_end (test_gui_app.GuiTests.test_recorded_final_expiry_uses_arrival_intervals_not_stream_end)",
+      "ERROR: test_recorded_overlay_flags_and_initial_geometry (test_gui_app.GuiTests.test_recorded_overlay_flags_and_initial_geometry)",
+      "ERROR: test_recorded_window_13_14_final_and_partial_keep_display_order (test_gui_app.GuiTests.test_recorded_window_13_14_final_and_partial_keep_display_order)"
+    ],
+    "summary": "----------------------------------------------------------------------\nRan 72 tests in 3.787s\n\nFAILED (errors=5)"
+  },
+  {
+    "name": "http_delay_timeout",
+    "command": "PYTHONPATH=phase3:phase4:. python -m unittest test_remote_gpu_client.ClientTests.test_delayed_http_roundtrip_timeout_no_retry_and_recovery",
+    "tests": 1,
+    "seconds": 0.689,
+    "outcome": "PASS",
+    "failures": [],
+    "summary": "----------------------------------------------------------------------\nRan 1 test in 0.689s\n\nOK"
+  }
+]

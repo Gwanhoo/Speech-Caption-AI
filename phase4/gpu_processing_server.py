@@ -77,6 +77,14 @@ class LoadedModels:
     vad: Any
 
 
+# One active inference plus three pending requests; preserve GPU serialization.
+MAX_INFLIGHT_REQUESTS = 4
+
+
+class PipelineBusyError(RuntimeError):
+    pass
+
+
 class PipelineService:
     whisper_model_name = DEFAULT_STT_MODEL
 
@@ -101,6 +109,8 @@ class PipelineService:
         self.requests_completed = 0
         self.requests_failed = 0
         self.requests_waiting = 0
+        self.requests_rejected = 0
+        self._request_slots = threading.BoundedSemaphore(MAX_INFLIGHT_REQUESTS)
         self._stats_lock = threading.Lock()
         self._inference_lock = threading.Lock()
         self._inference_executor = ThreadPoolExecutor(
@@ -210,6 +220,8 @@ class PipelineService:
                     "completed": self.requests_completed,
                     "failed": self.requests_failed,
                     "waiting": self.requests_waiting,
+                    "rejected": self.requests_rejected,
+                    "max_inflight": MAX_INFLIGHT_REQUESTS,
                 },
                 "uptime_seconds": time.time() - self.started_at,
                 "load_error": self.load_error,
@@ -228,6 +240,10 @@ class PipelineService:
         if not self.ready:
             raise RuntimeError("GPU pipeline is not ready")
 
+        if not self._request_slots.acquire(blocking=False):
+            with self._stats_lock:
+                self.requests_rejected += 1
+            raise PipelineBusyError("GPU request capacity reached; window rejected")
         received_at = time.time()
         wait_started = time.perf_counter()
         if request_diagnostics is not None:
@@ -235,7 +251,7 @@ class PipelineService:
         with self._stats_lock:
             self.requests_waiting += 1
         try:
-            response = self._inference_executor.submit(
+            future = self._inference_executor.submit(
                 self._run_inference_request,
                 request_id,
                 audio,
@@ -243,11 +259,21 @@ class PipelineService:
                 received_at,
                 wait_started,
                 request_diagnostics,
-            ).result()
+            )
+        except BaseException:
+            with self._stats_lock:
+                self.requests_waiting -= 1
+                self.requests_failed += 1
+            self._request_slots.release()
+            raise
+        try:
+            response = future.result()
         except BaseException:
             with self._stats_lock:
                 self.requests_failed += 1
             raise
+        finally:
+            self._request_slots.release()
         with self._stats_lock:
             self.requests_completed += 1
         return response
@@ -607,6 +633,11 @@ class ProcessingHandler(BaseHTTPRequestHandler):
             result["capture_timestamp"] = self.headers.get("X-Capture-Timestamp", "")
             result["stream_start_seconds"] = stream_start
             result["stream_end_seconds"] = stream_end
+        except PipelineBusyError as exc:
+            self._send_error(
+                HTTPStatus.SERVICE_UNAVAILABLE, "server_busy", str(exc), request_id
+            )
+            return
         except ValueError as exc:
             self._send_error(
                 HTTPStatus.BAD_REQUEST, "invalid_audio", str(exc), request_id
@@ -620,6 +651,12 @@ class ProcessingHandler(BaseHTTPRequestHandler):
                 request_id,
             )
             return
+        if latency_diagnostics:
+            # Emit before socket write: a timed-out client may already be gone.
+            print("[LATENCY SERVER PROCESS] " + json.dumps({
+                "request_id": request_id, "window": window_index,
+                "timing": result["timing"],
+            }), flush=True)
         send_timing = self._send_processing_result(
             HTTPStatus.OK,
             result,
@@ -628,7 +665,7 @@ class ProcessingHandler(BaseHTTPRequestHandler):
         )
         if latency_diagnostics:
             print(
-                f"[LATENCY SERVER] window={window_index:03d} "
+                f"[LATENCY SERVER] window={window_index:03d} request_id={request_id} "
                 f"response_serialize={send_timing['response_serialization_seconds']:.6f}s "
                 f"response_write={send_timing['response_body_write_seconds']:.6f}s "
                 f"response_bytes={send_timing['response_body_bytes']} "

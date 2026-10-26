@@ -5,6 +5,7 @@ import io
 import json
 import sys
 import threading
+import time
 from datetime import timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -232,6 +233,48 @@ class ClientTests(TestCase):
                 "client_transport_connection_replaced",
             )
             self.assertEqual(Handler.request_count, 2)
+        finally:
+            client.close()
+            server.shutdown()
+            server.server_close()
+            thread.join()
+
+    def test_delayed_http_roundtrip_timeout_no_retry_and_recovery(self):
+        class Handler(BaseHTTPRequestHandler):
+            protocol_version = "HTTP/1.1"
+            seen = []
+            def log_message(self, *args):
+                pass
+            def do_POST(self):
+                self.rfile.read(int(self.headers["Content-Length"]))
+                index = int(self.headers["X-Window-Index"])
+                type(self).seen.append(index)
+                if index < 2:
+                    time.sleep(.15)  # Transport/service delay, reported STT stays .01s.
+                body = json.dumps(payload(self.headers["X-Request-ID"], index, 160)).encode()
+                try:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                except (BrokenPipeError, ConnectionResetError):
+                    pass  # Expected when the client times out.
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        client = RemoteGPUClient(f"http://127.0.0.1:{server.server_port}", read_timeout=1)
+        audio = np.zeros(160, dtype=np.float32)
+        try:
+            result = client.process(audio, 0, latency_diagnostics=True)
+            self.assertGreaterEqual(result.client_timing["http_request_seconds"], .15)
+            self.assertEqual(result.timing["stt_seconds"], .01)
+            client.timeout = (1, .03)
+            with self.assertRaises(RemoteTimeoutError):
+                client.process(audio, 1)
+            client.timeout = (1, 1)
+            client.process(audio, 2)
+            self.assertEqual(Handler.seen, [0, 1, 2])
         finally:
             client.close()
             server.shutdown()

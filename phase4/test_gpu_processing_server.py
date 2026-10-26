@@ -4,6 +4,8 @@ import io
 import sys
 import tempfile
 import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest import TestCase, main
 from unittest.mock import Mock, patch
@@ -213,6 +215,8 @@ class ServerLatencyDiagnosticsTests(TestCase):
         service.requests_completed = 0
         service.requests_failed = 0
         service.requests_waiting = 0
+        service.requests_rejected = 0
+        service._request_slots = threading.BoundedSemaphore(server.MAX_INFLIGHT_REQUESTS)
         service._stats_lock = threading.Lock()
         service._inference_lock = threading.Lock()
         service._inference_executor = server.ThreadPoolExecutor(
@@ -480,6 +484,75 @@ class ServerLatencyDiagnosticsTests(TestCase):
             client.close()
             http_server.shutdown()
             http_server.server_close()
+            thread.join()
+
+
+class ServerBackpressureTests(TestCase):
+    def test_delayed_gpu_is_serialized_bounded_and_queue_wait_is_measured(self):
+        entered = threading.Event()
+        release = threading.Event()
+        ids = []
+        def infer(request_id, audio, duration, received, queue_wait, diagnostics):
+            ids.append(threading.get_ident())
+            entered.set()
+            if not release.wait(3):
+                raise RuntimeError("test failed to release simulated GPU")
+            return {"queue_wait_seconds": queue_wait}
+        with patch.object(server.PipelineService, "_load_models", return_value=Mock()), patch.object(
+                server.PipelineService, "_process_serialized", side_effect=infer):
+            service = server.PipelineService(warm_up=False)
+            callers = ThreadPoolExecutor(max_workers=4)
+            try:
+                futures = [callers.submit(service.process, str(i), np.zeros(16), .001, {})
+                           for i in range(4)]
+                self.assertTrue(entered.wait(1))
+                deadline = time.perf_counter() + 2
+                while service.requests_waiting < 3 and time.perf_counter() < deadline:
+                    time.sleep(.005)
+                self.assertEqual(service.requests_waiting, 3)
+                with self.assertRaises(server.PipelineBusyError):
+                    service.process("excess", np.zeros(16), .001)
+                self.assertEqual(service.requests_rejected, 1)
+                time.sleep(.08)
+                release.set()
+                results = [future.result(timeout=2) for future in futures]
+                self.assertTrue(all(wait >= .08 for wait in sorted(row["queue_wait_seconds"] for row in results)[1:]))
+                self.assertEqual(len(set(ids)), 1)
+                self.assertEqual(service.requests_waiting, 0)
+                service.process("recovered", np.zeros(16), .001)
+                self.assertEqual(service.requests_completed, 5)
+                with patch.object(service._inference_executor, "submit", side_effect=RuntimeError("closed")):
+                    with self.assertRaises(RuntimeError):
+                        service.process("submit-failed", np.zeros(16), .001)
+                self.assertEqual(service.requests_waiting, 0)
+                with patch.object(service, "_process_serialized", side_effect=RuntimeError("GPU failed")):
+                    with self.assertRaises(RuntimeError):
+                        service.process("inference-failed", np.zeros(16), .001)
+                service.process("after-failures", np.zeros(16), .001)
+                self.assertEqual(service.requests_failed, 2)
+            finally:
+                release.set()
+                callers.shutdown(wait=True)
+                service.close()
+
+    def test_busy_http_response_preserves_error_contract(self):
+        service = Mock()
+        service.process.side_effect = server.PipelineBusyError("full")
+        http = server.ProcessingHTTPServer(("127.0.0.1", 0), service)
+        thread = threading.Thread(target=http.serve_forever, daemon=True)
+        thread.start()
+        try:
+            wav = io.BytesIO()
+            sf.write(wav, np.zeros(160), 16000, format="WAV", subtype="FLOAT")
+            response = requests.post(f"http://127.0.0.1:{http.server_port}/v1/process",
+                                     data=wav.getvalue(), timeout=2)
+            self.assertEqual(response.status_code, 503)
+            self.assertEqual(response.json()["type"], "error")
+            self.assertEqual(response.json()["error"]["code"], "server_busy")
+            self.assertFalse(response.json()["error"]["retryable"])
+        finally:
+            http.shutdown()
+            http.server_close()
             thread.join()
 
 

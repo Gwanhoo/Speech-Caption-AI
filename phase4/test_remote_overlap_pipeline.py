@@ -1290,6 +1290,138 @@ class PipelineTests(TestCase):
         )
         self.assertEqual(dropped, [("audio_queue", 3)])
 
+    def test_diagnostics_survive_consumer_running_before_enqueue_returns(self):
+        original = pipeline.base.enqueue_or_drop
+        def delayed_return(*args, **kwargs):
+            accepted = original(*args, **kwargs)
+            time.sleep(.08)  # Consumer can finish before producer resumes.
+            return accepted
+        with patch.object(pipeline.base, "enqueue_or_drop", side_effect=delayed_return):
+            code, result = self.run_pipeline(True, latency_diagnostics=True,
+                                             speaker_mode="single")
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(code, 0)
+
+    def test_stop_does_not_send_queued_windows_and_restart_is_clean(self):
+        hooks = pipeline.LivePipelineHooks()
+        requests = []
+        def response(audio, index):
+            requests.append(index)
+            time.sleep(.2)  # Capture runs independently and fills the queue.
+            hooks.stop_event.set()
+            return payload("r", index, len(audio))
+        _, result = self.run_pipeline(True, duration=15, response_factory=response,
+                                     runtime_hooks=hooks, speaker_mode="single")
+        self.assertEqual(requests, [0])
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(result["subtitle_events"], [])
+        self.assertTrue(result["dropped"])
+        code, restarted = self.run_pipeline(True, speaker_mode="single")
+        self.assertEqual(code, 0)
+        self.assertEqual([row["window"] for row in restarted["windows"]], [0, 1])
+        self.assertEqual(restarted["dropped"], [])
+
+    def test_result_worker_failure_stops_capture_and_cleans_queues(self):
+        def fail(*args, **kwargs):
+            time.sleep(.2)
+            raise RuntimeError("injected result worker failure")
+        with patch.object(pipeline.SpeakerSubtitleState, "process", side_effect=fail):
+            code, result = self.run_pipeline(True, duration=15, speaker_mode="single")
+        self.assertEqual(code, 1)
+        self.assertTrue(any(row["stage"] == "stt" for row in result["errors"]))
+        self.assertTrue(any(row["reason"] == "worker_failed" for row in result["drop_details"]))
+        self.assertFalse(any(thread.name in {"capture_worker", "separation_worker", "stt_worker"}
+                             for thread in threading.enumerate()))
+
+    def test_full_queue_shutdown_waits_for_consumer_without_losing_stop(self):
+        target = queue.Queue(maxsize=1)
+        target.put("window")
+        done = threading.Event()
+        thread = threading.Thread(target=pipeline.finish_window_queue, args=(target, done))
+        thread.start()
+        try:
+            time.sleep(.15)
+            self.assertTrue(thread.is_alive())
+            self.assertEqual(target.get(timeout=1), "window")
+            target.task_done()
+            self.assertIs(target.get(timeout=1), pipeline.STOP)
+            target.task_done()
+            thread.join(1)
+            self.assertFalse(thread.is_alive())
+            self.assertEqual(target.unfinished_tasks, 0)
+        finally:
+            done.set()
+            thread.join(1)
+        # A dead consumer must not strand the producer on a full queue.
+        target.put("abandoned")
+        pipeline.finish_window_queue(target, done)
+
+    def test_slow_response_saturates_bounded_queue_and_records_every_drop(self):
+        def response(audio, index):
+            if index == 0:
+                time.sleep(.5)
+            return payload("r", index, len(audio))
+        code, result = self.run_pipeline(True, duration=17, response_factory=response,
+                                         speaker_mode="single")
+        self.assertEqual(code, 1)  # Loss remains visible as a degraded run.
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(result["max_audio_queue_depth"], 3)
+        self.assertTrue(result["dropped"])
+        self.assertEqual(len(result["dropped"]), len(result["drop_details"]))
+        self.assertTrue(all(row["reason"] == "queue_full" for row in result["drop_details"]))
+        self.assertEqual(len(result["windows"]) + len(result["dropped"]), 8)
+
+    def test_expired_queued_window_is_not_sent(self):
+        original = pipeline.WindowQueue._put
+        calls = []
+        def age_first(target, item):
+            if target.name == "audio_queue" and item is not pipeline.STOP and item.index == 0:
+                item.capture_ended -= 7  # Deterministic age injection; no host clock subtraction.
+            return original(target, item)
+        def response(audio, index):
+            calls.append(index)
+            return payload("r", index, len(audio))
+        with patch.object(pipeline.WindowQueue, "_put", new=age_first):
+            _, result = self.run_pipeline(True, response_factory=response, speaker_mode="single")
+        self.assertEqual(calls, [1])
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(result["drop_details"][0]["reason"], "stale_window")
+        self.assertEqual(result["drop_details"][0]["stage"], "audio_queue")
+        self.assertEqual(result["remote_live_max_window_age_seconds"], 6)
+
+    def test_late_response_is_dropped_before_subtitle_state_updates(self):
+        original = pipeline.WindowQueue._put
+        windows = {}
+        def remember(target, item):
+            if target.name == "audio_queue" and item is not pipeline.STOP:
+                windows[item.index] = item
+            return original(target, item)
+        def response(audio, index):
+            if index == 0:
+                windows[index].capture_ended -= 7
+            return payload("r", index, len(audio))
+        with patch.object(pipeline.WindowQueue, "_put", new=remember):
+            _, result = self.run_pipeline(True, response_factory=response, speaker_mode="single")
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(result["drop_details"][0]["stage"], "remote_response")
+        self.assertEqual(result["drop_details"][0]["reason"], "stale_window")
+        self.assertEqual([row["window"] for row in result["windows"]], [1])
+        self.assertTrue(all(event["window"] != 0 for event in result["subtitle_state_events"]))
+
+    def test_intentional_stop_is_cancelled_and_retains_drop_accounting(self):
+        hooks = pipeline.LivePipelineHooks()
+        def response(audio, index):
+            hooks.stop_event.set()
+            return payload("r", index, len(audio))
+        code, result = self.run_pipeline(True, response_factory=response,
+                                         runtime_hooks=hooks, speaker_mode="single")
+        self.assertEqual(code, 0)
+        self.assertTrue(result["cancelled"])
+        self.assertFalse(result["success"])
+        self.assertTrue(result["dropped"])
+        self.assertEqual(len(result["dropped"]), len(result["drop_details"]))
+        self.assertTrue(all(row["reason"] == "stop_requested" for row in result["drop_details"]))
+
     def test_remote_latency_diagnostics(self):
         code, result = self.run_pipeline(True, latency_diagnostics=True)
         self.assertEqual(code, 0)

@@ -163,6 +163,35 @@ class SeparatedWindow:
     latency_timing: dict[str, Any] = field(default_factory=dict)
 
 
+class WindowQueue(queue.Queue):
+    """Publish enqueue timing under the queue lock, before consumers can run."""
+
+    def __init__(self, maxsize: int, name: str):
+        super().__init__(maxsize=maxsize)
+        self.name = name
+
+    def _put(self, item: Any) -> None:
+        if item is not STOP:
+            if item.latency_timing:
+                now = time.perf_counter()
+                started = item.latency_timing[f"{self.name}_enqueue_started_perf_counter"]
+                item.latency_timing[f"{self.name}_enqueued_perf_counter"] = now
+                item.latency_timing[f"{self.name}_enqueue_seconds"] = now - started
+            setattr(item, f"{self.name}_size", self._qsize() + 1)
+        super()._put(item)
+
+
+def finish_window_queue(target: queue.Queue, consumer_done: threading.Event) -> None:
+    # Called only AFTER capture/production ends. A fixed 10s timeout can lose
+    # STOP while HTTP is still inside its 30s read timeout, stranding get().
+    while not consumer_done.is_set():
+        try:
+            target.put(STOP, timeout=.1)
+            return
+        except queue.Full:
+            continue
+
+
 def audio_queue_maxsize(processing_mode: str) -> int:
     if processing_mode == "local":
         return QUEUE_MAXSIZE
@@ -635,6 +664,8 @@ def main(
     monitor.start()
     errors: list[tuple[str, BaseException]] = []
     dropped: list[tuple[str, int]] = []
+    drop_details: list[dict[str, Any]] = []
+    remote_failures: list[dict[str, Any]] = []
     results: list[dict[str, Any]] = []
     assembler_events: list[dict[str, Any]] = []
     subtitle_state_events: list[dict[str, Any]] = []
@@ -644,11 +675,11 @@ def main(
     websocket_stats: dict[str, Any] = {"enabled": False}
     event_sequence = itertools.count(1)
     state_lock = threading.Lock()
-    audio_queue: queue.Queue[AudioWindow | object] = queue.Queue(
-        maxsize=audio_queue_maxsize_for_run
+    audio_queue: queue.Queue[AudioWindow | object] = WindowQueue(
+        maxsize=audio_queue_maxsize_for_run, name="audio_queue"
     )
-    separated_queue: queue.Queue[SeparatedWindow | object] = queue.Queue(
-        maxsize=separated_queue_maxsize
+    separated_queue: queue.Queue[SeparatedWindow | object] = WindowQueue(
+        maxsize=separated_queue_maxsize, name="separated_queue"
     )
     diagnostic_original_parts: list[np.ndarray] = []
     diagnostic_raw_slot_windows: list[dict[int, np.ndarray]] = [{}, {}]
@@ -964,6 +995,45 @@ def main(
             else threading.Event()
         )
 
+        separation_done = threading.Event()
+        stt_done = threading.Event()
+        # Three strides is the existing remote buffer budget (6s by default).
+        # Bound age as well as item count; offline/reference runs keep FIFO replay.
+        max_window_age = audio_queue_maxsize_for_run * args.stride_seconds
+
+        def record_drop(item: AudioWindow, stage: str, reason: str,
+                        target: queue.Queue, *, already_counted: bool = False,
+                        remote_result: RemoteWindowResult | None = None) -> None:
+            now = time.perf_counter()
+            detail = {
+                "window": item.index, "stage": stage, "reason": reason,
+                "capture_completed_perf_counter": item.capture_ended,
+                "dropped_perf_counter": now,
+                "age_seconds": now - item.capture_ended,
+                "queue_depth": target.qsize(),
+                "timing": dict(item.latency_timing),
+            }
+            if remote_result is not None:
+                detail["remote_timing"] = dict(remote_result.timing)
+                detail["remote_client_timing"] = dict(remote_result.client_timing)
+            with state_lock:
+                if not already_counted:
+                    dropped.append((stage, item.index))
+                drop_details.append(detail)
+            print("[WINDOW DROP] " + json.dumps(detail), flush=True)
+
+        def discard_live_window(item: AudioWindow, stage: str, target: queue.Queue,
+                                remote_result: RemoteWindowResult | None = None) -> bool:
+            if not (remote and args.live):
+                return False
+            reason = ("stop_requested" if stop_capture.is_set() else
+                      "stale_window" if time.perf_counter() - item.capture_ended > max_window_age
+                      else None)
+            if reason is None:
+                return False
+            record_drop(item, stage, reason, target, remote_result=remote_result)
+            return True
+
         def stitch_diagnostic_channels(
             channel_windows: list[dict[int, np.ndarray]],
         ) -> tuple[np.ndarray, np.ndarray]:
@@ -1224,32 +1294,22 @@ def main(
                                 SAMPLE_RATE,
                                 subtype="FLOAT",
                             )
-                        audio_queue_enqueue_started = time.perf_counter()
+                        if remote and args.live and stop_capture.is_set():
+                            record_drop(item, "capture", "stop_requested", audio_queue)
+                            break
+                        if args.latency_diagnostics:
+                            item.latency_timing["audio_queue_enqueue_started_perf_counter"] = time.perf_counter()
                         accepted = base.enqueue_or_drop(
                             audio_queue, item, "audio_queue", index, dropped, state_lock
                         )
-                        audio_queue_enqueue_ended = time.perf_counter()
                         if accepted:
-                            if args.latency_diagnostics:
-                                item.latency_timing.update(
-                                    {
-                                        "audio_queue_enqueue_started_perf_counter": (
-                                            audio_queue_enqueue_started
-                                        ),
-                                        "audio_queue_enqueued_perf_counter": (
-                                            audio_queue_enqueue_ended
-                                        ),
-                                        "audio_queue_enqueue_seconds": (
-                                            audio_queue_enqueue_ended
-                                            - audio_queue_enqueue_started
-                                        ),
-                                    }
-                                )
-                            item.audio_queue_size = audio_queue.qsize()
                             capture_state["max_queue_depth"] = max(
-                                capture_state["max_queue_depth"], audio_queue.qsize()
+                                capture_state["max_queue_depth"], item.audio_queue_size
                             )
                             capture_state["captured"] += 1
+                        else:
+                            record_drop(item, "audio_queue", "queue_full", audio_queue,
+                                        already_counted=True)
                         print(
                             f"Capture window {index:03d} [{stream_start:.1f}, {item.stream_end_seconds:.1f}]s: "
                             f"new_audio={new_seconds}s, wall={capture_ended - capture_started:.3f}s, "
@@ -1258,7 +1318,7 @@ def main(
                         )
                         index += 1
 
-                    if capture_duration is not None:
+                    if capture_duration is not None and not stop_capture.is_set():
                         remainder = capture_duration - captured_audio_seconds
                         if remainder > 0:
                             raw_remainder = recorder.record(numframes=remainder * base.CAPTURE_SAMPLE_RATE)
@@ -1278,7 +1338,7 @@ def main(
                 playback_launch.set()
             finally:
                 try:
-                    base.put_stop(audio_queue, "audio_queue")
+                    finish_window_queue(audio_queue, separation_done)
                 except BaseException as exc:
                     with state_lock:
                         errors.append(("capture-stop", exc))
@@ -1299,6 +1359,8 @@ def main(
                             item.latency_timing["audio_queue_dequeued_perf_counter"] = (
                                 audio_queue_dequeued
                             )
+                        if discard_live_window(item, "audio_queue", audio_queue):
+                            continue
                         backlog = base.data_backlog(audio_queue)
                         separation_state["max_audio_backlog"] = max(
                             separation_state["max_audio_backlog"], backlog
@@ -1354,10 +1416,21 @@ def main(
                                         flush=True,
                                     )
                             except RemoteGPUError as exc:
+                                failed_at = time.perf_counter()
+                                failure_record = {
+                                    "window": item.index, "error": type(exc).__name__,
+                                    "failed_perf_counter": failed_at,
+                                    "capture_to_failure_seconds": failed_at - item.capture_ended,
+                                    "timing": dict(item.latency_timing),
+                                }
+                                remote_failures.append(failure_record)
+                                print("[REMOTE FAILURE] " + json.dumps(failure_record), flush=True)
                                 separation_state["windows_skipped_after_failure"] += 1
                                 with state_lock:
                                     errors.append((f"remote-window-{item.index:03d}", exc))
                                 print(f"[REMOTE SKIP] window={item.index:03d} {type(exc).__name__}: {exc}", flush=True)
+                                continue
+                            if discard_live_window(item, "remote_response", audio_queue, remote_result):
                                 continue
                             monitor.observe(remote_result.gpu_memory)
                             separated = np.stack(remote_result.raw_speakers)[:, None, :]
@@ -1583,37 +1656,20 @@ def main(
                             latency_timing=dict(item.latency_timing),
                         )
                         separation_state["inferred"] += 1
-                        separated_queue_enqueue_started = time.perf_counter()
+                        if args.latency_diagnostics:
+                            separated_item.latency_timing["separated_queue_enqueue_started_perf_counter"] = time.perf_counter()
                         accepted = base.enqueue_or_drop(
-                            separated_queue,
-                            separated_item,
-                            "separated_queue",
-                            item.index,
-                            dropped,
-                            state_lock,
+                            separated_queue, separated_item, "separated_queue",
+                            item.index, dropped, state_lock,
                         )
-                        separated_queue_enqueue_ended = time.perf_counter()
                         if accepted:
-                            if args.latency_diagnostics:
-                                separated_item.latency_timing.update(
-                                    {
-                                        "separated_queue_enqueue_started_perf_counter": (
-                                            separated_queue_enqueue_started
-                                        ),
-                                        "separated_queue_enqueued_perf_counter": (
-                                            separated_queue_enqueue_ended
-                                        ),
-                                        "separated_queue_enqueue_seconds": (
-                                            separated_queue_enqueue_ended
-                                            - separated_queue_enqueue_started
-                                        ),
-                                    }
-                                )
-                            separated_item.separated_queue_size = separated_queue.qsize()
                             separation_state["max_queue_depth"] = max(
-                                separation_state["max_queue_depth"], separated_queue.qsize()
+                                separation_state["max_queue_depth"], separated_item.separated_queue_size
                             )
                             separation_state["delivered"] += 1
+                        else:
+                            record_drop(item, "separated_queue", "queue_full", separated_queue,
+                                        already_counted=True)
                         print(
                             f"Separation {item.index:03d}: {elapsed:.3f}s, "
                             f"RTF={elapsed / args.window_seconds:.3f}, audio_backlog={backlog}, "
@@ -1634,15 +1690,10 @@ def main(
                 stop_capture.set()
                 with state_lock:
                     errors.append(("separation", exc))
-                while True:
-                    try:
-                        audio_queue.get_nowait()
-                        audio_queue.task_done()
-                    except queue.Empty:
-                        break
             finally:
+                separation_done.set()
                 try:
-                    base.put_stop(separated_queue, "separated_queue")
+                    finish_window_queue(separated_queue, stt_done)
                 except BaseException as exc:
                     with state_lock:
                         errors.append(("separation-stop", exc))
@@ -1660,6 +1711,8 @@ def main(
                         if item is STOP:
                             break
                         assert isinstance(item, SeparatedWindow)
+                        if discard_live_window(item.source, "result_queue", separated_queue):
+                            continue
                         if args.latency_diagnostics:
                             item.latency_timing[
                                 "separated_queue_dequeued_perf_counter"
@@ -2278,8 +2331,11 @@ def main(
                     finally:
                         separated_queue.task_done()
             except BaseException as exc:
+                stop_capture.set()
                 with state_lock:
                     errors.append(("stt", exc))
+            finally:
+                stt_done.set()
 
         phase_label = (
             "4-I"
@@ -2313,6 +2369,21 @@ def main(
             capture_thread.join()
             separation_thread.join()
             stt_thread.join()
+
+        # A failed consumer can leave admitted work behind. All producers have
+        # joined now; release those arrays and account for every discarded window.
+        for target, stage in ((audio_queue, "audio_queue"), (separated_queue, "separated_queue")):
+            while True:
+                try:
+                    pending = target.get_nowait()
+                except queue.Empty:
+                    break
+                try:
+                    if pending is not STOP:
+                        source = pending.source if isinstance(pending, SeparatedWindow) else pending
+                        record_drop(source, stage, "worker_failed", target)
+                finally:
+                    target.task_done()
 
         if playback_errors:
             errors.extend((f"playback-{name}", exc) for name, exc in playback_errors)
@@ -2800,7 +2871,14 @@ def main(
                 )
             )
         )
+        cancelled = bool(
+            remote and args.live and runtime_hooks is not None
+            and runtime_hooks.stop_event.is_set() and not errors
+            and len(dropped) == len(drop_details)
+            and all(row["reason"] == "stop_requested" for row in drop_details)
+        )
         summary = {
+            "cancelled": cancelled,
             "phase": phase_label,
             "processing_mode": args.processing_mode,
             "speaker_mode": args.speaker_mode.value,
@@ -2837,6 +2915,9 @@ def main(
             "audio_queue_maxsize": audio_queue_maxsize_for_run,
             "separated_queue_maxsize": separated_queue_maxsize,
             "drop_policy": "drop newest when a bounded queue is full",
+            "remote_live_max_window_age_seconds": max_window_age if remote and args.live else None,
+            "drop_details": drop_details,
+            "remote_failures": remote_failures,
             "latency_diagnostics": {
                 "enabled": args.latency_diagnostics,
                 "per_window_field": (
@@ -3019,8 +3100,9 @@ def main(
         print(f"GPU after both models: {models_vram} MiB")
         print(f"GPU overall peak: {max(monitor.samples) if monitor.samples else None} MiB")
         print(f"JSON: {args.json_output}")
-        print(f"Phase {phase_label}: {'PASS' if success else 'FAIL'}", flush=True)
-        return 0 if success else 1
+        outcome = "CANCELLED" if cancelled else "PASS" if success else "FAIL"
+        print(f"Phase {phase_label}: {outcome}", flush=True)
+        return 0 if success or cancelled else 1
     finally:
         if remote_client is not None:
             remote_client.close()

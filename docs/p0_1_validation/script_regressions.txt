@@ -1,0 +1,17 @@
+python phase3/test_subtitle_assembler.py PASS 0.057s
+subtitle assembler regression: PASS
+
+python phase3/test_subtitle_state.py PASS 0.056s
+subtitle state regression: PASS
+
+python phase3/test_subtitle_consensus.py PASS 0.054s
+subtitle consensus regression: PASS
+
+python phase3/test_subtitle_assembler_state_integration.py PASS 0.057s
+subtitle assembler-state integration regression: PASS
+
+python phase3/test_subtitle_contract_p1.py PASS 0.057s
+P1 subtitle contract regression: PASS
+
+python phase3/test_pre_separation_silence_gate.py PASS 1.891s
+pre-separation silence gate regression: PASS

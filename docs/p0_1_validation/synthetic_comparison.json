@@ -1,0 +1,689 @@
+[
+  {
+    "version": "before",
+    "scenario": "normal",
+    "repeat": 0,
+    "wall_seconds": 0.21604627009946853,
+    "requests": [
+      0,
+      1
+    ],
+    "processed": 2,
+    "drops": [],
+    "errors": [],
+    "exit_code": 0,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.02541128802113235,
+      0.09554509096778929
+    ]
+  },
+  {
+    "version": "before",
+    "scenario": "normal",
+    "repeat": 1,
+    "wall_seconds": 0.5021228829864413,
+    "requests": [
+      0,
+      1
+    ],
+    "processed": 2,
+    "drops": [],
+    "errors": [],
+    "exit_code": 0,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.1999337850138545,
+      0.30506680393591523
+    ]
+  },
+  {
+    "version": "before",
+    "scenario": "normal",
+    "repeat": 2,
+    "wall_seconds": 0.29392041999381036,
+    "requests": [
+      0,
+      1
+    ],
+    "processed": 2,
+    "drops": [],
+    "errors": [],
+    "exit_code": 0,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.06551879900507629,
+      0.10018504702020437
+    ]
+  },
+  {
+    "version": "before",
+    "scenario": "stop_inflight",
+    "repeat": 0,
+    "wall_seconds": 1.1641673920676112,
+    "requests": [
+      0,
+      1,
+      2,
+      3,
+      5
+    ],
+    "processed": 5,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.22525071003474295,
+      0.37605426798108965,
+      0.5381011110730469,
+      0.694354492938146,
+      0.7607125209178776
+    ]
+  },
+  {
+    "version": "before",
+    "scenario": "stop_inflight",
+    "repeat": 1,
+    "wall_seconds": 1.228069172007963,
+    "requests": [
+      0,
+      1,
+      2,
+      3,
+      5
+    ],
+    "processed": 5,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.219303124002181,
+      0.381377769052051,
+      0.5486277289455757,
+      0.7118923700181767,
+      0.8232360909460112
+    ]
+  },
+  {
+    "version": "before",
+    "scenario": "stop_inflight",
+    "repeat": 2,
+    "wall_seconds": 1.2004435849376023,
+    "requests": [
+      0,
+      1,
+      2,
+      3,
+      5
+    ],
+    "processed": 5,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.22743873903527856,
+      0.383985938038677,
+      0.5401338960509747,
+      0.698393763974309,
+      0.7596914269961417
+    ]
+  },
+  {
+    "version": "before",
+    "scenario": "stale_queued",
+    "repeat": 0,
+    "wall_seconds": 0.31185202905908227,
+    "requests": [
+      0,
+      1
+    ],
+    "processed": 2,
+    "drops": [],
+    "errors": [],
+    "exit_code": 0,
+    "cancelled": false,
+    "post_capture_seconds": [
+      7.0198700920445845,
+      0.0980746690183878
+    ]
+  },
+  {
+    "version": "before",
+    "scenario": "stale_queued",
+    "repeat": 1,
+    "wall_seconds": 0.2097169270273298,
+    "requests": [
+      0,
+      1
+    ],
+    "processed": 2,
+    "drops": [],
+    "errors": [],
+    "exit_code": 0,
+    "cancelled": false,
+    "post_capture_seconds": [
+      7.022829919005744,
+      0.01504662202205509
+    ]
+  },
+  {
+    "version": "before",
+    "scenario": "stale_queued",
+    "repeat": 2,
+    "wall_seconds": 0.29990243702195585,
+    "requests": [
+      0,
+      1
+    ],
+    "processed": 2,
+    "drops": [],
+    "errors": [],
+    "exit_code": 0,
+    "cancelled": false,
+    "post_capture_seconds": [
+      7.014192971982993,
+      0.015305228065699339
+    ]
+  },
+  {
+    "version": "before",
+    "scenario": "overload",
+    "repeat": 0,
+    "wall_seconds": 0.8807397179771215,
+    "requests": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "processed": 4,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ],
+      [
+        "audio_queue",
+        5
+      ],
+      [
+        "audio_queue",
+        6
+      ],
+      [
+        "audio_queue",
+        7
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.5274122479604557,
+      0.48163525701966137,
+      0.501565451035276,
+      0.45939771307166666
+    ]
+  },
+  {
+    "version": "before",
+    "scenario": "overload",
+    "repeat": 1,
+    "wall_seconds": 0.8052171820309013,
+    "requests": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "processed": 4,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ],
+      [
+        "audio_queue",
+        5
+      ],
+      [
+        "audio_queue",
+        6
+      ],
+      [
+        "audio_queue",
+        7
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.5195107279578224,
+      0.5506501749623567,
+      0.5132629360305145,
+      0.48066695604939014
+    ]
+  },
+  {
+    "version": "before",
+    "scenario": "overload",
+    "repeat": 2,
+    "wall_seconds": 0.801812976016663,
+    "requests": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "processed": 4,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ],
+      [
+        "audio_queue",
+        5
+      ],
+      [
+        "audio_queue",
+        6
+      ],
+      [
+        "audio_queue",
+        7
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.5212391880340874,
+      0.48534153203945607,
+      0.5097403459949419,
+      0.5467109270393848
+    ]
+  },
+  {
+    "version": "after",
+    "scenario": "normal",
+    "repeat": 0,
+    "wall_seconds": 0.21239199698902667,
+    "requests": [
+      0,
+      1
+    ],
+    "processed": 2,
+    "drops": [],
+    "errors": [],
+    "exit_code": 0,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.02553748106583953,
+      0.015420990996062756
+    ]
+  },
+  {
+    "version": "after",
+    "scenario": "normal",
+    "repeat": 1,
+    "wall_seconds": 0.3817708679707721,
+    "requests": [
+      0,
+      1
+    ],
+    "processed": 2,
+    "drops": [],
+    "errors": [],
+    "exit_code": 0,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.015742107992991805,
+      0.01762269006576389
+    ]
+  },
+  {
+    "version": "after",
+    "scenario": "normal",
+    "repeat": 2,
+    "wall_seconds": 0.21831469202879816,
+    "requests": [
+      0,
+      1
+    ],
+    "processed": 2,
+    "drops": [],
+    "errors": [],
+    "exit_code": 0,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.014606502023525536,
+      0.015479572000913322
+    ]
+  },
+  {
+    "version": "after",
+    "scenario": "stop_inflight",
+    "repeat": 0,
+    "wall_seconds": 0.4355315089924261,
+    "requests": [
+      0
+    ],
+    "processed": 0,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ],
+      [
+        "remote_response",
+        0
+      ],
+      [
+        "audio_queue",
+        1
+      ],
+      [
+        "audio_queue",
+        2
+      ],
+      [
+        "audio_queue",
+        3
+      ],
+      [
+        "capture",
+        5
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": []
+  },
+  {
+    "version": "after",
+    "scenario": "stop_inflight",
+    "repeat": 1,
+    "wall_seconds": 0.3199803929310292,
+    "requests": [
+      0
+    ],
+    "processed": 0,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ],
+      [
+        "remote_response",
+        0
+      ],
+      [
+        "audio_queue",
+        1
+      ],
+      [
+        "audio_queue",
+        2
+      ],
+      [
+        "audio_queue",
+        3
+      ],
+      [
+        "capture",
+        5
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": []
+  },
+  {
+    "version": "after",
+    "scenario": "stop_inflight",
+    "repeat": 2,
+    "wall_seconds": 0.32035219098906964,
+    "requests": [
+      0
+    ],
+    "processed": 0,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ],
+      [
+        "remote_response",
+        0
+      ],
+      [
+        "audio_queue",
+        1
+      ],
+      [
+        "audio_queue",
+        2
+      ],
+      [
+        "audio_queue",
+        3
+      ],
+      [
+        "capture",
+        5
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": []
+  },
+  {
+    "version": "after",
+    "scenario": "stale_queued",
+    "repeat": 0,
+    "wall_seconds": 0.13651463307905942,
+    "requests": [
+      1
+    ],
+    "processed": 1,
+    "drops": [
+      [
+        "audio_queue",
+        0
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.020596568007022142
+    ]
+  },
+  {
+    "version": "after",
+    "scenario": "stale_queued",
+    "repeat": 1,
+    "wall_seconds": 0.18325158499646932,
+    "requests": [
+      1
+    ],
+    "processed": 1,
+    "drops": [
+      [
+        "audio_queue",
+        0
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.06199744890909642
+    ]
+  },
+  {
+    "version": "after",
+    "scenario": "stale_queued",
+    "repeat": 2,
+    "wall_seconds": 0.19902021309826523,
+    "requests": [
+      1
+    ],
+    "processed": 1,
+    "drops": [
+      [
+        "audio_queue",
+        0
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.0130975580541417
+    ]
+  },
+  {
+    "version": "after",
+    "scenario": "overload",
+    "repeat": 0,
+    "wall_seconds": 0.8935494890902191,
+    "requests": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "processed": 4,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ],
+      [
+        "audio_queue",
+        5
+      ],
+      [
+        "audio_queue",
+        6
+      ],
+      [
+        "audio_queue",
+        7
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.7441996850538999,
+      0.6558001450030133,
+      0.6193980789976195,
+      0.6088810900691897
+    ]
+  },
+  {
+    "version": "after",
+    "scenario": "overload",
+    "repeat": 1,
+    "wall_seconds": 0.7956959049915895,
+    "requests": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "processed": 4,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ],
+      [
+        "audio_queue",
+        5
+      ],
+      [
+        "audio_queue",
+        6
+      ],
+      [
+        "audio_queue",
+        7
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.5179879739880562,
+      0.4846551859518513,
+      0.5164122870191932,
+      0.4835012189578265
+    ]
+  },
+  {
+    "version": "after",
+    "scenario": "overload",
+    "repeat": 2,
+    "wall_seconds": 0.8123770739184693,
+    "requests": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "processed": 4,
+    "drops": [
+      [
+        "audio_queue",
+        4
+      ],
+      [
+        "audio_queue",
+        5
+      ],
+      [
+        "audio_queue",
+        6
+      ],
+      [
+        "audio_queue",
+        7
+      ]
+    ],
+    "errors": [],
+    "exit_code": 1,
+    "cancelled": false,
+    "post_capture_seconds": [
+      0.5293219810118899,
+      0.5490178089821711,
+      0.5144024920882657,
+      0.5591276790946722
+    ]
+  }
+]
