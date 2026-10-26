@@ -46,6 +46,7 @@ class SubtitleOverlay(QWidget):
         self._style = OverlayStyle()
         self._drag_offset: QPoint | None = None
         self._was_dragged = False
+        self._keep_empty_visible = False
         self._entries: tuple[SubtitleFeedEntry, ...] = ()
         self._source_entries: tuple[SubtitleFeedEntry, ...] = ()
         self.setWindowTitle("AI 실시간 자막 Overlay")
@@ -142,6 +143,11 @@ class SubtitleOverlay(QWidget):
     def clear_entries(self) -> None:
         self.set_entries(())
 
+    def set_keep_empty_visible(self, active: bool) -> None:
+        """Keep a blank, styled bar while the GUI caption session is active."""
+        self._keep_empty_visible = active
+        self._resize_for_entries()
+
     def apply_style(self, style: OverlayStyle) -> None:
         color = QColor(style.text_color)
         self._style = OverlayStyle(
@@ -188,8 +194,8 @@ class SubtitleOverlay(QWidget):
     def _resize_for_entries(self) -> None:
         """Match the window to its rows and cap extreme content to a compact bar."""
         if not self._entries:
-            self._card.hide()
-            self._set_window_height(self.EMPTY_HEIGHT)
+            self._card.setVisible(self._keep_empty_visible)
+            self._set_window_height(self._required_height(()))
             return
         self._card.show()
         desired_heights = [
@@ -247,6 +253,8 @@ class SubtitleOverlay(QWidget):
 
     def _required_height(self, entries: tuple[SubtitleFeedEntry, ...]) -> int:
         if not entries:
+            if self._keep_empty_visible:
+                return self._non_text_height(1) + self._font_line_height()
             return self.EMPTY_HEIGHT
         return self._non_text_height(len(entries)) + sum(
             self._entry_height(entry, self._text_width()) for entry in entries

@@ -502,14 +502,16 @@ class MainWindow(QMainWindow):
         if self.overlay is None:
             self.overlay = SubtitleOverlay()
             self.subtitle_model.entries_changed.connect(self.overlay.set_entries)
+        self.overlay.set_keep_empty_visible(self.controller.state in {"starting", "running"})
         self.overlay.apply_style(self._overlay_style())
         self.overlay.set_entries(self.subtitle_model.entries)
         return self.overlay
 
     def _hide_and_clear_overlay(self) -> None:
         if self.overlay is not None:
-            self.overlay.clear_entries()
             self.overlay.hide()
+            self.overlay.set_keep_empty_visible(False)
+            self.overlay.clear_entries()
 
     @Slot(float)
     def set_latency(self, milliseconds: float) -> None:

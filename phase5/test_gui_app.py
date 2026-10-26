@@ -72,6 +72,24 @@ class ExplodingBackend:
         raise AssertionError("preflight failure must prevent pipeline start")
 
 
+class SilentBackend(BlockingBackend):
+    """Hold preflight and produce no STT events, without any network calls."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.release_preflight = threading.Event()
+
+    def preflight(self, config: LiveCaptionConfig) -> EnvironmentInfo:
+        if not self.release_preflight.wait(10):
+            raise RuntimeError("test preflight was not released")
+        return super().preflight(config)
+
+    def run(self, config: LiveCaptionConfig, hooks) -> int:
+        self.started.set()
+        hooks.stop_event.wait(10)
+        return 0
+
+
 class RecoveringBackend(BlockingBackend):
     """First health check fails; a later user-initiated start succeeds."""
 
@@ -570,6 +588,91 @@ class GuiTests(unittest.TestCase):
             self.assertEqual(window.subtitle_model.entry_at(0).text, "문장 89")
             self.assertEqual(window.subtitle_model.entry_at(1).text, "문장 90")
         finally:
+            window.close()
+
+    def test_empty_overlay_is_visible_before_preflight_and_reused_after_restart(self) -> None:
+        backend = SilentBackend()
+        controller = LiveCaptionController(backend=backend)
+        window = MainWindow(controller)
+        window.overlay_font_size.setValue(34)
+        window.overlay_opacity.setValue(20)
+        window.overlay_bold_checkbox.setChecked(False)
+        window.overlay_text_color_combo.setCurrentIndex(1)
+        now = [0.0]
+        window.subtitle_model._presentation = SubtitlePresentationState(clock=lambda: now[0])
+        overlay = None
+        try:
+            for _ in range(2):
+                backend.release_preflight.clear()
+                window.start_button.click()
+                # Assert synchronously: neither preflight nor an STT result can finish.
+                self.assertEqual(controller.state, "starting")
+                if overlay is None:
+                    overlay = window.overlay
+                self.assertIs(window.overlay, overlay)
+                self.assertTrue(overlay.isVisible())
+                self.assertTrue(overlay._card.isVisible())
+                self.assertEqual(overlay.entries, ())
+                self.assertTrue(all(label.text() == "" for label in overlay._labels))
+                self.assertEqual(overlay.height(), overlay._font_line_height() + overlay._non_text_height(1))
+                self.assertEqual(overlay.style_config, window._overlay_style())
+                self.assertIn("rgba(10, 15, 25, 51)", overlay._card.styleSheet())
+                self.assertEqual(window.subtitle_model.receivers("2entries_changed(PyObject)"), 1)
+                self.app.processEvents()
+                self.assertTrue(overlay._card.isVisible())
+                backend.release_preflight.set()
+                self.pump_until(lambda: controller.state == "running")
+                self.assertEqual(overlay.entries, ())
+                overlay.move(100, 100)
+                overlay._was_dragged = True
+                position = overlay.pos()
+                with patch.object(overlay, "show", wraps=overlay.show) as show:
+                    for sequence, status in ((1, "partial"), (2, "final")):
+                        controller._worker.subtitle_event.emit(self.event("speaker_0", 1, sequence, "첫 자막", status))
+                        self.pump_until(lambda: bool(overlay.entries) and overlay.entries[0].status == status)
+                        self.assertEqual(overlay._labels[0].text(), "첫 자막")
+                        self.assertEqual(overlay.pos(), position)
+                        self.assertEqual(overlay.style_config, window._overlay_style())
+                    show.assert_not_called()
+                now[0] += 5
+                window.subtitle_model.expire_final_entries()
+                self.assertEqual(overlay.entries, ())
+                self.assertTrue(overlay._card.isVisible())
+                window.stop_button.click()
+                self.assertFalse(overlay.isVisible())
+                self.assertEqual(overlay.entries, ())
+                self.pump_until(lambda: controller.state == "idle")
+        finally:
+            backend.release_preflight.set()
+            if controller.state != "idle":
+                window.stop_captioning()
+                self.pump_until(lambda: controller.state == "idle")
+            window.close()
+
+    def test_empty_overlay_respects_visibility_toggle_during_session(self) -> None:
+        backend = SilentBackend()
+        controller = LiveCaptionController(backend=backend)
+        window = MainWindow(controller)
+        try:
+            window.overlay_visible_checkbox.setChecked(False)
+            window.start_button.click()
+            overlay = window.overlay
+            self.assertFalse(overlay.isVisible())
+            window.overlay_visible_checkbox.setChecked(True)
+            self.assertTrue(overlay.isVisible())
+            self.assertTrue(overlay._card.isVisible())
+            self.assertEqual(overlay.entries, ())
+            window.overlay_visible_checkbox.setChecked(False)
+            self.assertFalse(overlay.isVisible())
+            window.stop_button.click()
+            window.overlay_visible_checkbox.setChecked(True)
+            self.assertFalse(overlay.isVisible())
+            self.assertIs(window.overlay, overlay)
+        finally:
+            backend.release_preflight.set()
+            if controller.state != "idle":
+                window.stop_captioning()
+                self.pump_until(lambda: controller.state == "idle")
             window.close()
 
     def test_overlay_lifecycle_reuses_one_window_and_snapshot(self) -> None:
