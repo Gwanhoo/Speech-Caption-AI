@@ -653,6 +653,24 @@ class SubtitleAssembler:
                                     normalized_overlap_length = len(normalize_for_matching(overlap))
                                     new_text = raw[fuzzy_cut:]
 
+        if (
+            match_type == "none"
+            and previous and raw
+            and self.allow_shifted_head and self.enable_sentence_lifecycle
+            and shared_speech is True and supported_tail_revision
+        ):
+            # A literal percentage is a complete numeric unit even though
+            # normalization drops '%' (75% becomes only two matching chars).
+            # Require the existing acoustic tail-revision evidence and an
+            # entire previous token; never equate different numeric values or
+            # remove repetitions inside the current observation.
+            percentage = re.search(r"(?<!\S)[0-9]+(?:\.[0-9]+)?%$", previous)
+            if percentage and raw.startswith(percentage.group()):
+                overlap = percentage.group()
+                match_type = "boundary_exact"
+                normalized_overlap_length = len(normalize_for_matching(overlap))
+                new_text = raw[len(overlap):]
+
         correction = corrected_suffix_prefix(previous, raw) if previous and raw else None
         if correction is None and previous and raw and supported_tail_revision:
             correction = anchored_prefix_revision(previous, raw)
