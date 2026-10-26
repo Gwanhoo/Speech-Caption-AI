@@ -16,7 +16,7 @@ from unittest.mock import Mock, patch
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from phase5.gui_app import MainWindow, main as gui_main
+from phase5.gui_app import MainWindow, main as gui_main, parse_launch_options
 from phase5.subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState
 from phase5.replay_overlay_timeline import DEFAULT_TIMELINE, TimelineReplay, load_events
 from phase5.live_caption_controller import (
@@ -87,6 +87,16 @@ class RecoveringBackend(BlockingBackend):
 
 
 class GuiTests(unittest.TestCase):
+    def setUp(self) -> None:
+        # Device enumeration must not open WASAPI/PulseAudio in headless tests.
+        speaker = SimpleNamespace(id="{test-default}", name="Test output", channels=2)
+        soundcard = Mock()
+        soundcard.default_speaker.return_value = speaker
+        soundcard.all_speakers.return_value = [speaker]
+        self.soundcard_patch = patch.dict(sys.modules, {"soundcard": soundcard})
+        self.soundcard_patch.start()
+        self.addCleanup(self.soundcard_patch.stop)
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.app = QApplication.instance() or QApplication([])
@@ -865,7 +875,95 @@ class GuiTests(unittest.TestCase):
         self.assertEqual(argv[argv.index("--speaker-mode") + 1], "single")
         self.assertEqual(argv[argv.index("--output-device-id") + 1], "{selected-endpoint}")
         self.assertIn("--websocket", argv)
+        self.assertNotIn("--evidence-dir", argv)
+        self.assertNotIn("--latency-diagnostics", argv)
         self.assertIs(main.call_args.kwargs["runtime_hooks"], hooks)
+
+    def test_launch_options_defaults_and_qt_arguments(self) -> None:
+        config, qt_args = parse_launch_options(["-platform", "offscreen"])
+        self.assertEqual(config, LiveCaptionConfig())
+        self.assertEqual(qt_args, ["-platform", "offscreen"])
+
+    def test_invalid_window_stride_rejected_before_gui_start(self) -> None:
+        for window, stride in ((0, 2), (3, 0), (-1, 2), (3, -1), (3, 3), (2, 3)):
+            with self.subTest(window=window, stride=stride):
+                with self.assertRaises(ValueError):
+                    LiveCaptionConfig(window_seconds=window, stride_seconds=stride)
+                with (
+                    patch("phase5.gui_app.configure_gui_runtime") as runtime,
+                    patch("sys.stderr"),
+                    self.assertRaises(SystemExit) as error,
+                ):
+                    gui_main(["--window-seconds", str(window), "--stride-seconds", str(stride)])
+                self.assertEqual(error.exception.code, 2)
+                runtime.assert_not_called()
+        for value in (3.5, "4", True):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                LiveCaptionConfig(window_seconds=value)
+        with patch("sys.stderr"), self.assertRaises(SystemExit):
+            parse_launch_options(["--window-seconds", "3.5"])
+
+    def test_gui_main_passes_experiment_config_and_preserves_qt_options(self) -> None:
+        with (
+            patch("phase5.gui_app.configure_gui_runtime"),
+            patch("phase5.gui_app.shutdown_gui_runtime"),
+            patch("phase5.gui_app.QApplication") as application,
+            patch("phase5.gui_app.MainWindow") as window,
+        ):
+            application.instance.return_value = None
+            application.return_value.exec.return_value = 0
+            self.assertEqual(gui_main([
+                "--window-seconds", "4", "--stride-seconds", "3",
+                "--evidence-dir", "evidence/run B", "--latency-diagnostics",
+                "-platform", "offscreen",
+            ]), 0)
+            config = window.call_args.kwargs["config"]
+            self.assertEqual((config.window_seconds, config.stride_seconds), (4, 3))
+            self.assertEqual(config.evidence_dir, Path("evidence/run B"))
+            self.assertTrue(config.latency_diagnostics)
+            application.assert_called_once_with([sys.argv[0], "-platform", "offscreen"])
+
+    def test_experiment_options_survive_gui_start_restart_and_backend_adapter(self) -> None:
+        config, _ = parse_launch_options([
+            "--window-seconds", "4", "--stride-seconds", "3",
+            "--evidence-dir", "evidence/run B", "--latency-diagnostics",
+        ])
+        backend = BlockingBackend()
+        controller = LiveCaptionController(backend=backend)
+        devices = [SimpleNamespace(device_id="{ab-device}", name="A/B", is_default=True)]
+        with patch("phase5.gui_app.list_output_devices", return_value=devices):
+            window = MainWindow(controller, config=config)
+        try:
+            window.server_url_edit.setText("https://example.invalid")
+            window.output_device_combo.setCurrentIndex(1)
+            for _ in range(2):
+                backend.started.clear()
+                window.start_captioning()
+                self.pump_until(backend.started.is_set)
+                received = backend.config
+                self.assertEqual((received.window_seconds, received.stride_seconds), (4, 3))
+                self.assertEqual(received.server_url, "https://example.invalid")
+                self.assertEqual(received.output_device_id, "{ab-device}")
+                self.assertEqual(received.evidence_dir, config.evidence_dir)
+                self.assertTrue(received.latency_diagnostics)
+                pipeline = Mock()
+                pipeline.main.return_value = 0
+                hooks = object()
+                with patch("phase5.live_caption_controller._load_phase4_pipeline", return_value=pipeline):
+                    self.assertEqual(Phase4PipelineBackend().run(received, hooks), 0)
+                argv = pipeline.main.call_args.args[0]
+                for option, value in (("--window-seconds", "4"), ("--stride-seconds", "3"),
+                                      ("--evidence-dir", str(config.evidence_dir))):
+                    self.assertEqual(argv[argv.index(option) + 1], value)
+                self.assertIn("--latency-diagnostics", argv)
+                self.assertIs(pipeline.main.call_args.kwargs["runtime_hooks"], hooks)
+                window.stop_captioning()
+                self.pump_until(lambda: controller.state == "idle")
+        finally:
+            if controller.state != "idle":
+                window.stop_captioning()
+                self.pump_until(lambda: controller.state == "idle")
+            window.close()
 
     def test_preflight_profile_validation_rejects_known_mismatch(self) -> None:
         backend = Phase4PipelineBackend()

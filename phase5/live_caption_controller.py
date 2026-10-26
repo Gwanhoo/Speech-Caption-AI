@@ -117,6 +117,18 @@ class LiveCaptionConfig:
     json_output: Path = DEFAULT_GUI_OUTPUT
     speaker_mode: SpeakerMode = SpeakerMode.SINGLE
     output_device_id: str | None = None
+    window_seconds: int = 3
+    stride_seconds: int = 2
+    evidence_dir: Path | None = None
+    latency_diagnostics: bool = False
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.window_seconds) is not int
+            or type(self.stride_seconds) is not int
+            or not self.window_seconds > self.stride_seconds > 0
+        ):
+            raise ValueError("window_seconds > stride_seconds > 0 is required (integer seconds)")
 
 
 @dataclass(frozen=True)
@@ -215,15 +227,19 @@ class Phase4PipelineBackend:
             "--remote-read-timeout",
             str(config.read_timeout),
             "--window-seconds",
-            "3",
+            str(config.window_seconds),
             "--stride-seconds",
-            "2",
+            str(config.stride_seconds),
             "--assemble",
             "--speaker-mode",
             config.speaker_mode.value,
             "--json-output",
             str(config.json_output),
         ]
+        if config.evidence_dir is not None:
+            argv.extend(["--evidence-dir", str(config.evidence_dir)])
+        if config.latency_diagnostics:
+            argv.append("--latency-diagnostics")
         if config.output_device_id is not None:
             argv.extend(["--output-device-id", config.output_device_id])
         if config.websocket_enabled:

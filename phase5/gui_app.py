@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import argparse
 import sys
+from dataclasses import replace
+from pathlib import Path
 from typing import Any
 
 # See live_caption_controller.py: this import must precede PySide6 on Python 3.10.
@@ -214,6 +217,8 @@ class MainWindow(QMainWindow):
         self,
         controller: LiveCaptionController | None = None,
         parent: QWidget | None = None,
+        *,
+        config: LiveCaptionConfig | None = None,
     ) -> None:
         super().__init__(parent)
         # A closed top-level widget is hidden by default, leaving its active
@@ -223,6 +228,7 @@ class MainWindow(QMainWindow):
         # soon as an accepted close finishes.
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.controller = controller or LiveCaptionController()
+        self._launch_config = config or LiveCaptionConfig()
         self._close_when_finished = False
         self.overlay: SubtitleOverlay | None = None
         self.setWindowTitle("AI 실시간 자막")
@@ -418,7 +424,8 @@ class MainWindow(QMainWindow):
         self.subtitle_model.clear()
         self.latency_label.setText("최근 latency: —")
         if self.controller.start(
-            LiveCaptionConfig(
+            replace(
+                self._launch_config,
                 server_url=server_url,
                 speaker_mode=SpeakerMode(self.speaker_mode_combo.currentData()),
                 output_device_id=self.output_device_combo.currentData(),
@@ -623,11 +630,32 @@ class MainWindow(QMainWindow):
         label.setStyleSheet(f"color: {color}; font-weight: 700;")
 
 
-def main() -> int:
+def parse_launch_options(argv: list[str]) -> tuple[LiveCaptionConfig, list[str]]:
+    parser = argparse.ArgumentParser(description="VOXLUX GUI live A/B test options", allow_abbrev=False)
+    parser.add_argument("--window-seconds", type=int, default=3)
+    parser.add_argument("--stride-seconds", type=int, default=2)
+    parser.add_argument("--evidence-dir", type=Path)
+    parser.add_argument("--latency-diagnostics", action="store_true")
+    # Preserve Qt's existing command-line options (for example -platform).
+    args, qt_args = parser.parse_known_args(argv)
+    try:
+        config = LiveCaptionConfig(
+            window_seconds=args.window_seconds,
+            stride_seconds=args.stride_seconds,
+            evidence_dir=args.evidence_dir,
+            latency_diagnostics=args.latency_diagnostics,
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
+    return config, qt_args
+
+
+def main(argv: list[str] | None = None) -> int:
+    config, qt_args = parse_launch_options(sys.argv[1:] if argv is None else argv)
     try:
         configure_gui_runtime()
-        app = QApplication.instance() or QApplication(sys.argv)
-        window = MainWindow()
+        app = QApplication.instance() or QApplication([sys.argv[0], *qt_args])
+        window = MainWindow(config=config)
         window.show()
         return app.exec()
     except BaseException:
