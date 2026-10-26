@@ -1,0 +1,593 @@
+{
+  "head": "745688d",
+  "decision": "rejected_and_reverted",
+  "production_changes_retained": false,
+  "scope": "Saved text/VAD/overlap replay only; no GPU, waveform inference, or Windows GUI execution",
+  "before_candidate_tests": {
+    "run": 3,
+    "pass": 1,
+    "fail": 2,
+    "log": "test_recorded_internal_word_revision_preserves_unobserved_prefix (phase3.test_subtitle_assembler_production_evidence.ProductionEvidenceRegressions.test_recorded_internal_word_revision_preserves_unobserved_prefix) ... FAIL\ntest_internal_word_revision_preserves_prefix_before_previous_window (phase3.test_subtitle_assembler_production_evidence.ProductionEvidenceRegressions.test_internal_word_revision_preserves_prefix_before_previous_window) ... FAIL\ntest_internal_word_revision_does_not_retain_the_replaced_word (phase3.test_subtitle_assembler_production_evidence.ProductionEvidenceRegressions.test_internal_word_revision_does_not_retain_the_replaced_word) ... ok\n\n======================================================================\nFAIL: test_recorded_internal_word_revision_preserves_unobserved_prefix (phase3.test_subtitle_assembler_production_evidence.ProductionEvidenceRegressions.test_recorded_internal_word_revision_preserves_unobserved_prefix)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/Speech-Caption-AI/phase3/test_subtitle_assembler_production_evidence.py\", line 467, in test_recorded_internal_word_revision_preserves_unobserved_prefix\n    self.assertEqual(rows[16][\"assembly\"][\"utterance_hypothesis\"], expected)\nAssertionError: '프레밍 언어를 식별할 수 있는 웹사이트의 75%' != '사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%'\n- 프레밍 언어를 식별할 수 있는 웹사이트의 75%\n+ 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%\n? ++++\n\n\n======================================================================\nFAIL: test_internal_word_revision_preserves_prefix_before_previous_window (phase3.test_subtitle_assembler_production_evidence.ProductionEvidenceRegressions.test_internal_word_revision_preserves_prefix_before_previous_window)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/Speech-Caption-AI/phase3/test_subtitle_assembler_production_evidence.py\", line 482, in test_internal_word_revision_preserves_prefix_before_previous_window\n    self.assertEqual(event.utterance_hypothesis,\nAssertionError: '별도 안내입니다 프레밍 언어를 식별할 수 있는 웹사이트의 75%' != '별도 안내입니다. 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%'\n- 별도 안내입니다 프레밍 언어를 식별할 수 있는 웹사이트의 75%\n+ 별도 안내입니다. 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%\n?         +++++\n\n\n----------------------------------------------------------------------\nRan 3 tests in 0.016s\n\nFAILED (failures=2)\n"
+  },
+  "candidate_production_evidence_tests": {
+    "run": 43,
+    "pass": 41,
+    "fail": 2,
+    "failure_log": "\nFAIL: test_supported_substitution_of_unconfirmed_tail_still_reaches_final (phase3.test_subtitle_assembler_production_evidence.ReplacementSafetyRegressions.test_supported_substitution_of_unconfirmed_tail_still_reaches_final) (old='제 손은 그냥과와 높아지는')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/Speech-Caption-AI/phase3/test_subtitle_assembler_production_evidence.py\", line 404, in test_supported_substitution_of_unconfirmed_tail_still_reaches_final\n    self.assertEqual(partial.publication_text, expected)\nAssertionError: '제 손은 분양가와 높아지는 청약문턱에 지친 세대가' != '분양가와 높아지는 청약문턱에 지친 세대가'\n- 제 손은 분양가와 높아지는 청약문턱에 지친 세대가\n? -----\n+ 분양가와 높아지는 청약문턱에 지친 세대가\n\n\n======================================================================\nFAIL: test_supported_tail_revision_cannot_delete_text_before_previous_raw (phase3.test_subtitle_assembler_production_evidence.ReplacementSafetyRegressions.test_supported_tail_revision_cannot_delete_text_before_previous_raw)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/Speech-Caption-AI/phase3/test_subtitle_assembler_production_evidence.py\", line 361, in test_supported_tail_revision_cannot_delete_text_before_previous_raw\n    self.assertEqual(event.utterance_hypothesis, older + raw)\nAssertionError: '별도 앞부분 제 손은 분양가와 높아지는 청약문턱에 지친 세대가' != '별도 앞부분 분양가와 높아지는 청약문턱에 지친 세대가'\n- 별도 앞부분 제 손은 분양가와 높아지는 청약문턱에 지친 세대가\n?       -----\n+ 별도 앞부분 분양가와 높아지는 청약문턱에 지친 세대가\n\n\n----------------------------------------------------------------------\nRan 43 tests in 0.109s\n\nFAILED (failures=2)\n"
+  },
+  "candidate_corpus_comparison": [
+    {
+      "run": "A_repeat_0.json",
+      "windows": 19,
+      "changed": [],
+      "finals_before": [
+        [
+          4,
+          ""
+        ],
+        [
+          11,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          14,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          4,
+          ""
+        ],
+        [
+          11,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          14,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    },
+    {
+      "run": "A_repeat_1.json",
+      "windows": 19,
+      "changed": [],
+      "finals_before": [
+        [
+          4,
+          ""
+        ],
+        [
+          11,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          14,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          4,
+          ""
+        ],
+        [
+          11,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          14,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    },
+    {
+      "run": "A_repeat_2.json",
+      "windows": 19,
+      "changed": [],
+      "finals_before": [
+        [
+          4,
+          ""
+        ],
+        [
+          11,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          14,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          4,
+          ""
+        ],
+        [
+          11,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          14,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "사용된 프로그램은 사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    },
+    {
+      "run": "B_repeat_0.json",
+      "windows": 13,
+      "changed": [],
+      "finals_before": [
+        [
+          3,
+          ""
+        ],
+        [
+          7,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          12,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          3,
+          ""
+        ],
+        [
+          7,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          12,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    },
+    {
+      "run": "B_repeat_1.json",
+      "windows": 13,
+      "changed": [],
+      "finals_before": [
+        [
+          3,
+          ""
+        ],
+        [
+          7,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          12,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          3,
+          ""
+        ],
+        [
+          7,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          12,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    },
+    {
+      "run": "B_repeat_2.json",
+      "windows": 13,
+      "changed": [],
+      "finals_before": [
+        [
+          3,
+          ""
+        ],
+        [
+          7,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          12,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          3,
+          ""
+        ],
+        [
+          7,
+          "웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려줍니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          12,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    },
+    {
+      "run": "C_repeat_0.json",
+      "windows": 12,
+      "changed": [],
+      "finals_before": [
+        [
+          7,
+          "웹사이트 개발의 논리 웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          11,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          7,
+          "웹사이트 개발의 논리 웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          11,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    },
+    {
+      "run": "C_repeat_1.json",
+      "windows": 12,
+      "changed": [],
+      "finals_before": [
+        [
+          7,
+          "웹사이트 개발의 논리 웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          11,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          7,
+          "웹사이트 개발의 논리 웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          11,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    },
+    {
+      "run": "C_repeat_2.json",
+      "windows": 12,
+      "changed": [],
+      "finals_before": [
+        [
+          7,
+          "웹사이트 개발의 논리 웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          11,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          7,
+          "웹사이트 개발의 논리 웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          10,
+          "이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          11,
+          "사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    },
+    {
+      "run": "baseline_repeat_0.json",
+      "windows": 19,
+      "changed": [
+        {
+          "window": 16,
+          "before": "프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+          "candidate": "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%"
+        },
+        {
+          "window": 17,
+          "before": "프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+          "candidate": "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        },
+        {
+          "window": 18,
+          "before": "프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+          "candidate": "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        }
+      ],
+      "finals_before": [
+        [
+          11,
+          "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          15,
+          "이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          11,
+          "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          15,
+          "이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    },
+    {
+      "run": "baseline_repeat_1.json",
+      "windows": 19,
+      "changed": [
+        {
+          "window": 16,
+          "before": "프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+          "candidate": "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%"
+        },
+        {
+          "window": 17,
+          "before": "프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+          "candidate": "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        },
+        {
+          "window": 18,
+          "before": "프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+          "candidate": "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        }
+      ],
+      "finals_before": [
+        [
+          11,
+          "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          15,
+          "이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          11,
+          "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          15,
+          "이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    },
+    {
+      "run": "baseline_repeat_2.json",
+      "windows": 19,
+      "changed": [
+        {
+          "window": 16,
+          "before": "프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+          "candidate": "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%"
+        },
+        {
+          "window": 17,
+          "before": "프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+          "candidate": "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        },
+        {
+          "window": 18,
+          "before": "프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고",
+          "candidate": "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        }
+      ],
+      "finals_before": [
+        [
+          11,
+          "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          15,
+          "이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ],
+      "finals_candidate": [
+        [
+          11,
+          "웹사이트 개발의 논리성은 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다."
+        ],
+        [
+          15,
+          "이번 사태 파급력이 큰 건 php가 인터넷 전문 인터넷 전반에 광범위하게 쓰이는 핵심 기술이기 때문입니다."
+        ],
+        [
+          18,
+          "사용된 프레밍 언어를 식별할 수 있는 웹사이트의 75%가 php를 쓰고"
+        ]
+      ]
+    }
+  ],
+  "restored_corpus": {
+    "runs": 12,
+    "windows": 189,
+    "assembly_state_and_final_identical_to_head": true,
+    "excluded_comparison_fields": [
+      "matching_seconds",
+      "consensus_seconds"
+    ]
+  },
+  "final_regressions": {
+    "phase3": {
+      "run": 182,
+      "pass": 179,
+      "expected_failure": 3
+    },
+    "phase4": {
+      "run": 67,
+      "pass": 67
+    },
+    "assertion_scripts_pass": 14,
+    "r2_b6_unit": {
+      "pass": 2,
+      "skip": 1,
+      "skip_reason": "Original evidence not available"
+    }
+  },
+  "protected_files": {
+    "count": 49,
+    "all_unchanged": true,
+    "sha256": {
+      "experiments/r2_b6/DESIGN.md": "29b4e9e6d0774cdd4ff864fdc645bedf2e64d29fb541a66fe0ccb5587fa6646c",
+      "experiments/r2_b6/MEASUREMENTS.md": "2bd5b7719e8b5a1bc554a019a3a29e807c3f06b28493c1331959c6a6be95aef2",
+      "experiments/r2_b6/RAW_AND_FINAL.md": "c73b649faf08f2cc8bc5fc9b2d42152b11f9b95c4f5869a866ee36c58841a715",
+      "experiments/r2_b6/REPORT.md": "2a93c61a7dd38eddaa8157955efa2283291cb5d56b9aa72616344a507791d507",
+      "experiments/r2_b6/compare_windows.py": "2e17dacbb135c020ccdb608fa32b0ba1448c3ef779b2563265b4cf94ba007086",
+      "experiments/r2_b6/final_validation.json": "43362df96385399b189febf4ffcf718d8befd347168f5491aaa80172cf05f151",
+      "experiments/r2_b6/metrics.csv": "76d2d73004fc93f8cbbfb7a9561b90d66677445cbbaa3cb31a133dd120bf3d79",
+      "experiments/r2_b6/metrics.json": "ae9a4d49093695b4a77d50dfe52532cc1defc717ee7343a4af123d38e44df68c",
+      "experiments/r2_b6/pipeline_parity.json": "0c2ccaa4b05a44466c4841b1181688c1f0f948cbc9ea66c83876373749aac030",
+      "experiments/r2_b6/pipeline_parity_preflight.json": "0c2ccaa4b05a44466c4841b1181688c1f0f948cbc9ea66c83876373749aac030",
+      "experiments/r2_b6/run_checks.py": "5eaf9552d73ea95cdd522eb02f8dbe94ff84fb35bed3fc14b1cc2a925a2a1386",
+      "experiments/r2_b6/summarize_results.py": "a8ef9c8113deec02b29cb174739624e6ccb728e9ca92f9b4b9aaf4c6617b8a55",
+      "experiments/r2_b6/test_compare_windows.py": "37a5e6f993e6921cfd529f6ee9cb53d148b02c781c640074b5724ffd05ee3a02",
+      "experiments/r2_b6/verify_pipeline_parity.py": "57ea0bfc74450371639f3de795d237233a32a467219f750c7f38a7003c475e05",
+      "experiments/r2_b6/windows.csv": "6cf84613766d25eab17da21d3cb7e95dfaaf2ea8d72734e53fcfeb36db05808a",
+      "experiments/r2_b6/inspection/evidence_inspection.json": "36a541c60f3bcb61ff30516d928d9d5eb523292096740e4cc5a1f84c7aefbeb8",
+      "experiments/r2_b6/inspection/source_hashes_before.json": "e1b37cf0aba4ab42d0bddab72a18802a2b7172d5ae90ee241b7a9cbbfe478ba6",
+      "experiments/r2_b6/inspection/source_integrity.json": "053ddaffcac4fdb7b20b9c0187ed6000b366f75b22a76e3bba79adc788c0b3e4",
+      "experiments/r2_b6/results/A_repeat_0.json": "9a1b38e53f1731fbae95b53ac2ed6f584e5959803750c32adb893a663e7ca391",
+      "experiments/r2_b6/results/A_repeat_1.json": "d1fb41b79ba90d43d5eec300654da8ab33c0858249952d6152427e275b90e6bb",
+      "experiments/r2_b6/results/A_repeat_2.json": "36a0d75ff2643422713d71b3bab206dadc6b34d890e708d08aca4b7a87166741",
+      "experiments/r2_b6/results/B_repeat_0.json": "25448b1f73cf65eca671053d0fff01b4c63e29080e5d3e1eecdb4ec3dbb503b9",
+      "experiments/r2_b6/results/B_repeat_1.json": "7c08ae1392d4308a011279ab84aca5e9f28b5c9b3d6ded2511873b248276f882",
+      "experiments/r2_b6/results/B_repeat_2.json": "e82d3080a7a7277956d4e5de420dfd87dd7d8fa31e6ecff93a213f5394c6dcc8",
+      "experiments/r2_b6/results/C_repeat_0.json": "22c3a1457f4d2dfad96cc5feb99424688b52a31c8d8ce9109f720009cb726410",
+      "experiments/r2_b6/results/C_repeat_1.json": "0e11785ccb03df8a492d8320c21684d2e5fd608d4e39e1f9d507a8555d3e1855",
+      "experiments/r2_b6/results/C_repeat_2.json": "2777c442f1415123b1d0dc627699afacf65720af7b4337533ca0e4c233fa4364",
+      "experiments/r2_b6/results/baseline_repeat_0.json": "c685440c1df7295dfc8e6a475eb71dfe408c6bb3b339d70be6197cb59ce364a6",
+      "experiments/r2_b6/results/baseline_repeat_1.json": "be49360339c0cd2aebb13a00eeb7f13759c9a4cf393cce2505db8167a5a71f32",
+      "experiments/r2_b6/results/baseline_repeat_2.json": "e4442cec01c47a15fda2ad368d84d56ffaa325822221bb85642a5a192c609b1a",
+      "experiments/r2_b6/results/evidence_inspection.json": "36a541c60f3bcb61ff30516d928d9d5eb523292096740e4cc5a1f84c7aefbeb8",
+      "experiments/r2_b6/results/metadata.json": "a662efcc6318533767076fe82bfd63c7e2adb0d0e7405e634d956d7c712f2ceb",
+      "experiments/r2_b6/results/source_hashes_before.json": "e1b37cf0aba4ab42d0bddab72a18802a2b7172d5ae90ee241b7a9cbbfe478ba6",
+      "experiments/r2_b6/results/source_integrity.json": "053ddaffcac4fdb7b20b9c0187ed6000b366f75b22a76e3bba79adc788c0b3e4",
+      "experiments/r2_b6/results/summary.json": "a4f360c5218844d8478e8c74d941004cd8180f9b4beab14c616c67587ba230ff",
+      "phase3/test_fixtures/gui_last_run_overlap_windows.json": "2c3eeb9c517b9a12c6ed1fbbbbe2100b1fe2c0f49d04f7c6b980c3246aff6217",
+      "phase3/test_fixtures/news_20261022_160827_replacement_windows.json": "74f36181a4d45256d27795786afea59ee174b1fb7fab5f14d3194945951ab21e",
+      "phase3/test_fixtures/news_20261022_160827_windows.json": "8035fd0cb57d4fe67fd5715d01c141efc93c97c74a9e1e1bb8697da4fd2101a7",
+      "phase1/reference/speaker_a.mp3": "fcaded567448574ee226d15bb1102a31d201c1442ce3943c138dd55d3b41ffb2",
+      "phase1/reference/speaker_a.wav": "0ff99fd69e34bd033279d262af5f7f8ba5bd910bc2295b68b40e046cd8a92a4c",
+      "phase1/reference/speaker_b.mp3": "1a1c7ae3cb72107c18f22a3e4754964e530c67bf22eac2f031e8fc1335fb5d8b",
+      "phase1/reference/speaker_b.wav": "5fb9362b13109d5fb8da3494e537c4b603da75b7b6a9a1d235b1053059607ce4",
+      "phase3/test_audio/A.wav": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "phase3/test_audio/B.wav": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "phase3/test_audio/speaker_a_silence_test.wav": "1e0fd8c5ad5936267464b94dd512d4d0509f9521a3ee11cf460440db57e49aac",
+      "phase3/test_audio/speaker_b_silence_test.wav": "77c928f717424537ec50770bcfe0d2bc4fcb3b26e72ae835bf048620761aa3e2",
+      "phase3/test_audio/source_admission/single_a_mossformer_window0.json": "431d3e89396ffbb81941afe2c25d15b6f1bc5e990f732689d1b0b0b7d077dc26",
+      "phase3/test_audio/source_admission/single_a_mossformer_window0.npz": "fc755ef21abadbd8bd6caa00020c03975ac4b74006dddc7a18f968d228405b61",
+      "phase3/test_audio/source_admission/validation_summary.json": "9e3a61d303ce98e89ab483326ccc248331d501ffaca0207c88bf588f2cd68d34"
+    }
+  }
+}
