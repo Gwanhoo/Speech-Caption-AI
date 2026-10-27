@@ -33,8 +33,8 @@ from phase5.live_caption_controller import (
 )
 from remote_gpu_client import RemoteConnectionError, RemoteTimeoutError
 from PySide6.QtWidgets import QApplication, QLabel
-from PySide6.QtCore import QCoreApplication, QEvent, Qt
-from PySide6.QtGui import QColor
+from PySide6.QtCore import QCoreApplication, QEvent, QPoint, QPointF, Qt
+from PySide6.QtGui import QColor, QMouseEvent
 from typing_extensions import Self as TypingExtensionsSelf
 
 
@@ -101,6 +101,22 @@ class RecoveringBackend(BlockingBackend):
         self.preflight_attempts += 1
         if self.preflight_attempts == 1:
             raise RemoteConnectionError("mock server unavailable")
+        return super().preflight(config)
+
+
+class RemovedDeviceRecoveryBackend(BlockingBackend):
+    """Reject a disconnected explicit endpoint; allow the refreshed default."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.preflight_configs: list[LiveCaptionConfig] = []
+
+    def preflight(self, config: LiveCaptionConfig) -> EnvironmentInfo:
+        self.preflight_configs.append(config)
+        if config.output_device_id == "{id-b}":
+            raise RuntimeError(
+                "선택한 Windows 출력 장치를 찾을 수 없습니다. 장치 연결을 확인한 뒤 다시 시작하세요."
+            )
         return super().preflight(config)
 
 
@@ -426,6 +442,44 @@ class GuiTests(unittest.TestCase):
             self.assertFalse(window.refresh_device_button.isEnabled())
         finally:
             window.close()
+
+    def test_removed_selected_device_recovers_after_refresh_and_restart(self) -> None:
+        initial_devices = [
+            SimpleNamespace(device_id="{id-a}", name="스피커", is_default=True),
+            SimpleNamespace(device_id="{id-b}", name="헤드셋", is_default=False),
+        ]
+        remaining_devices = [
+            SimpleNamespace(device_id="{id-a}", name="스피커", is_default=True),
+        ]
+        backend = RemovedDeviceRecoveryBackend()
+        with patch(
+            "phase5.gui_app.list_output_devices",
+            side_effect=[initial_devices, remaining_devices],
+        ):
+            controller = LiveCaptionController(backend=backend)
+            window = MainWindow(controller)
+            try:
+                window.output_device_combo.setCurrentIndex(
+                    window.output_device_combo.findData("{id-b}")
+                )
+                window.start_captioning()
+                self.pump_until(lambda: controller.state == "idle")
+                self.assertIn("선택한 Windows 출력 장치를 찾을 수 없습니다", window.status_label.text())
+                self.assertEqual(backend.preflight_configs[-1].output_device_id, "{id-b}")
+
+                window.refresh_output_devices()
+                self.assertIsNone(window.output_device_combo.currentData())
+                self.assertIn("기본 출력 장치", window.device_label.text())
+                window.start_captioning()
+                self.pump_until(backend.started.is_set)
+                self.assertIsNone(backend.config.output_device_id)
+                window.stop_captioning()
+                self.pump_until(lambda: controller.state == "idle")
+            finally:
+                if controller.state != "idle":
+                    window.stop_captioning()
+                    self.pump_until(lambda: controller.state == "idle")
+                window.close()
 
     def test_idle_timer_expiry_updates_control_and_overlay_snapshot(self):
         window = MainWindow()
@@ -864,6 +918,85 @@ class GuiTests(unittest.TestCase):
         finally:
             window.close()
 
+    def test_extreme_single_korean_caption_is_explicitly_elided_not_visually_clipped(self) -> None:
+        window = MainWindow()
+        overlay = window._ensure_overlay()
+        text = "화면 높이 제한을 넘는 단일 한국어 자막은 말줄임으로 표시해야 합니다. " * 12
+        entry = SubtitleFeedEntry(
+            speaker_id="speaker_0",
+            utterance_id=1,
+            sequence=1,
+            status="partial",
+            text=text,
+        )
+        try:
+            overlay.set_entries((entry,))
+            overlay.show()
+            self.app.processEvents()
+            label = overlay._labels[0]
+
+            self.assertEqual(overlay.entries, (entry,))
+            self.assertTrue(label.text().endswith("…"))
+            self.assertEqual(label.toolTip(), text)
+            self.assertEqual(overlay._card.toolTip(), text)
+            self.assertLessEqual(label.heightForWidth(label.width()), label.height())
+        finally:
+            window.close()
+
+    def test_overlay_drag_preserves_position_and_window_configuration(self) -> None:
+        window = MainWindow()
+        overlay = window._ensure_overlay()
+        entry = SubtitleFeedEntry("speaker_0", 1, 1, "드래그 확인 자막", "partial")
+        try:
+            overlay.show()
+            self.app.processEvents()
+            self.assertTrue(overlay.windowFlags() & Qt.WindowType.FramelessWindowHint)
+            self.assertTrue(overlay.windowFlags() & Qt.WindowType.WindowStaysOnTopHint)
+            self.assertTrue(overlay.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground))
+
+            initial = overlay.pos()
+            start = initial + QPoint(30, 20)
+            destination = start + QPoint(80, 40)
+            overlay.mousePressEvent(
+                QMouseEvent(
+                    QEvent.Type.MouseButtonPress,
+                    QPointF(30, 20),
+                    QPointF(start),
+                    Qt.MouseButton.LeftButton,
+                    Qt.MouseButton.LeftButton,
+                    Qt.KeyboardModifier.NoModifier,
+                )
+            )
+            overlay.mouseMoveEvent(
+                QMouseEvent(
+                    QEvent.Type.MouseMove,
+                    QPointF(110, 60),
+                    QPointF(destination),
+                    Qt.MouseButton.NoButton,
+                    Qt.MouseButton.LeftButton,
+                    Qt.KeyboardModifier.NoModifier,
+                )
+            )
+            overlay.mouseReleaseEvent(
+                QMouseEvent(
+                    QEvent.Type.MouseButtonRelease,
+                    QPointF(110, 60),
+                    QPointF(destination),
+                    Qt.MouseButton.LeftButton,
+                    Qt.MouseButton.NoButton,
+                    Qt.KeyboardModifier.NoModifier,
+                )
+            )
+
+            self.assertEqual(overlay.pos(), initial + QPoint(80, 40))
+            overlay.set_entries((entry,))
+            self.app.processEvents()
+            self.assertEqual(overlay.pos(), initial + QPoint(80, 40))
+            window.overlay_opacity.setValue(55)
+            self.assertIn("rgba(10, 15, 25, 140)", overlay._card.styleSheet())
+        finally:
+            window.close()
+
     def test_duplicate_start_and_graceful_stop_state_transition(self) -> None:
         backend = BlockingBackend()
         controller = LiveCaptionController(backend=backend)
@@ -908,6 +1041,34 @@ class GuiTests(unittest.TestCase):
             self.assertIn("오류:", window.status_label.text())
             self.assertIn("WASAPI capture 실패", window.status_label.text())
             self.assertIn("연결 안 됨", window.server_state_label.text())
+        finally:
+            window.close()
+
+    def test_long_error_wraps_without_expanding_or_permanently_widening_window(self) -> None:
+        window = MainWindow(controller=LiveCaptionController(backend=BlockingBackend()))
+        try:
+            window.show()
+            self.app.processEvents()
+            initial_width = window.width()
+            long_error = "서버 연결에 실패했습니다. " + "상세 네트워크 진단 정보 " * 80
+
+            window.show_error(long_error)
+            self.app.processEvents()
+
+            self.assertEqual(window.width(), initial_width)
+            self.assertTrue(window.status_label.wordWrap())
+            self.assertEqual(window.status_label.toolTip(), f"오류: {long_error}")
+            self.assertEqual(window.status_label.minimumWidth(), 0)
+
+            window.show_error("짧은 오류")
+            self.app.processEvents()
+            self.assertEqual(window.width(), initial_width)
+            self.assertEqual(window.status_label.toolTip(), "오류: 짧은 오류")
+
+            window.apply_controller_state("starting")
+            self.app.processEvents()
+            self.assertEqual(window.width(), initial_width)
+            self.assertEqual(window.status_label.toolTip(), "")
         finally:
             window.close()
 

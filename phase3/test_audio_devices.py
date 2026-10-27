@@ -48,6 +48,11 @@ class AudioOutputDeviceTests(unittest.TestCase):
     def test_default_selection_resolves_current_default(self) -> None:
         self.assertIs(resolve_output_speaker(self.soundcard, None), self.default)
 
+    def test_default_selection_uses_the_current_default_after_device_change(self) -> None:
+        self.assertIs(resolve_output_speaker(self.soundcard, None), self.default)
+        self.soundcard.default = self.second
+        self.assertIs(resolve_output_speaker(self.soundcard, None), self.second)
+
     def test_explicit_selection_uses_id_not_duplicate_name(self) -> None:
         selected = resolve_output_speaker(self.soundcard, "{second-id}")
         self.assertIs(selected, self.second)
@@ -61,6 +66,17 @@ class AudioOutputDeviceTests(unittest.TestCase):
     def test_missing_default_device_reports_actionable_error(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "기본 Windows 출력 오디오 장치를 찾을 수 없습니다"):
             resolve_output_speaker(SoundcardStub([], None), None)
+
+    def test_missing_loopback_reports_actionable_error(self) -> None:
+        class NoLoopbackSoundcard(SoundcardStub):
+            def get_microphone(self, identifier: str, include_loopback: bool = False) -> object | None:
+                self.loopback_requests.append((identifier, include_loopback))
+                return None
+
+        soundcard = NoLoopbackSoundcard([self.default], self.default)
+        with self.assertRaisesRegex(RuntimeError, "WASAPI loopback을 찾을 수 없습니다"):
+            get_loopback_microphone(soundcard, self.default)
+        self.assertEqual(soundcard.loopback_requests, [("{default-id}", True)])
 
 
 if __name__ == "__main__":

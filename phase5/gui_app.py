@@ -380,6 +380,12 @@ class MainWindow(QMainWindow):
         status_layout.setContentsMargins(16, 11, 16, 11)
         self.status_label = QLabel("대기 중")
         self.status_label.setObjectName("statusText")
+        self.status_label.setWordWrap(True)
+        self.status_label.setMinimumWidth(0)
+        self.status_label.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Preferred,
+        )
         self.latency_label = QLabel("최근 latency: —")
         self.latency_label.setObjectName("latencyText")
         status_layout.addWidget(self.status_label, 1)
@@ -391,7 +397,7 @@ class MainWindow(QMainWindow):
         self.refresh_device_button.clicked.connect(self.refresh_output_devices)
         self.controller.server_state.connect(self.set_server_state)
         self.controller.device_state.connect(self.device_label.setText)
-        self.controller.status.connect(self.status_label.setText)
+        self.controller.status.connect(self.set_status_message)
         self.controller.subtitle_event.connect(self.apply_subtitle_event)
         self.controller.latency_updated.connect(self.set_latency)
         self.controller.error.connect(self.show_error)
@@ -519,8 +525,15 @@ class MainWindow(QMainWindow):
 
     @Slot(str)
     def show_error(self, message: str) -> None:
-        self.status_label.setText(f"오류: {message}")
+        text = f"오류: {message}"
+        self.status_label.setText(text)
+        self.status_label.setToolTip(text)
         self.status_label.setStyleSheet("color: #b91c1c;")
+
+    @Slot(str)
+    def set_status_message(self, message: str) -> None:
+        self.status_label.setToolTip("")
+        self.status_label.setText(message)
 
     @Slot(str)
     def apply_controller_state(self, state: str) -> None:
@@ -533,7 +546,7 @@ class MainWindow(QMainWindow):
         self.refresh_device_button.setEnabled(not active)
         if state == "starting":
             self.status_label.setStyleSheet("color: #1d4ed8;")
-            self.status_label.setText("서버와 오디오 장치 확인 중…")
+            self.set_status_message("서버와 오디오 장치 확인 중…")
         elif state == "stopping":
             self.stop_button.setEnabled(False)
             self.subtitle_model.clear()

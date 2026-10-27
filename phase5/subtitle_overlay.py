@@ -137,6 +137,7 @@ class SubtitleOverlay(QWidget):
                 self._apply_label_style(label, entry.status)
             else:
                 label.clear()
+                label.setToolTip("")
                 label.setVisible(False)
         self._resize_for_entries()
 
@@ -164,6 +165,7 @@ class SubtitleOverlay(QWidget):
                 label.setVisible(True)
             else:
                 label.clear()
+                label.setToolTip("")
                 label.setVisible(False)
         alpha = round(255 * self._style.background_opacity / 100)
         self._card.setStyleSheet(
@@ -195,6 +197,7 @@ class SubtitleOverlay(QWidget):
         """Match the window to its rows and cap extreme content to a compact bar."""
         if not self._entries:
             self._card.setVisible(self._keep_empty_visible)
+            self._card.setToolTip("")
             self._set_window_height(self._required_height(()))
             return
         self._card.show()
@@ -205,11 +208,25 @@ class SubtitleOverlay(QWidget):
         maximum_height = self._maximum_height()
         height = min(maximum_height, non_text_height + sum(desired_heights))
         available_text_height = max(1, height - non_text_height)
+        card_tooltip = ""
         for index, desired_height in enumerate(desired_heights):
             remaining_rows = len(desired_heights) - index - 1
             row_height = min(desired_height, max(1, available_text_height - remaining_rows))
-            self._labels[index].setFixedHeight(row_height)
+            label = self._labels[index]
+            display_text = self._display_text_for_height(
+                self._entries[index], self._text_width(), row_height
+            )
+            label.setText(display_text)
+            label.setToolTip(
+                self._entries[index].text
+                if display_text != self._entries[index].text
+                else ""
+            )
+            if display_text != self._entries[index].text:
+                card_tooltip = self._entries[index].text
+            label.setFixedHeight(row_height)
             available_text_height -= row_height
+        self._card.setToolTip(card_tooltip)
         self._set_window_height(height)
 
     def _set_window_height(self, height: int) -> None:
@@ -295,6 +312,33 @@ class SubtitleOverlay(QWidget):
             entry.text,
         )
         return max(metrics.height(), bounds.height())
+
+    def _display_text_for_height(
+        self, entry: SubtitleFeedEntry, width: int, maximum_height: int
+    ) -> str:
+        """Return a whole-line display string when one entry exceeds the height cap."""
+        if self._entry_height(entry, width) <= maximum_height:
+            return entry.text
+
+        best_length = 0
+        low, high = 1, len(entry.text)
+        while low <= high:
+            length = (low + high) // 2
+            candidate = entry.text[:length].rstrip() + "…"
+            candidate_entry = SubtitleFeedEntry(
+                speaker_id=entry.speaker_id,
+                utterance_id=entry.utterance_id,
+                sequence=entry.sequence,
+                status=entry.status,
+                text=candidate,
+            )
+            if self._entry_height(candidate_entry, width) <= maximum_height:
+                best_length = length
+                low = length + 1
+            else:
+                high = length - 1
+
+        return entry.text[:best_length].rstrip() + "…"
 
     def mousePressEvent(self, event: QMouseEvent) -> None:  # noqa: N802
         if event.button() == Qt.MouseButton.LeftButton:
