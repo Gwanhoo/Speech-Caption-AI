@@ -7,6 +7,7 @@ Windows client distribution.
 """
 
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_data_files
 
 
 project_root = Path(SPECPATH)
@@ -18,10 +19,14 @@ a = Analysis(
         str(project_root / "phase3"),
         str(project_root / "phase4"),
         str(project_root / "phase5"),
+        str(project_root / "phase0"),
+        str(project_root / "phase1"),
+        str(project_root / "phase1" / "diagnostic"),
+        str(project_root / "phase2"),
     ],
     binaries=[],
-    datas=[],
-    hiddenimports=[],
+    datas=collect_data_files("soundcard"),
+    hiddenimports=["run_overlap_pipeline"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -32,6 +37,11 @@ a = Analysis(
         "funasr",
         "silero_vad",
         "torch",
+        "torchvision",
+        "torchaudio",
+        "transformers",
+        "onnxruntime",
+        "ctranslate2",
     ],
     noarchive=False,
 )

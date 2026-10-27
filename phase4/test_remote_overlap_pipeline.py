@@ -113,7 +113,7 @@ class PipelineTests(TestCase):
             stack.enter_context(patch.object(pipeline, "separate_with_fp32_fallback", side_effect=separation))
             cuda_calls = []
             for name in ("is_available", "reset_peak_memory_stats", "memory_allocated", "memory_reserved", "max_memory_allocated"):
-                cuda_calls.append(stack.enter_context(patch.object(pipeline.torch.cuda, name, return_value=True if name == "is_available" else 0)))
+                cuda_calls.append(stack.enter_context(patch("torch.cuda." + name, return_value=True if name == "is_available" else 0)))
             code = pipeline.main(runtime_hooks=runtime_hooks)
             self.last_loopback_calls = list(pipeline.sc.get_microphone.call_args_list)
             if remote:

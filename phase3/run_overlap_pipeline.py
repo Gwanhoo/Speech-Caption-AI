@@ -19,7 +19,6 @@ from typing import Any, Callable, Sequence
 import numpy as np
 import soundcard as sc
 import soundfile as sf
-import torch
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -268,6 +267,7 @@ def build_window_latency_diagnostics(
 
 
 def detect_speech_activity(model: Any, audio: np.ndarray, minimum_speech_ms: int) -> dict[str, Any]:
+    import torch
     from silero_vad import get_speech_timestamps
 
     started = time.perf_counter()
@@ -659,6 +659,10 @@ def main(
     )
     if window_count == 0:
         parser.error("--duration must contain at least one complete window")
+    # Remote Windows clients do not load or package local GPU inference.
+    if not remote:
+        import torch
+
     if sys.platform != "win32" or (not remote and not torch.cuda.is_available()):
         raise RuntimeError("Capture requires Windows WASAPI; local mode additionally requires CUDA")
     sys.stdout.reconfigure(encoding="utf-8")

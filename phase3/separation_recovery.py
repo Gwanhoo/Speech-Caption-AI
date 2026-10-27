@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 import numpy as np
-import torch
 
 
 InferenceCallable = Callable[[np.ndarray], tuple[np.ndarray, float]]
@@ -123,6 +122,8 @@ def infer_separator(
     device: torch.device,
     use_amp: bool,
 ) -> tuple[np.ndarray, float]:
+    import torch
+
     torch.cuda.synchronize(device)
     started = time.perf_counter()
     with torch.inference_mode():

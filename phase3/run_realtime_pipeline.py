@@ -17,8 +17,6 @@ from typing import Any
 import numpy as np
 import soundcard as sc
 import soundfile as sf
-import torch
-from faster_whisper import WhisperModel
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -46,7 +44,6 @@ sys.path.insert(0, str(ROOT / "phase1"))
 sys.path.insert(0, str(ROOT / "phase1" / "diagnostic"))
 sys.path.insert(0, str(ROOT / "phase2"))
 
-from benchmark_cuda_amp import run_once  # noqa: E402
 from capture import CAPTURE_SAMPLE_RATE, _resample  # noqa: E402
 from playback_capture import estimate_offset, load_reference  # noqa: E402
 from separate import CHECKPOINT_MARKER, MODEL_NAME, _load_clearvoice  # noqa: E402
@@ -234,6 +231,9 @@ def transcribe_audio(model: Any, audio: np.ndarray, backend: str = "whisper") ->
 
 
 def load_models(monitor: GpuMonitor, stt_backend: str = "whisper"):
+    import torch
+    from faster_whisper import WhisperModel
+
     if not (MODEL_DIR / "model.bin").is_file():
         raise FileNotFoundError(MODEL_DIR / "model.bin")
 
@@ -291,6 +291,8 @@ def warm_up(
     monitor: GpuMonitor,
     stt_backend: str = "whisper",
 ) -> None:
+    import torch
+
     audio, sample_rate = sf.read(SEPARATION_WARMUP_INPUT, dtype="float32")
     if sample_rate != SAMPLE_RATE or audio.ndim != 1 or len(audio) != 5 * SAMPLE_RATE:
         raise ValueError(f"Invalid warm-up input: {SEPARATION_WARMUP_INPUT}")
@@ -328,6 +330,9 @@ def warm_up(
 
 
 def main() -> int:
+    import torch
+    from benchmark_cuda_amp import run_once
+
     global CHUNK_SECONDS, CHUNK_COUNT, CAPTURE_SECONDS
 
     parser = argparse.ArgumentParser(description="Phase 3-B real-time separation and STT pipeline")
