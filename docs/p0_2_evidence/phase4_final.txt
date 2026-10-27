@@ -1,0 +1,23 @@
+...usage: python -m unittest [-h]
+                          (--direct-wav DIRECT_WAV | --audio AUDIO | --separated-wav SEPARATED_WAV [SEPARATED_WAV ...])
+                          [--models MODELS [MODELS ...]] [--output OUTPUT]
+                          [--separated-dir SEPARATED_DIR] [--prepare-only]
+                          [--no-warmup]
+python -m unittest: error: --prepare-only requires --audio
+.Prepared fixed WAVs: /tmp/tmpewkhgwff/fixed.wav
+JSON: /tmp/tmpewkhgwff/report.json
+.....................http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 503 -
+..[LATENCY SERVER PROCESS] {"request_id": "window-0-1793074860203402532", "window": 0, "timing": {"queue_wait_seconds": 0.0, "separation_seconds": 0.0, "vad_seconds": 0.0, "stt_seconds": 0.0, "processing_seconds": 0.0, "amp_seconds": 0.0, "fp32_seconds": 0.0, "server_request_received_perf_counter": 638001.947059199, "server_request_thread_id": 125024778610368, "server_request_thread_name": "Thread-4 (process_request_thread)", "request_body_read_started_perf_counter": 638001.94709123, "request_body_read_ended_perf_counter": 638001.94709447, "request_body_read_seconds": 3.2400712370872498e-06, "request_body_bytes": 6480, "request_decode_started_perf_counter": 638001.94709501, "request_decode_ended_perf_counter": 638001.947538631, "request_decode_seconds": 0.00044362107291817665, "connection_client_port": 56128}}
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+[LATENCY SERVER] window=000 request_id=window-0-1793074860203402532 response_serialize=0.000094s response_write=0.000621s response_bytes=14704 format=binary-f32le
+[LATENCY SERVER PROCESS] {"request_id": "window-1-1793074860207912343", "window": 1, "timing": {"queue_wait_seconds": 0.0, "separation_seconds": 0.0, "vad_seconds": 0.0, "stt_seconds": 0.0, "processing_seconds": 0.0, "amp_seconds": 0.0, "fp32_seconds": 0.0, "server_request_received_perf_counter": 638001.950150766, "server_request_thread_id": 125024778610368, "server_request_thread_name": "Thread-4 (process_request_thread)", "request_body_read_started_perf_counter": 638001.950173607, "request_body_read_ended_perf_counter": 638001.950195817, "request_body_read_seconds": 2.2210064344108105e-05, "request_body_bytes": 6480, "request_decode_started_perf_counter": 638001.950196027, "request_decode_ended_perf_counter": 638001.950549076, "request_decode_seconds": 0.0003530489047989249, "connection_client_port": 56128}}
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+[LATENCY SERVER] window=001 request_id=window-1-1793074860207912343 response_serialize=0.000083s response_write=0.000016s response_bytes=14706 format=binary-f32le
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+........................................[DROP] audio_queue full; dropped chunk 003
+................
+----------------------------------------------------------------------
+Ran 83 tests in 26.685s
+
+OK

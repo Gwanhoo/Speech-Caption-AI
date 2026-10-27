@@ -387,6 +387,7 @@ class PipelineService:
         waveform_encode_ranges: list[tuple[float, float]] = []
         for speaker, (speaker_audio, vad) in enumerate(zip(separated, vad_results)):
             stt_started = time.perf_counter()
+            stt_result = None
             if vad["speech_detected"]:
                 stt_result = transcribe_base(self.models.whisper, speaker_audio)
                 raw_text = stt_result.text
@@ -415,6 +416,18 @@ class PipelineService:
                     "vad": vad,
                     "stt_seconds": stt_seconds,
                     "raw_transcript": raw_text,
+                    "stt_diagnostics": {
+                        "executed": bool(vad["speech_detected"]),
+                        "skip_reason": None if vad["speech_detected"] else "vad_inactive",
+                        **{
+                            key: value if isinstance(value, (int, float)) and math.isfinite(value) else None
+                            for key in (
+                                "segment_count", "average_log_probability",
+                                "maximum_no_speech_probability", "maximum_compression_ratio",
+                            )
+                            for value in (getattr(stt_result, key, None),)
+                        },
+                    },
                 }
             )
 

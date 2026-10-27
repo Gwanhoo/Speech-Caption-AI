@@ -1,0 +1,214 @@
+test_backend_reuses_phase4_pipeline_with_fixed_live_settings (test_gui_app.GuiTests.test_backend_reuses_phase4_pipeline_with_fixed_live_settings) ... [PIPELINE CODE] module=<unknown>
+ok
+test_canceling_custom_overlay_color_keeps_current_color (test_gui_app.GuiTests.test_canceling_custom_overlay_color_keeps_current_color) ... ok
+test_connection_and_timeout_messages_are_distinct (test_gui_app.GuiTests.test_connection_and_timeout_messages_are_distinct) ... ok
+test_connection_failure_returns_idle_and_a_later_start_recovers (test_gui_app.GuiTests.test_connection_failure_returns_idle_and_a_later_start_recovers) ... Live caption worker failed
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase5/live_caption_controller.py", line 308, in run
+    info = self.backend.preflight(self.config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase5/test_gui_app.py", line 103, in preflight
+    raise RemoteConnectionError("mock server unavailable")
+remote_gpu_client.RemoteConnectionError: mock server unavailable
+ok
+test_consoleless_runtime_redirects_output_to_log (test_gui_app.GuiTests.test_consoleless_runtime_redirects_output_to_log) ... ok
+test_custom_overlay_color_updates_visible_partial_and_final_without_recreation (test_gui_app.GuiTests.test_custom_overlay_color_updates_visible_partial_and_final_without_recreation) ... ok
+test_device_refresh_controls_are_disabled_while_running (test_gui_app.GuiTests.test_device_refresh_controls_are_disabled_while_running) ... ok
+test_duplicate_start_and_graceful_stop_state_transition (test_gui_app.GuiTests.test_duplicate_start_and_graceful_stop_state_transition) ... ok
+test_empty_overlay_is_visible_before_preflight_and_reused_after_restart (test_gui_app.GuiTests.test_empty_overlay_is_visible_before_preflight_and_reused_after_restart) ... This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+ok
+test_empty_overlay_respects_visibility_toggle_during_session (test_gui_app.GuiTests.test_empty_overlay_respects_visibility_toggle_during_session) ... This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+ok
+test_experiment_options_survive_gui_start_restart_and_backend_adapter (test_gui_app.GuiTests.test_experiment_options_survive_gui_start_restart_and_backend_adapter) ... This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+[PIPELINE CODE] module=<unknown>
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+[PIPELINE CODE] module=<unknown>
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+ok
+test_extreme_wrapped_rows_keep_only_the_newest_readable_overlay_entry (test_gui_app.GuiTests.test_extreme_wrapped_rows_keep_only_the_newest_readable_overlay_entry) ... This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+ok
+test_feed_retains_only_recent_entries (test_gui_app.GuiTests.test_feed_retains_only_recent_entries) ... ok
+test_gui_import_and_main_window_creation (test_gui_app.GuiTests.test_gui_import_and_main_window_creation) ... ok
+test_gui_main_passes_experiment_config_and_preserves_qt_options (test_gui_app.GuiTests.test_gui_main_passes_experiment_config_and_preserves_qt_options) ... ok
+test_gui_main_releases_runtime_on_exit_and_startup_failure (test_gui_app.GuiTests.test_gui_main_releases_runtime_on_exit_and_startup_failure) ... ok
+test_idle_timer_expiry_updates_control_and_overlay_snapshot (test_gui_app.GuiTests.test_idle_timer_expiry_updates_control_and_overlay_snapshot) ... ok
+test_invalid_window_stride_rejected_before_gui_start (test_gui_app.GuiTests.test_invalid_window_stride_rejected_before_gui_start) ... ok
+test_launch_options_defaults_and_qt_arguments (test_gui_app.GuiTests.test_launch_options_defaults_and_qt_arguments) ... ok
+test_long_mock_captions_expand_overlay_without_label_clipping (test_gui_app.GuiTests.test_long_mock_captions_expand_overlay_without_label_clipping) ... This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+ok
+test_long_text_is_left_intact_for_qt_word_wrap (test_gui_app.GuiTests.test_long_text_is_left_intact_for_qt_word_wrap) ... ok
+test_new_utterance_appends_new_entry (test_gui_app.GuiTests.test_new_utterance_appends_new_entry) ... ok
+test_no_output_device_blocks_start_and_keeps_refresh_available (test_gui_app.GuiTests.test_no_output_device_blocks_start_and_keeps_refresh_available) ... ok
+test_other_stream_final_preserves_current_partial (test_gui_app.GuiTests.test_other_stream_final_preserves_current_partial) ... ok
+test_output_device_enumeration_failure_blocks_start_with_error (test_gui_app.GuiTests.test_output_device_enumeration_failure_blocks_start_with_error) ... ok
+test_output_device_refresh_preserves_surviving_selection (test_gui_app.GuiTests.test_output_device_refresh_preserves_surviving_selection) ... ok
+test_output_device_refresh_reverts_missing_selection_to_default (test_gui_app.GuiTests.test_output_device_refresh_reverts_missing_selection_to_default) ... ok
+test_overlay_height_shrinks_with_three_two_one_and_zero_rows (test_gui_app.GuiTests.test_overlay_height_shrinks_with_three_two_one_and_zero_rows) ... This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+ok
+test_overlay_lifecycle_reuses_one_window_and_snapshot (test_gui_app.GuiTests.test_overlay_lifecycle_reuses_one_window_and_snapshot) ... This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+ok
+test_overlay_regrows_after_empty_and_preserves_bottom_or_drag_anchor (test_gui_app.GuiTests.test_overlay_regrows_after_empty_and_preserves_bottom_or_drag_anchor) ... This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+ok
+test_overlay_settings_apply_without_recreation (test_gui_app.GuiTests.test_overlay_settings_apply_without_recreation) ... ok
+test_partial_overlay_uses_selected_weight_and_color (test_gui_app.GuiTests.test_partial_overlay_uses_selected_weight_and_color) ... ok
+test_partial_updates_existing_entry_and_final_confirms_it (test_gui_app.GuiTests.test_partial_updates_existing_entry_and_final_confirms_it) ... ok
+test_preflight_profile_validation_accepts_match_and_legacy_health (test_gui_app.GuiTests.test_preflight_profile_validation_accepts_match_and_legacy_health) ... ok
+test_preflight_profile_validation_rejects_known_mismatch (test_gui_app.GuiTests.test_preflight_profile_validation_rejects_known_mismatch) ... ok
+test_pyside_python310_self_compatibility_is_primed (test_gui_app.GuiTests.test_pyside_python310_self_compatibility_is_primed) ... ok
+test_real_qt_timer_removes_expired_recorded_final_without_new_event (test_gui_app.GuiTests.test_real_qt_timer_removes_expired_recorded_final_without_new_event) ... skipped 'Recorded news timeline.jsonl absent; no synthetic replacement'
+test_recorded_final_duplicate_does_not_renew_deadline_or_reappear (test_gui_app.GuiTests.test_recorded_final_duplicate_does_not_renew_deadline_or_reappear) ... skipped 'Recorded news timeline.jsonl absent; no synthetic replacement'
+test_recorded_final_expiry_uses_arrival_intervals_not_stream_end (test_gui_app.GuiTests.test_recorded_final_expiry_uses_arrival_intervals_not_stream_end) ... skipped 'Recorded news timeline.jsonl absent; no synthetic replacement'
+test_recorded_overlay_flags_and_initial_geometry (test_gui_app.GuiTests.test_recorded_overlay_flags_and_initial_geometry) ... skipped 'Recorded news timeline.jsonl absent; no synthetic replacement'
+test_recorded_window_13_14_final_and_partial_keep_display_order (test_gui_app.GuiTests.test_recorded_window_13_14_final_and_partial_keep_display_order) ... skipped 'Recorded news timeline.jsonl absent; no synthetic replacement'
+test_refresh_enumeration_failure_disables_start_after_prior_success (test_gui_app.GuiTests.test_refresh_enumeration_failure_disables_start_after_prior_success) ... ok
+test_runtime_shutdown_preserves_external_streams_and_handlers (test_gui_app.GuiTests.test_runtime_shutdown_preserves_external_streams_and_handlers) ... ok
+test_selected_output_device_id_is_passed_from_gui_to_backend (test_gui_app.GuiTests.test_selected_output_device_id_is_passed_from_gui_to_backend) ... This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+ok
+test_stop_before_worker_runs_skips_preflight_request (test_gui_app.GuiTests.test_stop_before_worker_runs_skips_preflight_request) ... ok
+test_stop_rejects_queued_old_worker_events_even_after_restart (test_gui_app.GuiTests.test_stop_rejects_queued_old_worker_events_even_after_restart) ... This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+ok
+test_structured_worker_event_reaches_window (test_gui_app.GuiTests.test_structured_worker_event_reaches_window) ... ok
+test_two_stream_partials_share_the_snapshot (test_gui_app.GuiTests.test_two_stream_partials_share_the_snapshot) ... ok
+test_worker_can_be_constructed (test_gui_app.GuiTests.test_worker_can_be_constructed) ... ok
+test_worker_exception_becomes_gui_error_state (test_gui_app.GuiTests.test_worker_exception_becomes_gui_error_state) ... Live caption worker failed
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase5/live_caption_controller.py", line 308, in run
+    info = self.backend.preflight(self.config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase5/test_gui_app.py", line 69, in preflight
+    raise RuntimeError("WASAPI capture 실패")
+RuntimeError: WASAPI capture 실패
+ok
+test_overflow_preview_is_capped_and_keeps_the_newest_entry (test_overlay_preview.OverlayPreviewTests.test_overflow_preview_is_capped_and_keeps_the_newest_entry) ... ok
+test_overflow_preview_supplies_three_long_sentences (test_overlay_preview.OverlayPreviewTests.test_overflow_preview_supplies_three_long_sentences) ... ok
+test_preview_session_applies_style_to_the_production_overlay (test_overlay_preview.OverlayPreviewTests.test_preview_session_applies_style_to_the_production_overlay) ... ok
+test_standard_preview_contains_two_finals_and_one_partial (test_overlay_preview.OverlayPreviewTests.test_standard_preview_contains_two_finals_and_one_partial) ... ok
+test_active_partials_take_priority_over_recent_finals (test_subtitle_presentation.SubtitlePresentationStateTests.test_active_partials_take_priority_over_recent_finals) ... ok
+test_blank_text_is_ignored (test_subtitle_presentation.SubtitlePresentationStateTests.test_blank_text_is_ignored) ... ok
+test_discard_closes_only_matching_partial_without_a_final_caption (test_subtitle_presentation.SubtitlePresentationStateTests.test_discard_closes_only_matching_partial_without_a_final_caption) ... ok
+test_duplicate_final_event_is_ignored_but_later_same_words_are_allowed (test_subtitle_presentation.SubtitlePresentationStateTests.test_duplicate_final_event_is_ignored_but_later_same_words_are_allowed) ... ok
+test_final_expiry_preserves_partials_and_rejects_replayed_final (test_subtitle_presentation.SubtitlePresentationStateTests.test_final_expiry_preserves_partials_and_rejects_replayed_final) ... ok
+test_final_history_is_bounded (test_subtitle_presentation.SubtitlePresentationStateTests.test_final_history_is_bounded) ... ok
+test_long_text_is_preserved_without_inserted_line_breaks (test_subtitle_presentation.SubtitlePresentationStateTests.test_long_text_is_preserved_without_inserted_line_breaks) ... ok
+test_new_utterance_follows_final_caption (test_subtitle_presentation.SubtitlePresentationStateTests.test_new_utterance_follows_final_caption) ... ok
+test_out_of_order_event_cannot_replace_the_current_caption (test_subtitle_presentation.SubtitlePresentationStateTests.test_out_of_order_event_cannot_replace_the_current_caption) ... ok
+test_partial_becomes_one_final_caption (test_subtitle_presentation.SubtitlePresentationStateTests.test_partial_becomes_one_final_caption) ... ok
+test_partial_updates_one_current_caption (test_subtitle_presentation.SubtitlePresentationStateTests.test_partial_updates_one_current_caption) ... ok
+test_rejected_replay_records_identity_and_visible_snapshot (test_subtitle_presentation.SubtitlePresentationStateTests.test_rejected_replay_records_identity_and_visible_snapshot) ... ok
+test_sequences_are_checked_per_stream_and_clear_resets_both (test_subtitle_presentation.SubtitlePresentationStateTests.test_sequences_are_checked_per_stream_and_clear_resets_both) ... ok
+test_two_partials_update_and_finalize_independently (test_subtitle_presentation.SubtitlePresentationStateTests.test_two_partials_update_and_finalize_independently) ... ok
+test_create_start_stop_state_transition_and_overlay_persistence (test_ui_shell.GuiShellTests.test_create_start_stop_state_transition_and_overlay_persistence) ... This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+ok
+test_empty_subtitle_is_ignored (test_ui_shell.GuiShellTests.test_empty_subtitle_is_ignored) ... This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+ok
+test_initial_state (test_ui_shell.GuiShellTests.test_initial_state) ... ok
+test_settings_path_is_safe_before_overlay_creation (test_ui_shell.GuiShellTests.test_settings_path_is_safe_before_overlay_creation) ... ok
+
+----------------------------------------------------------------------
+Ran 72 tests in 1.568s
+
+OK (skipped=5)

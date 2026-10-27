@@ -23,6 +23,8 @@ class SubtitleFeedEntry:
     status: str
     text: str
     timestamp: int | float | None = None
+    session_id: str | None = None
+    window_index: int | None = None
 
 
 class SubtitlePresentationState:
@@ -71,12 +73,15 @@ class SubtitlePresentationState:
         expired = {key for key, deadline in self._final_deadlines.items() if now >= deadline}
         if not expired:
             return False
+        expired_entries = [entry for entry in self._final_entries
+                           if (entry.speaker_id, entry.utterance_id) in expired]
         self._final_entries = [entry for entry in self._final_entries
                                if (entry.speaker_id, entry.utterance_id) not in expired]
         for key in expired:
             del self._final_deadlines[key]
+        for entry in expired_entries:
+            self._log_decision("expire", "final_lifetime_elapsed", entry=entry)
         # Keep sequence/finalization tombstones: expiry must not permit replay.
-        self._log_decision("expire", "final_lifetime_elapsed", keys=expired)
         return True
 
     def apply(self, event: dict[str, Any]) -> bool:
@@ -144,7 +149,7 @@ class SubtitlePresentationState:
         source: dict[str, Any] = event or {}
         LOGGER.info(
             "action=%s reason=%s speaker=%r utterance_id=%r status=%r "
-            "sequence=%r text=%r keys=%r visible=%r",
+            "sequence=%r text=%r keys=%r session_id=%r window_index=%r visible=%r",
             action,
             reason,
             entry.speaker_id if entry else source.get("speaker"),
@@ -153,6 +158,8 @@ class SubtitlePresentationState:
             entry.sequence if entry else source.get("sequence"),
             entry.text if entry else source.get("text"),
             sorted(keys) if keys else None,
+            entry.session_id if entry else source.get("session_id"),
+            entry.window_index if entry else source.get("window_index"),
             [
                 (value.speaker_id, value.utterance_id, value.status, value.sequence, value.text)
                 for value in self.entries
@@ -198,6 +205,8 @@ class SubtitlePresentationState:
             status=status,
             text=text.strip(),
             timestamp=event.get("timestamp"),
+            session_id=event.get("session_id"),
+            window_index=event.get("window_index"),
         )
 
     @staticmethod

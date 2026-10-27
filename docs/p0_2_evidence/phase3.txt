@@ -1,0 +1,55 @@
+...................................................................................................E....E...........xxx.................................................................
+======================================================================
+ERROR: test_overlap_diagnostic_schema (unittest.loader._FailedTest.test_overlap_diagnostic_schema)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_overlap_diagnostic_schema
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/workspace/Speech-Caption-AI/phase3/test_overlap_diagnostic_schema.py", line 3, in <module>
+    from run_overlap_pipeline import build_diagnostic_audio_window_record
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 20, in <module>
+    import soundcard as sc
+  File "/usr/local/lib/python3.12/dist-packages/soundcard/__init__.py", line 4, in <module>
+    from soundcard.pulseaudio import *
+  File "/usr/local/lib/python3.12/dist-packages/soundcard/pulseaudio.py", line 290, in <module>
+    _pulse = _PulseAudio()
+             ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/soundcard/pulseaudio.py", line 101, in __init__
+    assert self._pa_context_get_state(self.context)==_pa.PA_CONTEXT_READY
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+
+
+======================================================================
+ERROR: test_secondary_validity_live_test (unittest.loader._FailedTest.test_secondary_validity_live_test)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_secondary_validity_live_test
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/workspace/Speech-Caption-AI/phase3/test_secondary_validity_live_test.py", line 10, in <module>
+    from run_secondary_validity_live_test import (
+  File "/workspace/Speech-Caption-AI/phase3/run_secondary_validity_live_test.py", line 24, in <module>
+    import soundcard as sc
+  File "/usr/local/lib/python3.12/dist-packages/soundcard/__init__.py", line 4, in <module>
+    from soundcard.pulseaudio import *
+  File "/usr/local/lib/python3.12/dist-packages/soundcard/pulseaudio.py", line 290, in <module>
+    _pulse = _PulseAudio()
+             ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/soundcard/pulseaudio.py", line 101, in __init__
+    assert self._pa_context_get_state(self.context)==_pa.PA_CONTEXT_READY
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+
+
+----------------------------------------------------------------------
+Ran 184 tests in 7.851s
+
+FAILED (errors=2, expected failures=3)

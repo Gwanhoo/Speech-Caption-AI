@@ -1,0 +1,290 @@
+{
+  "environment": {
+    "torch": "2.8.0+cu128",
+    "silero-vad": "6.2.3",
+    "faster-whisper": "1.2.1"
+  },
+  "cases": [
+    {
+      "name": "digital_silence",
+      "vad": {
+        "speech_detected": false,
+        "speech_duration_ms": 0.0,
+        "speech_ratio": 0.0,
+        "rms": 0.0,
+        "peak": 0.0,
+        "processing_seconds": 0.14608704100828618,
+        "timestamps": [],
+        "audio_duration_ms": 3000.0
+      },
+      "server_slot": {
+        "raw_slot": 0,
+        "sample_count": 48000,
+        "rms": 0.0,
+        "peak": 0.0,
+        "vad": {
+          "speech_detected": false,
+          "speech_duration_ms": 0.0,
+          "speech_ratio": 0.0,
+          "rms": 0.0,
+          "peak": 0.0,
+          "processing_seconds": 0.05561398796271533,
+          "timestamps": [],
+          "audio_duration_ms": 3000.0
+        },
+        "stt_seconds": 0.0,
+        "raw_transcript": "",
+        "stt_diagnostics": {
+          "executed": false,
+          "skip_reason": "vad_inactive",
+          "segment_count": null,
+          "average_log_probability": null,
+          "maximum_no_speech_probability": null,
+          "maximum_compression_ratio": null
+        }
+      }
+    },
+    {
+      "name": "low_amplitude_noise",
+      "vad": {
+        "speech_detected": false,
+        "speech_duration_ms": 0.0,
+        "speech_ratio": 0.0,
+        "rms": 0.00010001690679928288,
+        "peak": 0.0004153488262090832,
+        "processing_seconds": 0.046924752998165786,
+        "timestamps": [],
+        "audio_duration_ms": 3000.0
+      },
+      "server_slot": {
+        "raw_slot": 0,
+        "sample_count": 48000,
+        "rms": 0.00010001690679928288,
+        "peak": 0.0004153488262090832,
+        "vad": {
+          "speech_detected": false,
+          "speech_duration_ms": 0.0,
+          "speech_ratio": 0.0,
+          "rms": 0.00010001690679928288,
+          "peak": 0.0004153488262090832,
+          "processing_seconds": 0.04313743894454092,
+          "timestamps": [],
+          "audio_duration_ms": 3000.0
+        },
+        "stt_seconds": 0.0,
+        "raw_transcript": "",
+        "stt_diagnostics": {
+          "executed": false,
+          "skip_reason": "vad_inactive",
+          "segment_count": null,
+          "average_log_probability": null,
+          "maximum_no_speech_probability": null,
+          "maximum_compression_ratio": null
+        }
+      }
+    },
+    {
+      "name": "reference_0_3s",
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 2966.0,
+        "speech_ratio": 0.9886666666666667,
+        "rms": 0.13128381967544556,
+        "peak": 0.94427490234375,
+        "processing_seconds": 0.04352951899636537,
+        "timestamps": [
+          {
+            "start": 544,
+            "end": 48000
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "server_slot": {
+        "raw_slot": 0,
+        "sample_count": 48000,
+        "rms": 0.13128381967544556,
+        "peak": 0.94427490234375,
+        "vad": {
+          "speech_detected": true,
+          "speech_duration_ms": 2966.0,
+          "speech_ratio": 0.9886666666666667,
+          "rms": 0.13128381967544556,
+          "peak": 0.94427490234375,
+          "processing_seconds": 0.043183260015212,
+          "timestamps": [
+            {
+              "start": 544,
+              "end": 48000
+            }
+          ],
+          "audio_duration_ms": 3000.0
+        },
+        "stt_seconds": 0.5197385939536616,
+        "raw_transcript": "데이터베이스는 여러 사용자가 필요한 정보를 저장하고",
+        "stt_diagnostics": {
+          "executed": true,
+          "skip_reason": null,
+          "segment_count": 1,
+          "average_log_probability": -0.0689639151096344,
+          "maximum_no_speech_probability": 0.0,
+          "maximum_compression_ratio": 0.891566265060241
+        }
+      }
+    },
+    {
+      "name": "silence_after_speech",
+      "vad": {
+        "speech_detected": false,
+        "speech_duration_ms": 0.0,
+        "speech_ratio": 0.0,
+        "rms": 0.0,
+        "peak": 0.0,
+        "processing_seconds": 0.043634961009956896,
+        "timestamps": [],
+        "audio_duration_ms": 3000.0
+      },
+      "server_slot": {
+        "raw_slot": 0,
+        "sample_count": 48000,
+        "rms": 0.0,
+        "peak": 0.0,
+        "vad": {
+          "speech_detected": false,
+          "speech_duration_ms": 0.0,
+          "speech_ratio": 0.0,
+          "rms": 0.0,
+          "peak": 0.0,
+          "processing_seconds": 0.06776954000815749,
+          "timestamps": [],
+          "audio_duration_ms": 3000.0
+        },
+        "stt_seconds": 0.0,
+        "raw_transcript": "",
+        "stt_diagnostics": {
+          "executed": false,
+          "skip_reason": "vad_inactive",
+          "segment_count": null,
+          "average_log_probability": null,
+          "maximum_no_speech_probability": null,
+          "maximum_compression_ratio": null
+        }
+      }
+    },
+    {
+      "name": "reference_2_5s",
+      "vad": {
+        "speech_detected": true,
+        "speech_duration_ms": 2866.0,
+        "speech_ratio": 0.9553333333333334,
+        "rms": 0.11134323477745056,
+        "peak": 0.9320068359375,
+        "processing_seconds": 0.044101073988713324,
+        "timestamps": [
+          {
+            "start": 32,
+            "end": 17376
+          },
+          {
+            "start": 19488,
+            "end": 48000
+          }
+        ],
+        "audio_duration_ms": 3000.0
+      },
+      "server_slot": {
+        "raw_slot": 0,
+        "sample_count": 48000,
+        "rms": 0.11134323477745056,
+        "peak": 0.9320068359375,
+        "vad": {
+          "speech_detected": true,
+          "speech_duration_ms": 2866.0,
+          "speech_ratio": 0.9553333333333334,
+          "rms": 0.11134323477745056,
+          "peak": 0.9320068359375,
+          "processing_seconds": 0.049569558002986014,
+          "timestamps": [
+            {
+              "start": 32,
+              "end": 17376
+            },
+            {
+              "start": 19488,
+              "end": 48000
+            }
+          ],
+          "audio_duration_ms": 3000.0
+        },
+        "stt_seconds": 0.18592016806360334,
+        "raw_transcript": "정보를 저장하고 관리하기 위한 시스템입니다.",
+        "stt_diagnostics": {
+          "executed": true,
+          "skip_reason": null,
+          "segment_count": 1,
+          "average_log_probability": -0.06851357064749065,
+          "maximum_no_speech_probability": 0.0,
+          "maximum_compression_ratio": 0.8493150684931506
+        }
+      }
+    },
+    {
+      "name": "silence_again",
+      "vad": {
+        "speech_detected": false,
+        "speech_duration_ms": 0.0,
+        "speech_ratio": 0.0,
+        "rms": 0.0,
+        "peak": 0.0,
+        "processing_seconds": 0.043733874103054404,
+        "timestamps": [],
+        "audio_duration_ms": 3000.0
+      },
+      "server_slot": {
+        "raw_slot": 0,
+        "sample_count": 48000,
+        "rms": 0.0,
+        "peak": 0.0,
+        "vad": {
+          "speech_detected": false,
+          "speech_duration_ms": 0.0,
+          "speech_ratio": 0.0,
+          "rms": 0.0,
+          "peak": 0.0,
+          "processing_seconds": 0.07439566403627396,
+          "timestamps": [],
+          "audio_duration_ms": 3000.0
+        },
+        "stt_seconds": 0.0,
+        "raw_transcript": "",
+        "stt_diagnostics": {
+          "executed": false,
+          "skip_reason": "vad_inactive",
+          "segment_count": null,
+          "average_log_probability": null,
+          "maximum_no_speech_probability": null,
+          "maximum_compression_ratio": null
+        }
+      }
+    }
+  ],
+  "cuda_available": true,
+  "real_vad_status": "PASS",
+  "ungated_silence_stt": {
+    "text": "다음 영상에서 만나요.",
+    "elapsed_seconds": 0.1646274710074067,
+    "segment_count": 1,
+    "average_log_probability": -0.4053819444444444,
+    "maximum_no_speech_probability": 0.0,
+    "maximum_compression_ratio": 0.7317073170731707
+  },
+  "ungated_noise_stt": {
+    "text": "감사합니다.",
+    "elapsed_seconds": 0.16290050791576505,
+    "segment_count": 1,
+    "average_log_probability": -0.3888671875,
+    "maximum_no_speech_probability": 0.0,
+    "maximum_compression_ratio": 0.64
+  },
+  "gpu_status": "PASS"
+}

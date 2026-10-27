@@ -161,6 +161,10 @@ def parse_result(payload: Any, request_id: str, window_index: int, samples: int,
             vad = slot["vad"]
             if type(vad["speech_detected"]) is not bool:
                 raise ValueError("invalid VAD flag")
+            # The server skips STT for inactive VAD. Never let contradictory
+            # text enter the assembler, including its retained hypothesis.
+            if not vad["speech_detected"] and slot["raw_transcript"].strip():
+                raise ValueError("nonempty transcript with inactive VAD")
             for key in ("speech_duration_ms", "speech_ratio", "processing_seconds", "rms", "peak", "audio_duration_ms"):
                 if not _number(vad[key]):
                     raise ValueError(f"invalid VAD {key}")

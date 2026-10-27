@@ -47,6 +47,28 @@ def payload(request_id="r", window=0, samples=48000):
 
 
 class ClientTests(TestCase):
+    def test_inactive_vad_rejects_any_nonempty_raw_transcript(self):
+        for text in ("감사", "감사합니다", "네", "오늘의 뉴스", "arbitrary hallucination"):
+            with self.subTest(text=text):
+                result = payload()
+                result["speakers"][0]["vad"].update(
+                    speech_detected=False, speech_duration_ms=0., speech_ratio=0.)
+                result["speakers"][0]["raw_transcript"] = text
+                with self.assertRaisesRegex(RemoteProtocolError, "inactive VAD"):
+                    parse_result(result, "r", 0, 48000, .01)
+
+    def test_active_vad_preserves_short_text_and_inactive_empty_is_valid(self):
+        for text in ("네", "감사", "감사합니다", "아니요"):
+            with self.subTest(text=text):
+                result = payload()
+                result["speakers"][0]["raw_transcript"] = text
+                result["speakers"][1]["vad"].update(
+                    speech_detected=False, speech_duration_ms=0., speech_ratio=0.)
+                result["speakers"][1]["raw_transcript"] = ""
+                parsed = parse_result(result, "r", 0, 48000, .01)
+                self.assertEqual(parsed.slots[0]["raw_transcript"], text)
+                self.assertEqual(parsed.slots[1]["raw_transcript"], "")
+
     def test_binary_response_roundtrip_preserves_float32_waveforms(self):
         p = payload(samples=16000)
         for slot in p["speakers"]:

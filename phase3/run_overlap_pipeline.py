@@ -10,6 +10,7 @@ import statistics
 import sys
 import threading
 import time
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -442,6 +443,9 @@ def build_evidence_timeline_records(
                 "record_type": "window",
                 "schema_version": EVIDENCE_SCHEMA_VERSION,
                 "window_id": window_id,
+                "session_id": item.get("session_id"),
+                "remote_request_id": item.get("remote_request_id"),
+                "remote_stt_diagnostics": item.get("remote_stt_diagnostics"),
                 "capture_completed_timestamp": item["capture_completed_timestamp"],
                 "audio": {
                     "source": "original.wav",
@@ -673,6 +677,7 @@ def main(
     published_subtitle_utterances: set[tuple[int, int]] = set()
     websocket_server: Any | None = None
     websocket_stats: dict[str, Any] = {"enabled": False}
+    session_id = uuid.uuid4().hex
     event_sequence = itertools.count(1)
     state_lock = threading.Lock()
     audio_queue: queue.Queue[AudioWindow | object] = WindowQueue(
@@ -790,6 +795,7 @@ def main(
             display_text = append_preserving_text(display_text, event.publication_text)
         subtitle_event: dict[str, Any] = {
             "type": "subtitle",
+            "session_id": session_id,
             "status": event.status,
             "action": event.action,
             "utterance_id": event.utterance_id,
@@ -1006,6 +1012,7 @@ def main(
                         remote_result: RemoteWindowResult | None = None) -> None:
             now = time.perf_counter()
             detail = {
+                "session_id": session_id,
                 "window": item.index, "stage": stage, "reason": reason,
                 "capture_completed_perf_counter": item.capture_ended,
                 "dropped_perf_counter": now,
@@ -1014,6 +1021,7 @@ def main(
                 "timing": dict(item.latency_timing),
             }
             if remote_result is not None:
+                detail["remote_request_id"] = remote_result.request_id
                 detail["remote_timing"] = dict(remote_result.timing)
                 detail["remote_client_timing"] = dict(remote_result.client_timing)
             with state_lock:
@@ -2197,6 +2205,12 @@ def main(
                         post_capture = pipeline_ended - item.source.capture_ended
                         metric = {
                             "window": item.source.index,
+                            "session_id": session_id,
+                            "remote_request_id": item.remote_result.request_id if item.remote_result else None,
+                            "remote_stt_diagnostics": (
+                                [slot.get("stt_diagnostics") for slot in logical_remote_slots]
+                                if logical_remote_slots is not None else None
+                            ),
                             "processing_mode": args.processing_mode,
                             "speaker_mode": args.speaker_mode.value,
                             "single_mode_primary": single_mode_primary,
@@ -2878,6 +2892,7 @@ def main(
             and all(row["reason"] == "stop_requested" for row in drop_details)
         )
         summary = {
+            "session_id": session_id,
             "cancelled": cancelled,
             "phase": phase_label,
             "processing_mode": args.processing_mode,

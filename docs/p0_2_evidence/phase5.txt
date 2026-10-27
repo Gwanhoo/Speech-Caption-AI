@@ -1,0 +1,232 @@
+[PIPELINE CODE] module=<unknown>
+...Live caption worker failed
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase5/live_caption_controller.py", line 308, in run
+    info = self.backend.preflight(self.config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase5/test_gui_app.py", line 103, in preflight
+    raise RemoteConnectionError("mock server unavailable")
+remote_gpu_client.RemoteConnectionError: mock server unavailable
+.....This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+.This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+.This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+[PIPELINE CODE] module=<unknown>
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+[PIPELINE CODE] module=<unknown>
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+.This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+........This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+........This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+.This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+.This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+.......EEEEE..This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+..This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+....Live caption worker failed
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase5/live_caption_controller.py", line 308, in run
+    info = self.backend.preflight(self.config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase5/test_gui_app.py", line 69, in preflight
+    raise RuntimeError("WASAPI capture 실패")
+RuntimeError: WASAPI capture 실패
+...................This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+.This plugin does not support propagateSizeHints()
+This plugin does not support raise()
+This plugin does not support raise()
+...
+======================================================================
+ERROR: test_real_qt_timer_removes_expired_recorded_final_without_new_event (test_gui_app.GuiTests.test_real_qt_timer_removes_expired_recorded_final_without_new_event)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase5/test_gui_app.py", line 241, in test_real_qt_timer_removes_expired_recorded_final_without_new_event
+    window.apply_subtitle_event(load_events(DEFAULT_TIMELINE)[10])
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase5/replay_overlay_timeline.py", line 28, in load_events
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/Speech-Caption-AI/phase3/output/evidence/news_20261022_160827/timeline.jsonl'
+
+======================================================================
+ERROR: test_recorded_final_duplicate_does_not_renew_deadline_or_reappear (test_gui_app.GuiTests.test_recorded_final_duplicate_does_not_renew_deadline_or_reappear)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase5/test_gui_app.py", line 219, in test_recorded_final_duplicate_does_not_renew_deadline_or_reappear
+    replay = TimelineReplay(load_events(DEFAULT_TIMELINE))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase5/replay_overlay_timeline.py", line 28, in load_events
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/Speech-Caption-AI/phase3/output/evidence/news_20261022_160827/timeline.jsonl'
+
+======================================================================
+ERROR: test_recorded_final_expiry_uses_arrival_intervals_not_stream_end (test_gui_app.GuiTests.test_recorded_final_expiry_uses_arrival_intervals_not_stream_end)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase5/test_gui_app.py", line 194, in test_recorded_final_expiry_uses_arrival_intervals_not_stream_end
+    replay = TimelineReplay(load_events(DEFAULT_TIMELINE))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase5/replay_overlay_timeline.py", line 28, in load_events
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/Speech-Caption-AI/phase3/output/evidence/news_20261022_160827/timeline.jsonl'
+
+======================================================================
+ERROR: test_recorded_overlay_flags_and_initial_geometry (test_gui_app.GuiTests.test_recorded_overlay_flags_and_initial_geometry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase5/test_gui_app.py", line 252, in test_recorded_overlay_flags_and_initial_geometry
+    replay = TimelineReplay(load_events(DEFAULT_TIMELINE))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase5/replay_overlay_timeline.py", line 28, in load_events
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/Speech-Caption-AI/phase3/output/evidence/news_20261022_160827/timeline.jsonl'
+
+======================================================================
+ERROR: test_recorded_window_13_14_final_and_partial_keep_display_order (test_gui_app.GuiTests.test_recorded_window_13_14_final_and_partial_keep_display_order)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase5/test_gui_app.py", line 164, in test_recorded_window_13_14_final_and_partial_keep_display_order
+    events = load_events(DEFAULT_TIMELINE)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase5/replay_overlay_timeline.py", line 28, in load_events
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/Speech-Caption-AI/phase3/output/evidence/news_20261022_160827/timeline.jsonl'
+
+----------------------------------------------------------------------
+Ran 72 tests in 1.565s
+
+FAILED (errors=5)

@@ -1,0 +1,45 @@
+FFFFF
+======================================================================
+FAIL: test_inactive_vad_rejects_any_nonempty_raw_transcript (test_remote_gpu_client.ClientTests.test_inactive_vad_rejects_any_nonempty_raw_transcript) (text='감사')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_gpu_client.py", line 57, in test_inactive_vad_rejects_any_nonempty_raw_transcript
+    with self.assertRaisesRegex(RemoteProtocolError, "inactive VAD"):
+AssertionError: RemoteProtocolError not raised
+
+======================================================================
+FAIL: test_inactive_vad_rejects_any_nonempty_raw_transcript (test_remote_gpu_client.ClientTests.test_inactive_vad_rejects_any_nonempty_raw_transcript) (text='감사합니다')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_gpu_client.py", line 57, in test_inactive_vad_rejects_any_nonempty_raw_transcript
+    with self.assertRaisesRegex(RemoteProtocolError, "inactive VAD"):
+AssertionError: RemoteProtocolError not raised
+
+======================================================================
+FAIL: test_inactive_vad_rejects_any_nonempty_raw_transcript (test_remote_gpu_client.ClientTests.test_inactive_vad_rejects_any_nonempty_raw_transcript) (text='네')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_gpu_client.py", line 57, in test_inactive_vad_rejects_any_nonempty_raw_transcript
+    with self.assertRaisesRegex(RemoteProtocolError, "inactive VAD"):
+AssertionError: RemoteProtocolError not raised
+
+======================================================================
+FAIL: test_inactive_vad_rejects_any_nonempty_raw_transcript (test_remote_gpu_client.ClientTests.test_inactive_vad_rejects_any_nonempty_raw_transcript) (text='오늘의 뉴스')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_gpu_client.py", line 57, in test_inactive_vad_rejects_any_nonempty_raw_transcript
+    with self.assertRaisesRegex(RemoteProtocolError, "inactive VAD"):
+AssertionError: RemoteProtocolError not raised
+
+======================================================================
+FAIL: test_inactive_vad_rejects_any_nonempty_raw_transcript (test_remote_gpu_client.ClientTests.test_inactive_vad_rejects_any_nonempty_raw_transcript) (text='arbitrary hallucination')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_gpu_client.py", line 57, in test_inactive_vad_rejects_any_nonempty_raw_transcript
+    with self.assertRaisesRegex(RemoteProtocolError, "inactive VAD"):
+AssertionError: RemoteProtocolError not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.015s
+
+FAILED (failures=5)
