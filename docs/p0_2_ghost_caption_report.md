@@ -142,5 +142,7 @@ python -u -m phase5.gui_app --window-seconds 3 --stride-seconds 2 --latency-diag
 ## 8. Git 결과
 
 - 사전 원격 확인: `git ls-remote origin refs/heads/main` = `322884d15a657b2300a31cdef04f293e94bed6f7`. 예상하지 못한 원격 변경 없음.
-- P0-2A 관련 파일만 명시적으로 stage할 예정이다. 기존 XFAIL/환경 SKIP은 위에 기록했으며, 수정으로 추가된 회귀 실패나 임계값 조정은 없다.
-- 최종 커밋 해시·푸시 결과·종료 상태: 실제 실행 후 이 절에 기록한다. 아직 수행하지 않은 Git 결과를 성공으로 기재하지 않았다.
+- 최종 구현·테스트 커밋: `b3f53cf98af94b256528a2d6120a22ecb299655c` (`fix: reject inconsistent ghost caption responses and trace STT evidence`).
+- `git push origin main`: **성공** (`322884d..b3f53cf main -> main`). 이후 `git ls-remote`의 main도 같은 전체 해시인 것을 확인했다. 강제 푸시 없음.
+- 구현 커밋 푸시 직후 `git status --short`: **출력 없음(깨끗함)**. P0-2A 관련 21개 파일만 개별 경로로 stage했다. 기존 XFAIL/환경 SKIP은 위에 기록했으며 수정으로 추가된 회귀 실패나 임계값 조정은 없다.
+- 이 Git 결과는 위 커밋·푸시를 실제 확인한 뒤 작성했다. 결과 기록 자체는 후속 문서 전용 커밋으로 보존한다. 문서가 자신의 커밋 해시를 포함할 수 없으므로 최종 문서 커밋 해시는 `git log -1 --format=%H -- docs/p0_2_ghost_caption_report.md`로 확인한다. 최종 터미널 응답에도 해당 실제 해시와 푸시·종료 상태를 별도로 출력한다.
