@@ -268,6 +268,30 @@ def is_internal_deletion_revision(previous: str, current: str) -> bool:
     )
 
 
+def is_terminal_token_revision(previous: str, current: str, old_length: int, new_cut: int) -> bool:
+    """Recognize a bounded ending correction after identical complete words.
+
+    Only used with adjacent shared-audio revision support and an already accepted
+    correction candidate. Do not promote noisy earlier words or sentence tails.
+    Confirmed-prefix and internal-deletion checks still run at the call site.
+    """
+    _, positions = normalize_with_positions(previous)
+    old_seam = previous[positions[len(positions) - old_length]:]
+    new_seam = current[:new_cut]
+    if has_sentence_ending(old_seam) or has_sentence_ending(new_seam):
+        return False
+    old_tokens, new_tokens = old_seam.split(), new_seam.split()
+    return bool(
+        len(old_tokens) >= 2 and len(old_tokens) == len(new_tokens)
+        and old_tokens[:-1] == new_tokens[:-1]
+        and old_tokens[-1] != new_tokens[-1]
+        and re.fullmatch(r"[가-힣]+", old_tokens[-1])
+        and re.fullmatch(r"[가-힣]+", new_tokens[-1])
+        and normalized_common_prefix_length(old_tokens[-1], new_tokens[-1]) >= 2
+        and normalized_common_prefix_length(old_seam, new_seam) >= 6
+    )
+
+
 def anchored_prefix_revision(previous: str, current: str) -> tuple[int, int, float] | None:
     """Revise a short modifier before a shared word, with external timing support.
 
@@ -685,6 +709,12 @@ class SubtitleAssembler:
             and similarity is not None
             and correction[2] > similarity
         )
+        supported_terminal_correction = bool(
+            correction and shared_speech is True and supported_tail_revision
+            and new_text.strip()
+            and normalize_for_matching(raw[:correction[1]]) == normalize_for_matching(overlap)
+            and is_terminal_token_revision(previous, raw, correction[0], correction[1])
+        )
         unsupported_full_correction_with_extension = bool(
             correction
             and match_type == "fuzzy"
@@ -705,7 +735,8 @@ class SubtitleAssembler:
             match_type == "none"
             or (
                 match_type == "fuzzy"
-                and (correction_covers_previous or correction_beats_fuzzy_seam)
+                and (correction_covers_previous or correction_beats_fuzzy_seam
+                     or supported_terminal_correction)
             )
         ):
             old_length, new_cut, similarity = correction
