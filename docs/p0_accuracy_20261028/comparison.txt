@@ -1,0 +1,138 @@
+{
+  "scope": "Constructed text fixtures, shared_speech supplied; not live STT or human-labelled audio",
+  "base_commit": "0a2a33a",
+  "live_CER": null,
+  "live_WER": null,
+  "live_latency": null,
+  "cases": [
+    {
+      "input": [
+        "시청해 주셔서 감사합니다.",
+        "시청해 주셔서 감사합니다.",
+        "시청해 주셔서 감사합니다."
+      ],
+      "expected_final_transcript": "시청해 주셔서 감사합니다.",
+      "before": {
+        "final_transcript": "시청해 주셔서 감사합니다. 시청해 주셔서 감사합니다.",
+        "events": [
+          [
+            "partial",
+            1,
+            "시청해 주셔서 감사합니다."
+          ],
+          [
+            "final",
+            1,
+            "시청해 주셔서 감사합니다."
+          ],
+          [
+            "partial",
+            2,
+            "시청해 주셔서 감사합니다."
+          ],
+          [
+            "final",
+            2,
+            "시청해 주셔서 감사합니다."
+          ]
+        ],
+        "extra_sentence_copies": 1,
+        "CER": 1.0,
+        "WER": 1.0
+      },
+      "after": {
+        "final_transcript": "시청해 주셔서 감사합니다.",
+        "events": [
+          [
+            "partial",
+            1,
+            "시청해 주셔서 감사합니다."
+          ],
+          [
+            "final",
+            1,
+            "시청해 주셔서 감사합니다."
+          ]
+        ],
+        "extra_sentence_copies": 0,
+        "CER": 0.0,
+        "WER": 0.0
+      }
+    },
+    {
+      "input": [
+        "시청해 주셔서 감사합니다.",
+        "시청해 주셔서 감사합니다.",
+        "시청해 주셔서 감사합니다. 다음 소식을 전합니다."
+      ],
+      "expected_final_transcript": "시청해 주셔서 감사합니다. 다음 소식을 전합니다.",
+      "before": {
+        "final_transcript": "시청해 주셔서 감사합니다. 시청해 주셔서 감사합니다. 다음 소식을 전합니다.",
+        "events": [
+          [
+            "partial",
+            1,
+            "시청해 주셔서 감사합니다."
+          ],
+          [
+            "final",
+            1,
+            "시청해 주셔서 감사합니다."
+          ],
+          [
+            "partial",
+            2,
+            "시청해 주셔서 감사합니다. 다음 소식을 전합니다."
+          ],
+          [
+            "final",
+            2,
+            "시청해 주셔서 감사합니다. 다음 소식을 전합니다."
+          ]
+        ],
+        "extra_sentence_copies": 1,
+        "CER": 0.55,
+        "WER": 0.5
+      },
+      "after": {
+        "final_transcript": "시청해 주셔서 감사합니다. 다음 소식을 전합니다.",
+        "events": [
+          [
+            "partial",
+            1,
+            "시청해 주셔서 감사합니다."
+          ],
+          [
+            "final",
+            1,
+            "시청해 주셔서 감사합니다."
+          ],
+          [
+            "partial",
+            2,
+            "다음 소식을 전합니다."
+          ],
+          [
+            "final",
+            2,
+            "다음 소식을 전합니다."
+          ]
+        ],
+        "extra_sentence_copies": 0,
+        "CER": 0.0,
+        "WER": 0.0
+      }
+    }
+  ],
+  "before_cpu_ms_per_two_scenarios": {
+    "mean": 0.46622776659205556,
+    "p95": 0.7480790372937918,
+    "samples": 200
+  },
+  "after_cpu_ms_per_two_scenarios": {
+    "mean": 0.4590639239177108,
+    "p95": 0.7545400876551867,
+    "samples": 200
+  },
+  "diagnostic_ms_per_small_record_mean": 0.01358812302350998
+}

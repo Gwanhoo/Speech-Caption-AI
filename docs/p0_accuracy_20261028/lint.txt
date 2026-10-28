@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/voxlux-p0-gui-deps/ruff/__main__.py", line 27, in <module>
+    _run()
+  File "/tmp/voxlux-p0-gui-deps/ruff/__main__.py", line 10, in _run
+    ruff = find_ruff_bin()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/voxlux-p0-gui-deps/ruff/_find_ruff.py", line 53, in find_ruff_bin
+    raise RuffNotFound(
+ruff._find_ruff.RuffNotFound: Could not find the ruff binary in any of the following locations:
+ - /usr/local/bin
+ - /tmp/voxlux-p0-gui-deps/bin
+ - /root/.local/bin
+

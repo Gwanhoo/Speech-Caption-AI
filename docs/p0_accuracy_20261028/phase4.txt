@@ -1,0 +1,898 @@
+test_direct_wav_is_a_supported_benchmark_source (test_benchmark_stt_models.FixedAudioTests.test_direct_wav_is_a_supported_benchmark_source) ... ok
+test_direct_windows_match_complete_production_3s_2s_schedule (test_benchmark_stt_models.FixedAudioTests.test_direct_windows_match_complete_production_3s_2s_schedule) ... ok
+test_load_fixed_inputs_validates_and_reuses_saved_wav (test_benchmark_stt_models.FixedAudioTests.test_load_fixed_inputs_validates_and_reuses_saved_wav) ... ok
+test_prepare_only_requires_mixed_audio (test_benchmark_stt_models.FixedAudioTests.test_prepare_only_requires_mixed_audio) ... usage: run_regressions.py [-h]
+                          (--direct-wav DIRECT_WAV | --audio AUDIO | --separated-wav SEPARATED_WAV [SEPARATED_WAV ...])
+                          [--models MODELS [MODELS ...]] [--output OUTPUT]
+                          [--separated-dir SEPARATED_DIR] [--prepare-only]
+                          [--no-warmup]
+run_regressions.py: error: --prepare-only requires --audio
+ok
+test_prepare_only_writes_manifest_without_loading_whisper (test_benchmark_stt_models.FixedAudioTests.test_prepare_only_writes_manifest_without_loading_whisper) ... Prepared fixed WAVs: /tmp/tmp7i1lldr5/fixed.wav
+JSON: /tmp/tmp7i1lldr5/report.json
+ok
+test_score_transcript_normalizes_hangul_punctuation_and_space (test_benchmark_stt_models.FixedAudioTests.test_score_transcript_normalizes_hangul_punctuation_and_space) ... ok
+test_detects_general_adjacent_phrase_repetition_without_editing_text (test_benchmark_stt_models.RepetitionMetricTests.test_detects_general_adjacent_phrase_repetition_without_editing_text) ... ok
+test_empty_transcript_is_supported (test_benchmark_stt_models.RepetitionMetricTests.test_empty_transcript_is_supported) ... ok
+test_records_raw_segments_metadata_and_production_options (test_benchmark_stt_models.TranscriptionRecordTests.test_records_raw_segments_metadata_and_production_options) ... ok
+test_side_by_side_preserves_each_model_transcript_and_segments (test_benchmark_stt_models.TranscriptionRecordTests.test_side_by_side_preserves_each_model_transcript_and_segments) ... ok
+test_inconsistent_response_is_dropped_before_assembler_and_next_speech_survives (test_ghost_caption_path.GhostCaptionPathTests.test_inconsistent_response_is_dropped_before_assembler_and_next_speech_survives) ... ok
+test_server_vad_gate_and_stt_diagnostics_roundtrip (test_ghost_caption_path.GhostCaptionPathTests.test_server_vad_gate_and_stt_diagnostics_roundtrip) ... ok
+test_single_repeated_short_speech_silence_and_expiry (test_ghost_caption_path.GhostCaptionPathTests.test_single_repeated_short_speech_silence_and_expiry) ... ok
+test_transcribe_empty_and_nonfinite_diagnostics_do_not_create_text (test_ghost_caption_path.GhostCaptionPathTests.test_transcribe_empty_and_nonfinite_diagnostics_do_not_create_text) ... ok
+test_invalid_model_is_rejected_before_loading_gpu (test_gpu_processing_server.FasterWhisperModelSourceTests.test_invalid_model_is_rejected_before_loading_gpu) ... ok
+test_overlap_profile_cli_override_is_preserved (test_gpu_processing_server.FasterWhisperModelSourceTests.test_overlap_profile_cli_override_is_preserved) ... ok
+test_overlap_profile_still_loads_mossformer2 (test_gpu_processing_server.FasterWhisperModelSourceTests.test_overlap_profile_still_loads_mossformer2) ... ok
+test_production_default_is_large_v3_turbo (test_gpu_processing_server.FasterWhisperModelSourceTests.test_production_default_is_large_v3_turbo) ... ok
+test_selected_model_does_not_reuse_legacy_base_snapshot (test_gpu_processing_server.FasterWhisperModelSourceTests.test_selected_model_does_not_reuse_legacy_base_snapshot) ... ok
+test_selected_model_is_reported_by_health (test_gpu_processing_server.FasterWhisperModelSourceTests.test_selected_model_is_reported_by_health) ... ok
+test_single_profile_does_not_load_mossformer2 (test_gpu_processing_server.FasterWhisperModelSourceTests.test_single_profile_does_not_load_mossformer2) ... ok
+test_single_warmup_skips_separator (test_gpu_processing_server.FasterWhisperModelSourceTests.test_single_warmup_skips_separator) ... ok
+test_uses_base_model_name_when_project_checkpoint_is_missing (test_gpu_processing_server.FasterWhisperModelSourceTests.test_uses_base_model_name_when_project_checkpoint_is_missing) ... ok
+test_uses_valid_local_snapshot_without_assuming_snapshot_hash (test_gpu_processing_server.FasterWhisperModelSourceTests.test_uses_valid_local_snapshot_without_assuming_snapshot_hash) ... ok
+test_warmup_finishes_on_inference_worker_before_ready (test_gpu_processing_server.FasterWhisperModelSourceTests.test_warmup_finishes_on_inference_worker_before_ready) ... ok
+test_whisper_model_cli_override_is_preserved (test_gpu_processing_server.FasterWhisperModelSourceTests.test_whisper_model_cli_override_is_preserved) ... ok
+test_busy_http_response_preserves_error_contract (test_gpu_processing_server.ServerBackpressureTests.test_busy_http_response_preserves_error_contract) ... http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 503 -
+ok
+test_delayed_gpu_is_serialized_bounded_and_queue_wait_is_measured (test_gpu_processing_server.ServerBackpressureTests.test_delayed_gpu_is_serialized_bounded_and_queue_wait_is_measured) ... ok
+test_http_handler_returns_server_diagnostics_without_loading_models (test_gpu_processing_server.ServerLatencyDiagnosticsTests.test_http_handler_returns_server_diagnostics_without_loading_models) ... [LATENCY SERVER PROCESS] {"request_id": "window-0-1793183555511436650", "window": 0, "timing": {"queue_wait_seconds": 0.0, "separation_seconds": 0.0, "vad_seconds": 0.0, "stt_seconds": 0.0, "processing_seconds": 0.0, "amp_seconds": 0.0, "fp32_seconds": 0.0, "server_request_received_perf_counter": 752749.806146526, "server_request_thread_id": 130792860677824, "server_request_thread_name": "Thread-4 (process_request_thread)", "request_body_read_started_perf_counter": 752749.806171833, "request_body_read_ended_perf_counter": 752749.806320083, "request_body_read_seconds": 0.00014825002290308475, "request_body_bytes": 6480, "request_decode_started_perf_counter": 752749.806320457, "request_decode_ended_perf_counter": 752749.806614565, "request_decode_seconds": 0.00029410794377326965, "connection_client_port": 50034}}
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+[LATENCY SERVER] window=000 request_id=window-0-1793183555511436650 response_serialize=0.000069s response_write=0.000532s response_bytes=14707 format=binary-f32le
+[LATENCY SERVER PROCESS] {"request_id": "window-1-1793183555515395847", "window": 1, "timing": {"queue_wait_seconds": 0.0, "separation_seconds": 0.0, "vad_seconds": 0.0, "stt_seconds": 0.0, "processing_seconds": 0.0, "amp_seconds": 0.0, "fp32_seconds": 0.0, "server_request_received_perf_counter": 752749.80943359, "server_request_thread_id": 130792860677824, "server_request_thread_name": "Thread-4 (process_request_thread)", "request_body_read_started_perf_counter": 752749.809448004, "request_body_read_ended_perf_counter": 752749.809493003, "request_body_read_seconds": 4.499894566833973e-05, "request_body_bytes": 6480, "request_decode_started_perf_counter": 752749.809493139, "request_decode_ended_perf_counter": 752749.809741886, "request_decode_seconds": 0.00024874694645404816, "connection_client_port": 50034}}
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+[LATENCY SERVER] window=001 request_id=window-1-1793183555515395847 response_serialize=0.000047s response_write=0.000008s response_bytes=14705 format=binary-f32le
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+ok
+test_input_residual_evidence_is_computed_and_survives_binary_raw_slot_mapping (test_gpu_processing_server.ServerLatencyDiagnosticsTests.test_input_residual_evidence_is_computed_and_survives_binary_raw_slot_mapping) ... ok
+test_process_uses_cached_gpu_memory_without_nvidia_smi (test_gpu_processing_server.ServerLatencyDiagnosticsTests.test_process_uses_cached_gpu_memory_without_nvidia_smi) ... ok
+test_single_process_uses_original_audio_and_preserves_two_slot_contract (test_gpu_processing_server.ServerLatencyDiagnosticsTests.test_single_process_uses_original_audio_and_preserves_two_slot_contract) ... ok
+test_active_vad_preserves_short_text_and_inactive_empty_is_valid (test_remote_gpu_client.ClientTests.test_active_vad_preserves_short_text_and_inactive_empty_is_valid) ... ok
+test_binary_response_roundtrip_preserves_float32_waveforms (test_remote_gpu_client.ClientTests.test_binary_response_roundtrip_preserves_float32_waveforms) ... ok
+test_client_recovers_after_server_closes_a_successful_response (test_remote_gpu_client.ClientTests.test_client_recovers_after_server_closes_a_successful_response) ... ok
+test_delayed_http_roundtrip_timeout_no_retry_and_recovery (test_remote_gpu_client.ClientTests.test_delayed_http_roundtrip_timeout_no_retry_and_recovery) ... ok
+test_diagnostic_header_is_absent_by_default (test_remote_gpu_client.ClientTests.test_diagnostic_header_is_absent_by_default) ... ok
+test_fixed_wav_http_and_subtitle_continuity (test_remote_gpu_client.ClientTests.test_fixed_wav_http_and_subtitle_continuity) ... ok
+test_inactive_vad_rejects_any_nonempty_raw_transcript (test_remote_gpu_client.ClientTests.test_inactive_vad_rejects_any_nonempty_raw_transcript) ... ok
+test_injected_connection_failure_is_classified_as_connection_error (test_remote_gpu_client.ClientTests.test_injected_connection_failure_is_classified_as_connection_error)
+A closed listener is OS/firewall dependent; inject its contract instead. ... ok
+test_malformed_contracts (test_remote_gpu_client.ClientTests.test_malformed_contracts) ... ok
+test_monotonic_timing_and_queue_wait_calculation (test_remote_gpu_client.ClientTests.test_monotonic_timing_and_queue_wait_calculation) ... ok
+test_remote_client_records_transport_timing (test_remote_gpu_client.ClientTests.test_remote_client_records_transport_timing) ... ok
+test_transport_errors (test_remote_gpu_client.ClientTests.test_transport_errors) ... ok
+test_waveform_preserves_peak_above_one (test_remote_gpu_client.ClientTests.test_waveform_preserves_peak_above_one) ... ok
+test_waveform_roundtrip_and_mapping (test_remote_gpu_client.ClientTests.test_waveform_roundtrip_and_mapping) ... ok
+test_all_remote_windows_fail_without_summary_crash (test_remote_overlap_pipeline.PipelineTests.test_all_remote_windows_fail_without_summary_crash) ... ERROR
+test_ambiguous_tentative_is_withheld_and_discarded_internally (test_remote_overlap_pipeline.PipelineTests.test_ambiguous_tentative_is_withheld_and_discarded_internally) ... 
+  test_ambiguous_tentative_is_withheld_and_discarded_internally (test_remote_overlap_pipeline.PipelineTests.test_ambiguous_tentative_is_withheld_and_discarded_internally) (duration=3) ... ERROR
+  test_ambiguous_tentative_is_withheld_and_discarded_internally (test_remote_overlap_pipeline.PipelineTests.test_ambiguous_tentative_is_withheld_and_discarded_internally) (duration=5) ... ERROR
+test_default_reference_is_not_resampled_twice (test_remote_overlap_pipeline.PipelineTests.test_default_reference_is_not_resampled_twice) ... ok
+test_diagnostics_survive_consumer_running_before_enqueue_returns (test_remote_overlap_pipeline.PipelineTests.test_diagnostics_survive_consumer_running_before_enqueue_returns) ... ERROR
+test_expired_queued_window_is_not_sent (test_remote_overlap_pipeline.PipelineTests.test_expired_queued_window_is_not_sent) ... ERROR
+test_explicit_evidence_dir_links_original_raw_stt_and_final_subtitles (test_remote_overlap_pipeline.PipelineTests.test_explicit_evidence_dir_links_original_raw_stt_and_final_subtitles) ... ERROR
+test_explicit_output_device_id_reaches_loopback_capture (test_remote_overlap_pipeline.PipelineTests.test_explicit_output_device_id_reaches_loopback_capture) ... ok
+test_failed_remote_window_continues (test_remote_overlap_pipeline.PipelineTests.test_failed_remote_window_continues) ... ERROR
+test_fragment_routing_permutation_and_revision_in_real_workers (test_remote_overlap_pipeline.PipelineTests.test_fragment_routing_permutation_and_revision_in_real_workers)
+Exercise actual worker wiring/remote parsing with synthetic VAD/STT. ... ok
+test_full_queue_shutdown_waits_for_consumer_without_losing_stop (test_remote_overlap_pipeline.PipelineTests.test_full_queue_shutdown_waits_for_consumer_without_losing_stop) ... ok
+test_http_protocol_and_connection_failure_continue (test_remote_overlap_pipeline.PipelineTests.test_http_protocol_and_connection_failure_continue) ... 
+  test_http_protocol_and_connection_failure_continue (test_remote_overlap_pipeline.PipelineTests.test_http_protocol_and_connection_failure_continue) (failure='RemoteConnectionError') ... ERROR
+  test_http_protocol_and_connection_failure_continue (test_remote_overlap_pipeline.PipelineTests.test_http_protocol_and_connection_failure_continue) (failure='RemoteHTTPError') ... ERROR
+  test_http_protocol_and_connection_failure_continue (test_remote_overlap_pipeline.PipelineTests.test_http_protocol_and_connection_failure_continue) (failure='RemoteProtocolError') ... ERROR
+test_intentional_stop_is_cancelled_and_retains_drop_accounting (test_remote_overlap_pipeline.PipelineTests.test_intentional_stop_is_cancelled_and_retains_drop_accounting) ... ERROR
+test_late_response_is_dropped_before_subtitle_state_updates (test_remote_overlap_pipeline.PipelineTests.test_late_response_is_dropped_before_subtitle_state_updates) ... ERROR
+test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap)
+Synthetic remote results exercise the full state and publication path. ... 
+  test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=True, raw_swap=False, restart=False)
+Synthetic remote results exercise the full state and publication path. ... ERROR
+  test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=True, raw_swap=True, restart=False)
+Synthetic remote results exercise the full state and publication path. ... ERROR
+  test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=False, raw_swap=False, restart=False)
+Synthetic remote results exercise the full state and publication path. ... ERROR
+  test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=False, raw_swap=True, restart=False)
+Synthetic remote results exercise the full state and publication path. ... ERROR
+  test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=False, raw_swap=False, restart=True)
+Synthetic remote results exercise the full state and publication path. ... ERROR
+  test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=False, raw_swap=True, restart=True)
+Synthetic remote results exercise the full state and publication path. ... ERROR
+test_local_default_path (test_remote_overlap_pipeline.PipelineTests.test_local_default_path) ... ok
+test_low_energy_540ms_false_vad_emits_no_websocket_subtitle (test_remote_overlap_pipeline.PipelineTests.test_low_energy_540ms_false_vad_emits_no_websocket_subtitle) ... ERROR
+test_new_stream_admission_in_real_workers_with_permutation (test_remote_overlap_pipeline.PipelineTests.test_new_stream_admission_in_real_workers_with_permutation) ... ok
+test_overlap_artifact_and_next_raw_permutation_keep_one_stream_in_workers (test_remote_overlap_pipeline.PipelineTests.test_overlap_artifact_and_next_raw_permutation_keep_one_stream_in_workers) ... ERROR
+test_playback_resampler_preserves_sample_count_duration (test_remote_overlap_pipeline.PipelineTests.test_playback_resampler_preserves_sample_count_duration) ... ok
+test_previously_published_utterance_still_retracts_after_support_is_lost (test_remote_overlap_pipeline.PipelineTests.test_previously_published_utterance_still_retracts_after_support_is_lost) ... ERROR
+test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) ... 
+  test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=False, text='구독과 좋아요 부탁드려요!') ... ERROR
+  test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=False, text='내일 기차가 도착합니다') ... ERROR
+  test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=False, text='An arbitrary English sentence') ... ERROR
+  test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=True, text='구독과 좋아요 부탁드려요!') ... ERROR
+  test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=True, text='내일 기차가 도착합니다') ... ERROR
+  test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=True, text='An arbitrary English sentence') ... ERROR
+test_reference_override_preserves_playback_duration_and_pitch (test_remote_overlap_pipeline.PipelineTests.test_reference_override_preserves_playback_duration_and_pitch) ... ok
+test_remote_audio_queue_absorbs_one_bounded_startup_burst (test_remote_overlap_pipeline.PipelineTests.test_remote_audio_queue_absorbs_one_bounded_startup_burst) ... [DROP] audio_queue full; dropped chunk 003
+ok
+test_remote_latency_diagnostics (test_remote_overlap_pipeline.PipelineTests.test_remote_latency_diagnostics) ... ERROR
+test_remote_workers (test_remote_overlap_pipeline.PipelineTests.test_remote_workers) ... ERROR
+test_repeated_unsupported_tentative_never_reaches_external_publishers (test_remote_overlap_pipeline.PipelineTests.test_repeated_unsupported_tentative_never_reaches_external_publishers) ... ERROR
+test_result_worker_failure_stops_capture_and_cleans_queues (test_remote_overlap_pipeline.PipelineTests.test_result_worker_failure_stops_capture_and_cleans_queues) ... ERROR
+test_single_mode_routes_only_mapped_primary_with_raw_hallucinations (test_remote_overlap_pipeline.PipelineTests.test_single_mode_routes_only_mapped_primary_with_raw_hallucinations) ... ERROR
+test_slow_response_saturates_bounded_queue_and_records_every_drop (test_remote_overlap_pipeline.PipelineTests.test_slow_response_saturates_bounded_queue_and_records_every_drop) ... ERROR
+test_source_artifact_admission_reaches_real_publishers_without_ghosts (test_remote_overlap_pipeline.PipelineTests.test_source_artifact_admission_reaches_real_publishers_without_ghosts) ... 
+  test_source_artifact_admission_reaches_real_publishers_without_ghosts (test_remote_overlap_pipeline.PipelineTests.test_source_artifact_admission_reaches_real_publishers_without_ghosts) (genuine_amplitude=None, text='고맙습니다') ... ERROR
+  test_source_artifact_admission_reaches_real_publishers_without_ghosts (test_remote_overlap_pipeline.PipelineTests.test_source_artifact_admission_reaches_real_publishers_without_ghosts) (genuine_amplitude=None, text='내일 기차가 도착합니다') ... ERROR
+  test_source_artifact_admission_reaches_real_publishers_without_ghosts (test_remote_overlap_pipeline.PipelineTests.test_source_artifact_admission_reaches_real_publishers_without_ghosts) (genuine_amplitude=1.0, text='고맙습니다') ... ERROR
+  test_source_artifact_admission_reaches_real_publishers_without_ghosts (test_remote_overlap_pipeline.PipelineTests.test_source_artifact_admission_reaches_real_publishers_without_ghosts) (genuine_amplitude=0.001, text='작지만 실제 두 번째 발화입니다') ... ERROR
+test_stop_does_not_send_queued_windows_and_restart_is_clean (test_remote_overlap_pipeline.PipelineTests.test_stop_does_not_send_queued_windows_and_restart_is_clean) ... ERROR
+test_stop_during_remote_response_prevents_late_publication (test_remote_overlap_pipeline.PipelineTests.test_stop_during_remote_response_prevents_late_publication) ... ERROR
+test_strong_316ms_transient_is_tentative_and_emits_no_websocket_subtitle (test_remote_overlap_pipeline.PipelineTests.test_strong_316ms_transient_is_tentative_and_emits_no_websocket_subtitle) ... ERROR
+test_structured_runtime_hooks_receive_subtitles_and_metrics (test_remote_overlap_pipeline.PipelineTests.test_structured_runtime_hooks_receive_subtitles_and_metrics) ... ERROR
+test_supported_overlap_revises_wrong_primary_partial_in_real_workers (test_remote_overlap_pipeline.PipelineTests.test_supported_overlap_revises_wrong_primary_partial_in_real_workers) ... ERROR
+test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes (test_remote_overlap_pipeline.PipelineTests.test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes) ... 
+  test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes (test_remote_overlap_pipeline.PipelineTests.test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes) (duration_ms=508) ... ERROR
+  test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes (test_remote_overlap_pipeline.PipelineTests.test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes) (duration_ms=1144) ... ERROR
+  test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes (test_remote_overlap_pipeline.PipelineTests.test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes) (duration_ms=764) ... ERROR
+test_weak_noise_and_genuine_short_speech_finalization_in_workers (test_remote_overlap_pipeline.PipelineTests.test_weak_noise_and_genuine_short_speech_finalization_in_workers) ... ok
+test_withheld_tentative_is_published_after_genuine_source_support (test_remote_overlap_pipeline.PipelineTests.test_withheld_tentative_is_published_after_genuine_source_support) ... ERROR
+test_websocket_mvp (unittest.loader._FailedTest.test_websocket_mvp) ... ERROR
+
+======================================================================
+ERROR: test_all_remote_windows_fail_without_summary_crash (test_remote_overlap_pipeline.PipelineTests.test_all_remote_windows_fail_without_summary_crash)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1457, in test_all_remote_windows_fail_without_summary_crash
+    code, result = self.run_pipeline(True, fail_all=True)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_ambiguous_tentative_is_withheld_and_discarded_internally (test_remote_overlap_pipeline.PipelineTests.test_ambiguous_tentative_is_withheld_and_discarded_internally) (duration=3)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 736, in test_ambiguous_tentative_is_withheld_and_discarded_internally
+    code, result = self.run_pipeline(True, response_factory=response, duration=duration)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_ambiguous_tentative_is_withheld_and_discarded_internally (test_remote_overlap_pipeline.PipelineTests.test_ambiguous_tentative_is_withheld_and_discarded_internally) (duration=5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 736, in test_ambiguous_tentative_is_withheld_and_discarded_internally
+    code, result = self.run_pipeline(True, response_factory=response, duration=duration)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_diagnostics_survive_consumer_running_before_enqueue_returns (test_remote_overlap_pipeline.PipelineTests.test_diagnostics_survive_consumer_running_before_enqueue_returns)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1300, in test_diagnostics_survive_consumer_running_before_enqueue_returns
+    code, result = self.run_pipeline(True, latency_diagnostics=True,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_expired_queued_window_is_not_sent (test_remote_overlap_pipeline.PipelineTests.test_expired_queued_window_is_not_sent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1385, in test_expired_queued_window_is_not_sent
+    _, result = self.run_pipeline(True, response_factory=response, speaker_mode="single")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_explicit_evidence_dir_links_original_raw_stt_and_final_subtitles (test_remote_overlap_pipeline.PipelineTests.test_explicit_evidence_dir_links_original_raw_stt_and_final_subtitles)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 254, in test_explicit_evidence_dir_links_original_raw_stt_and_final_subtitles
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_failed_remote_window_continues (test_remote_overlap_pipeline.PipelineTests.test_failed_remote_window_continues)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1437, in test_failed_remote_window_continues
+    code, result = self.run_pipeline(True, True)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_http_protocol_and_connection_failure_continue (test_remote_overlap_pipeline.PipelineTests.test_http_protocol_and_connection_failure_continue) (failure='RemoteConnectionError')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1452, in test_http_protocol_and_connection_failure_continue
+    code, result = self.run_pipeline(True, True, failure)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_http_protocol_and_connection_failure_continue (test_remote_overlap_pipeline.PipelineTests.test_http_protocol_and_connection_failure_continue) (failure='RemoteHTTPError')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1452, in test_http_protocol_and_connection_failure_continue
+    code, result = self.run_pipeline(True, True, failure)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_http_protocol_and_connection_failure_continue (test_remote_overlap_pipeline.PipelineTests.test_http_protocol_and_connection_failure_continue) (failure='RemoteProtocolError')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1452, in test_http_protocol_and_connection_failure_continue
+    code, result = self.run_pipeline(True, True, failure)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_intentional_stop_is_cancelled_and_retains_drop_accounting (test_remote_overlap_pipeline.PipelineTests.test_intentional_stop_is_cancelled_and_retains_drop_accounting)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1416, in test_intentional_stop_is_cancelled_and_retains_drop_accounting
+    code, result = self.run_pipeline(True, response_factory=response,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_late_response_is_dropped_before_subtitle_state_updates (test_remote_overlap_pipeline.PipelineTests.test_late_response_is_dropped_before_subtitle_state_updates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1404, in test_late_response_is_dropped_before_subtitle_state_updates
+    _, result = self.run_pipeline(True, response_factory=response, speaker_mode="single")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=True, raw_swap=False, restart=False)
+Synthetic remote results exercise the full state and publication path.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 940, in test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=True, raw_swap=True, restart=False)
+Synthetic remote results exercise the full state and publication path.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 940, in test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=False, raw_swap=False, restart=False)
+Synthetic remote results exercise the full state and publication path.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 940, in test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=False, raw_swap=True, restart=False)
+Synthetic remote results exercise the full state and publication path.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 940, in test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=False, raw_swap=False, restart=True)
+Synthetic remote results exercise the full state and publication path.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 940, in test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap) (leakage=False, raw_swap=True, restart=True)
+Synthetic remote results exercise the full state and publication path.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 940, in test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_low_energy_540ms_false_vad_emits_no_websocket_subtitle (test_remote_overlap_pipeline.PipelineTests.test_low_energy_540ms_false_vad_emits_no_websocket_subtitle)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1084, in test_low_energy_540ms_false_vad_emits_no_websocket_subtitle
+    _, result = self.run_pipeline(
+                ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_overlap_artifact_and_next_raw_permutation_keep_one_stream_in_workers (test_remote_overlap_pipeline.PipelineTests.test_overlap_artifact_and_next_raw_permutation_keep_one_stream_in_workers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1234, in test_overlap_artifact_and_next_raw_permutation_keep_one_stream_in_workers
+    code, result = self.run_pipeline(True, response_factory=response, duration=11)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_previously_published_utterance_still_retracts_after_support_is_lost (test_remote_overlap_pipeline.PipelineTests.test_previously_published_utterance_still_retracts_after_support_is_lost)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 994, in test_previously_published_utterance_still_retracts_after_support_is_lost
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=False, text='구독과 좋아요 부탁드려요!')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 482, in test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers
+    code, result = self.run_pipeline(True, response_factory=response, duration=3,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=False, text='내일 기차가 도착합니다')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 482, in test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers
+    code, result = self.run_pipeline(True, response_factory=response, duration=3,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=False, text='An arbitrary English sentence')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 482, in test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers
+    code, result = self.run_pipeline(True, response_factory=response, duration=3,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=True, text='구독과 좋아요 부탁드려요!')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 482, in test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers
+    code, result = self.run_pipeline(True, response_factory=response, duration=3,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=True, text='내일 기차가 도착합니다')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 482, in test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers
+    code, result = self.run_pipeline(True, response_factory=response, duration=3,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) (reverse=True, text='An arbitrary English sentence')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 482, in test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers
+    code, result = self.run_pipeline(True, response_factory=response, duration=3,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_remote_latency_diagnostics (test_remote_overlap_pipeline.PipelineTests.test_remote_latency_diagnostics)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1426, in test_remote_latency_diagnostics
+    code, result = self.run_pipeline(True, latency_diagnostics=True)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_remote_workers (test_remote_overlap_pipeline.PipelineTests.test_remote_workers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 223, in test_remote_workers
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_repeated_unsupported_tentative_never_reaches_external_publishers (test_remote_overlap_pipeline.PipelineTests.test_repeated_unsupported_tentative_never_reaches_external_publishers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 797, in test_repeated_unsupported_tentative_never_reaches_external_publishers
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_result_worker_failure_stops_capture_and_cleans_queues (test_remote_overlap_pipeline.PipelineTests.test_result_worker_failure_stops_capture_and_cleans_queues)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1329, in test_result_worker_failure_stops_capture_and_cleans_queues
+    code, result = self.run_pipeline(True, duration=15, speaker_mode="single")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_single_mode_routes_only_mapped_primary_with_raw_hallucinations (test_remote_overlap_pipeline.PipelineTests.test_single_mode_routes_only_mapped_primary_with_raw_hallucinations)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 344, in test_single_mode_routes_only_mapped_primary_with_raw_hallucinations
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_slow_response_saturates_bounded_queue_and_records_every_drop (test_remote_overlap_pipeline.PipelineTests.test_slow_response_saturates_bounded_queue_and_records_every_drop)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1364, in test_slow_response_saturates_bounded_queue_and_records_every_drop
+    code, result = self.run_pipeline(True, duration=17, response_factory=response,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_source_artifact_admission_reaches_real_publishers_without_ghosts (test_remote_overlap_pipeline.PipelineTests.test_source_artifact_admission_reaches_real_publishers_without_ghosts) (genuine_amplitude=None, text='고맙습니다')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 426, in test_source_artifact_admission_reaches_real_publishers_without_ghosts
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_source_artifact_admission_reaches_real_publishers_without_ghosts (test_remote_overlap_pipeline.PipelineTests.test_source_artifact_admission_reaches_real_publishers_without_ghosts) (genuine_amplitude=None, text='내일 기차가 도착합니다')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 426, in test_source_artifact_admission_reaches_real_publishers_without_ghosts
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_source_artifact_admission_reaches_real_publishers_without_ghosts (test_remote_overlap_pipeline.PipelineTests.test_source_artifact_admission_reaches_real_publishers_without_ghosts) (genuine_amplitude=1.0, text='고맙습니다')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 426, in test_source_artifact_admission_reaches_real_publishers_without_ghosts
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_source_artifact_admission_reaches_real_publishers_without_ghosts (test_remote_overlap_pipeline.PipelineTests.test_source_artifact_admission_reaches_real_publishers_without_ghosts) (genuine_amplitude=0.001, text='작지만 실제 두 번째 발화입니다')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 426, in test_source_artifact_admission_reaches_real_publishers_without_ghosts
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_stop_does_not_send_queued_windows_and_restart_is_clean (test_remote_overlap_pipeline.PipelineTests.test_stop_does_not_send_queued_windows_and_restart_is_clean)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1313, in test_stop_does_not_send_queued_windows_and_restart_is_clean
+    _, result = self.run_pipeline(True, duration=15, response_factory=response,
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_stop_during_remote_response_prevents_late_publication (test_remote_overlap_pipeline.PipelineTests.test_stop_during_remote_response_prevents_late_publication)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1011, in test_stop_during_remote_response_prevents_late_publication
+    _, result = self.run_pipeline(True, response_factory=response, runtime_hooks=hooks)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_strong_316ms_transient_is_tentative_and_emits_no_websocket_subtitle (test_remote_overlap_pipeline.PipelineTests.test_strong_316ms_transient_is_tentative_and_emits_no_websocket_subtitle)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1174, in test_strong_316ms_transient_is_tentative_and_emits_no_websocket_subtitle
+    _, result = self.run_pipeline(
+                ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_structured_runtime_hooks_receive_subtitles_and_metrics (test_remote_overlap_pipeline.PipelineTests.test_structured_runtime_hooks_receive_subtitles_and_metrics)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1259, in test_structured_runtime_hooks_receive_subtitles_and_metrics
+    code, result = self.run_pipeline(True, runtime_hooks=hooks)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_supported_overlap_revises_wrong_primary_partial_in_real_workers (test_remote_overlap_pipeline.PipelineTests.test_supported_overlap_revises_wrong_primary_partial_in_real_workers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 586, in test_supported_overlap_revises_wrong_primary_partial_in_real_workers
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes (test_remote_overlap_pipeline.PipelineTests.test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes) (duration_ms=508)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1037, in test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes
+    code, result = self.run_pipeline(True, response_factory=response)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes (test_remote_overlap_pipeline.PipelineTests.test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes) (duration_ms=1144)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1037, in test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes
+    code, result = self.run_pipeline(True, response_factory=response)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes (test_remote_overlap_pipeline.PipelineTests.test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes) (duration_ms=764)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 1037, in test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes
+    code, result = self.run_pipeline(True, response_factory=response)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_withheld_tentative_is_published_after_genuine_source_support (test_remote_overlap_pipeline.PipelineTests.test_withheld_tentative_is_published_after_genuine_source_support)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 866, in test_withheld_tentative_is_published_after_genuine_source_support
+    code, result = self.run_pipeline(
+                   ^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase4/test_remote_overlap_pipeline.py", line 117, in run_pipeline
+    code = pipeline.main(runtime_hooks=runtime_hooks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Speech-Caption-AI/phase3/run_overlap_pipeline.py", line 911, in main
+    from subtitle_websocket import SubtitleWebSocketServer
+  File "/workspace/Speech-Caption-AI/phase4/subtitle_websocket.py", line 11, in <module>
+    from websockets.asyncio.server import Server, ServerConnection, serve
+ModuleNotFoundError: No module named 'websockets'
+
+======================================================================
+ERROR: test_websocket_mvp (unittest.loader._FailedTest.test_websocket_mvp)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_websocket_mvp
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/workspace/Speech-Caption-AI/phase4/test_websocket_mvp.py", line 8, in <module>
+    from websockets.asyncio.client import connect
+ModuleNotFoundError: No module named 'websockets'
+
+
+----------------------------------------------------------------------
+Ran 85 tests in 10.722s
+
+FAILED (errors=47)

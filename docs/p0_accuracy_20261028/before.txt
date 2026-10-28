@@ -1,0 +1,43 @@
+test_existing_evidence_is_never_overwritten (test_p0_accuracy_diagnostics.EvidencePreservationTests.test_existing_evidence_is_never_overwritten) ... FAIL
+test_changed_words_after_final_are_not_fuzzy_deleted (test_p0_accuracy_diagnostics.FinalizedOverlapTests.test_changed_words_after_final_are_not_fuzzy_deleted) ... ok
+test_finalized_duplicate_tail_is_not_published_again (test_p0_accuracy_diagnostics.FinalizedOverlapTests.test_finalized_duplicate_tail_is_not_published_again) ... FAIL
+test_finalized_tail_is_trimmed_before_new_content (test_p0_accuracy_diagnostics.FinalizedOverlapTests.test_finalized_tail_is_trimmed_before_new_content) ... FAIL
+test_repetition_without_adjacent_shared_audio_is_preserved (test_p0_accuracy_diagnostics.FinalizedOverlapTests.test_repetition_without_adjacent_shared_audio_is_preserved) ... ok
+
+======================================================================
+FAIL: test_existing_evidence_is_never_overwritten (test_p0_accuracy_diagnostics.EvidencePreservationTests.test_existing_evidence_is_never_overwritten)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase3/test_p0_accuracy_diagnostics.py", line 61, in test_existing_evidence_is_never_overwritten
+    with self.assertRaises(FileExistsError):
+AssertionError: FileExistsError not raised
+
+======================================================================
+FAIL: test_finalized_duplicate_tail_is_not_published_again (test_p0_accuracy_diagnostics.FinalizedOverlapTests.test_finalized_duplicate_tail_is_not_published_again)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase3/test_p0_accuracy_diagnostics.py", line 19, in test_finalized_duplicate_tail_is_not_published_again
+    self.assertEqual(events, [])
+AssertionError: Lists differ: [SubtitleStateEvent(window=2, speaker=0, u[883 chars]ep')] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+SubtitleStateEvent(window=2, speaker=0, utterance_id=2, status='partial', action='start', raw_text='시청해 주셔서 감사합니다.', before='', text='시청해 주셔서 감사합니다.', previous_raw='', match_type='none', overlap_text='', similarity=None, stream_time_seconds=7, utterance_start_seconds=7, finalize_reason=None, matching_seconds=1.0097050108015537e-05, stable_text='', tentative_text='시청해 주셔서 감사합니다.', history_size=1, stability_action='awaiting_independent_support', publication_text='시청해 주셔서 감사합니다.', source_supported_text='시청해 주셔서 감사합니다.', source_supported=True, require_final_support=True, support_update={'reason': 'current_source_covers_unretained_text', 'source_text': '시청해 주셔서 감사합니다.', 'retained_prefix_length': 0, 'observed_suffix_matches': True, 'unobserved_prefix_length': 0, 'unsupported_gap_length': 0, 'candidate_provenance': 'VALIDATED', 'candidate_transition': 'keep'}, candidate_provenance='VALIDATED', candidate_transition='keep')
+
+Diff is 1776 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_finalized_tail_is_trimmed_before_new_content (test_p0_accuracy_diagnostics.FinalizedOverlapTests.test_finalized_tail_is_trimmed_before_new_content)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase3/test_p0_accuracy_diagnostics.py", line 29, in test_finalized_tail_is_trimmed_before_new_content
+    self.assertEqual(events[-1].publication_text, new)
+AssertionError: '시청해 주셔서 감사합니다. 다음 소식을 전합니다.' != '다음 소식을 전합니다.'
+- 시청해 주셔서 감사합니다. 다음 소식을 전합니다.
++ 다음 소식을 전합니다.
+
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.906s
+
+FAILED (failures=3)
