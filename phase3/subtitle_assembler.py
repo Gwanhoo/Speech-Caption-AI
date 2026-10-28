@@ -571,6 +571,8 @@ class SubtitleAssembler:
         self.utterance_hypothesis = ""
         self.last_window = -1
         self._finalized_session = ""
+        self._finalized_overlap_tail = ""
+        self._pending_finalized_tail = ""
         self.confirmed_prefix_length = 0
 
     def reset_utterance(self, *, final_text: str | None = None) -> None:
@@ -579,11 +581,19 @@ class SubtitleAssembler:
                                    append_preserving_text(self._finalized_session, final_text))
         self.assembled = self._finalized_session
         self.confirmed_prefix_length = 0
+        self._finalized_overlap_tail = ""
+        self._pending_finalized_tail = ""
         self.previous = ""
         self.utterance_hypothesis = ""
 
     def commit_finalized_text(self, final_text: str) -> None:
         """Record a FINAL while preserving a new hypothesis already rolled over."""
+        tail = self._pending_finalized_tail
+        self._finalized_overlap_tail = (
+            tail if tail and normalize_for_matching(final_text).endswith(
+                normalize_for_matching(tail)) else ""
+        )
+        self._pending_finalized_tail = ""
         self._finalized_session = append_preserving_text(
             self._finalized_session, final_text
         )
@@ -617,6 +627,23 @@ class SubtitleAssembler:
         normalized_overlap_length = 0
         similarity: float | None = None
         fuzzy_token_continuation = False
+
+        # A duplicate-only sentence rollover leaves no active hypothesis. Keep
+        # one adjacent-window exact seam after commit, otherwise that FINAL can
+        # be published again. Never fuzzy-revise finalized speech or search the
+        # session history; silence, gaps and absent shared audio invalidate it.
+        finalized_tail = self._finalized_overlap_tail
+        self._finalized_overlap_tail = ""
+        self._pending_finalized_tail = ""
+        if (not before_hypothesis and finalized_tail and raw
+                and window == self.last_window + 1 and shared_speech is True):
+            length, cut = longest_normalized_suffix_prefix(
+                finalized_tail, raw, self.minimum_characters)
+            if cut:
+                match_type = "finalized_tail_exact"
+                overlap = raw[:cut].strip()
+                normalized_overlap_length = length
+                new_text = raw[cut:]
 
         if previous and raw:
             token_overlap_length = longest_token_suffix_prefix(
@@ -943,6 +970,8 @@ class SubtitleAssembler:
         self.assembled = append_preserving_text(
             self._finalized_session, self.utterance_hypothesis
         )
+        if rollover_text and not self.utterance_hypothesis:
+            self._pending_finalized_tail = raw
         self.previous = self.utterance_hypothesis if rollover_text else raw
         self.last_window = window
 

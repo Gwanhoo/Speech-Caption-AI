@@ -8,9 +8,9 @@ from PySide6.QtGui import QColor, QFont, QFontMetrics, QGuiApplication, QMouseEv
 from PySide6.QtWidgets import QFrame, QLabel, QLayout, QSizePolicy, QVBoxLayout, QWidget
 
 try:
-    from .subtitle_presentation import SubtitleFeedEntry
+    from .subtitle_presentation import SubtitleFeedEntry, trace_display
 except ImportError:  # Direct execution: python phase5/gui_app.py
-    from subtitle_presentation import SubtitleFeedEntry  # type: ignore[no-redef]
+    from subtitle_presentation import SubtitleFeedEntry, trace_display  # type: ignore[no-redef]
 
 
 @dataclass(frozen=True)
@@ -140,6 +140,8 @@ class SubtitleOverlay(QWidget):
                 label.setToolTip("")
                 label.setVisible(False)
         self._resize_for_entries()
+        trace_display("overlay_delivery", entries=self._entries, visible=self.isVisible(),
+                      source_rows=len(self._source_entries))
 
     def clear_entries(self) -> None:
         self.set_entries(())

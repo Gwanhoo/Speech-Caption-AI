@@ -120,6 +120,8 @@ class PipelineTests(TestCase):
                 client.close.assert_called_once()
             result = json.loads(output.read_text())
             if evidence:
+                self.last_trace_records = [json.loads(line) for line in
+                    (evidence_dir / "diagnostic.jsonl").read_text(encoding="utf-8").splitlines()]
                 self.last_evidence_records = [
                     json.loads(line)
                     for line in (evidence_dir / "timeline.jsonl").read_text(
@@ -262,6 +264,15 @@ class PipelineTests(TestCase):
         self.assertEqual(evidence["sample_rate"], 16000)
         self.assertEqual(evidence["channels"], 1)
         self.assertEqual(evidence["sample_count"], 5 * 16000)
+        stages = [row["stage"] for row in self.last_trace_records]
+        self.assertEqual(stages[0], "session")
+        self.assertEqual(stages[-1], "session_end")
+        self.assertIn("window_result", stages)
+        self.assertIn("publication_decision", stages)
+        dispatches = [row for row in self.last_trace_records if row["stage"] == "subtitle_dispatch"]
+        self.assertEqual(len(dispatches), len(result["subtitle_events"]))
+        self.assertTrue(all(row["event_id"] == f"{row['session_id']}:{row['sequence']}"
+                            for row in dispatches))
         self.assertEqual(self.last_evidence_audio_info.samplerate, 16000)
         self.assertEqual(self.last_evidence_audio_info.channels, 1)
         self.assertEqual(self.last_evidence_audio_info.frames, 5 * 16000)

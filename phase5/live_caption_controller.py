@@ -4,6 +4,7 @@ import sys
 import os
 import threading
 import logging
+import uuid
 from dataclasses import dataclass, field
 from importlib import import_module
 from pathlib import Path
@@ -29,6 +30,7 @@ from remote_gpu_client import (  # noqa: E402
     RemoteProtocolError,
     RemoteTimeoutError,
 )
+from caption_diagnostics import start_trace, stop_trace
 from speaker_mode import SpeakerMode  # noqa: E402
 from audio_devices import (  # noqa: E402
     get_loopback_microphone,
@@ -46,10 +48,12 @@ DEFAULT_GUI_LOG = ROOT / "phase5" / "output" / "voxlux.log"
 LOGGER = logging.getLogger("voxlux")
 _CONSOLE_STREAMS: list[tuple[str, TextIO | None, TextIO]] = []
 _GUI_LOG_HANDLERS: list[logging.FileHandler] = []
+_GUI_TRACE_HANDLERS: list[logging.Handler] = []
 _LOGGER_STATE: tuple[int, bool] | None = None
 
 
-def configure_gui_runtime(log_path: Path = DEFAULT_GUI_LOG) -> Path:
+def configure_gui_runtime(log_path: Path = DEFAULT_GUI_LOG, *,
+                          diagnostic_dir: Path | None = None) -> Path:
     """Make GUI diagnostics available when launched with ``pythonw``.
 
     The Phase 3 pipeline deliberately writes progress to stdout.  Windows
@@ -58,6 +62,10 @@ def configure_gui_runtime(log_path: Path = DEFAULT_GUI_LOG) -> Path:
     """
     global _LOGGER_STATE
 
+    if diagnostic_dir is not None:
+        handler = start_trace(diagnostic_dir / f"gui_trace_{uuid.uuid4().hex}.jsonl")
+        if handler is not None:
+            _GUI_TRACE_HANDLERS.append(handler)
     log_path.parent.mkdir(parents=True, exist_ok=True)
     resolved_log_path = log_path.resolve()
     if not any(
@@ -89,6 +97,8 @@ def shutdown_gui_runtime() -> None:
     """Release GUI-owned log files after workers and the event loop finish."""
     global _LOGGER_STATE
 
+    while _GUI_TRACE_HANDLERS:
+        stop_trace(_GUI_TRACE_HANDLERS.pop())
     while _CONSOLE_STREAMS:
         stream_name, original_stream, stream = _CONSOLE_STREAMS.pop()
         # A caller (or a test patch) may already have restored/replaced stdout.

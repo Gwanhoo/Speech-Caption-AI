@@ -17,6 +17,7 @@ import requests
 import soundfile as sf
 from requests.adapters import HTTPAdapter
 
+from caption_diagnostics import trace_event
 from remote_gpu_protocol import BINARY_RESPONSE_MEDIA_TYPE, decode_binary_result
 
 
@@ -195,6 +196,7 @@ class RemoteGPUClient:
             raise ValueError("Timeouts must be positive")
         if not math.isfinite(connect_timeout) or not math.isfinite(read_timeout):
             raise ValueError("Timeouts must be finite")
+        self.diagnostic_session_id: str | None = None
         self.url = server_url.rstrip("/")
         self.timeout = (connect_timeout, read_timeout)
         self.session = requests.Session()
@@ -417,9 +419,20 @@ class RemoteGPUClient:
         if latency_diagnostics:
             headers["X-Latency-Diagnostics"] = "1"
         request_ready = time.perf_counter()
-        payload, transport_timing = self._request_with_timing(
-            "POST", "/v1/process", data=request_body, headers=headers
-        )
+        trace_identity = {"session_id": self.diagnostic_session_id,
+                          "window_id": window_index, "request_id": request_id}
+        trace_event("request_sent", **trace_identity,
+                    stream_start_seconds=stream_start_seconds,
+                    stream_end_seconds=stream_end_seconds, request_bytes=len(request_body))
+        try:
+            payload, transport_timing = self._request_with_timing(
+                "POST", "/v1/process", data=request_body, headers=headers
+            )
+        except RemoteGPUError as exc:
+            trace_event("request_error", **trace_identity, error_type=type(exc).__name__)
+            raise
+        trace_event("response_received", **trace_identity,
+                    elapsed_seconds=time.perf_counter() - request_ready)
         parse_started = time.perf_counter()
         client_timing = {
             "process_started_perf_counter": process_started,
@@ -471,6 +484,13 @@ class RemoteGPUClient:
         client_timing["client_total_seconds"] = monotonic_duration(
             process_started, parse_ended
         )
+        trace_event("raw_stt", **trace_identity,
+                    raw_stt=[slot["raw_transcript"] for slot in result.slots],
+                    stt_diagnostics=[slot.get("stt_diagnostics") for slot in result.slots],
+                    server_timing={key: value for key, value in result.timing.items()
+                                   if isinstance(value, (int, float)) and math.isfinite(value)},
+                    client_timing={key: value for key, value in result.client_timing.items()
+                                   if isinstance(value, (int, float)) and math.isfinite(value)})
         return result
 
 

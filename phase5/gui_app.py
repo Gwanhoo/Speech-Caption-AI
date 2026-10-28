@@ -43,7 +43,7 @@ try:
         configure_gui_runtime,
         shutdown_gui_runtime,
     )
-    from .subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState
+    from .subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState, trace_display
     from .subtitle_overlay import OverlayStyle, SubtitleOverlay
     from audio_devices import list_output_devices
 except ImportError:  # Direct execution: python phase5/gui_app.py
@@ -56,7 +56,7 @@ except ImportError:  # Direct execution: python phase5/gui_app.py
         configure_gui_runtime,
         shutdown_gui_runtime,
     )
-    from subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState  # type: ignore[no-redef]
+    from subtitle_presentation import SubtitleFeedEntry, SubtitlePresentationState, trace_display  # type: ignore[no-redef]
     from subtitle_overlay import OverlayStyle, SubtitleOverlay  # type: ignore[no-redef]
     from audio_devices import list_output_devices  # type: ignore[no-redef]
 
@@ -157,6 +157,7 @@ class SubtitleFeedModel(QAbstractListModel):
         self.beginResetModel()
         self._entries = list(self._presentation.entries)
         self.endResetModel()
+        trace_display("gui_model_delivery", entries=self._entries)
         self.entries_changed.emit(tuple(self._entries))
 
     def entry_at(self, row: int) -> SubtitleFeedEntry:
@@ -668,7 +669,10 @@ def parse_launch_options(argv: list[str]) -> tuple[LiveCaptionConfig, list[str]]
 def main(argv: list[str] | None = None) -> int:
     config, qt_args = parse_launch_options(sys.argv[1:] if argv is None else argv)
     try:
-        configure_gui_runtime()
+        if config.evidence_dir is not None:
+            configure_gui_runtime(diagnostic_dir=config.evidence_dir)
+        else:
+            configure_gui_runtime()
         app = QApplication.instance() or QApplication([sys.argv[0], *qt_args])
         window = MainWindow(config=config)
         window.show()

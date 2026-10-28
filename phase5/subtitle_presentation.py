@@ -5,7 +5,7 @@ only chooses which already-structured events are visible to the reader.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import logging
 import time
 from typing import Any, Callable
@@ -13,6 +13,14 @@ from typing import Any, Callable
 
 FINAL_LIFETIME_SECONDS = 4.0
 LOGGER = logging.getLogger("voxlux.presentation")
+TRACE_LOGGER = logging.getLogger("voxlux.caption_trace")
+
+
+def trace_display(stage: str, *, entries=(), **fields) -> None:
+    if TRACE_LOGGER.isEnabledFor(logging.INFO) and TRACE_LOGGER.handlers:
+        TRACE_LOGGER.info("caption", extra={"caption_trace": {
+            "stage": stage, "entries": [asdict(entry) for entry in entries], **fields,
+        }})
 
 
 @dataclass(frozen=True)
@@ -147,6 +155,12 @@ class SubtitlePresentationState:
         keys: set[tuple[str, int]] | None = None,
     ) -> None:
         source: dict[str, Any] = event or {}
+        trace_display("presentation_decision", entries=self.entries,
+                      action=action, reason=reason,
+                      event=asdict(entry) if entry else {
+                          key: source.get(key) for key in (
+                              "session_id", "window_index", "speaker", "utterance_id",
+                              "sequence", "status", "text")})
         LOGGER.info(
             "action=%s reason=%s speaker=%r utterance_id=%r status=%r "
             "sequence=%r text=%r keys=%r session_id=%r window_index=%r visible=%r",

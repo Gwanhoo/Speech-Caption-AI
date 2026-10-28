@@ -51,6 +51,7 @@ from secondary_leakage_diagnostics import (  # noqa: E402
     resolve_subtitle_fragments,
     subtitle_overlap_evidence,
 )
+from caption_diagnostics import start_trace, stop_trace, trace_event
 from speaker_tracking import PersistentSpeakerTracker  # noqa: E402
 from speaker_mode import SpeakerMode, select_single_mode_primary  # noqa: E402
 from remote_gpu_client import (  # noqa: E402
@@ -446,6 +447,10 @@ def build_evidence_timeline_records(
                 "session_id": item.get("session_id"),
                 "remote_request_id": item.get("remote_request_id"),
                 "remote_stt_diagnostics": item.get("remote_stt_diagnostics"),
+                "latency_diagnostics": item.get("latency_diagnostics"),
+                "remote_timing": item.get("remote_timing"),
+                "audio_queue_depth": item.get("audio_queue_depth"),
+                "separated_queue_depth": item.get("separated_queue_depth"),
                 "capture_completed_timestamp": item["capture_completed_timestamp"],
                 "audio": {
                     "source": "original.wav",
@@ -487,6 +492,16 @@ def build_evidence_timeline_records(
     return records
 
 
+def reserve_evidence_directory(output_dir: Path) -> None:
+    """Reserve before capture, including crash/empty-run protection."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    if any((output_dir / name).exists()
+           for name in ("original.wav", "timeline.jsonl", "windows")):
+        raise FileExistsError("Evidence directory already contains capture data; choose a new directory")
+    with (output_dir / ".capture-reserved").open("x", encoding="utf-8") as reservation:
+        reservation.write("Capture reserved; use a new directory for another run.\n")
+
+
 def write_evidence_bundle(
     output_dir: Path,
     original_parts: list[np.ndarray],
@@ -506,7 +521,12 @@ def write_evidence_bundle(
     output_dir.mkdir(parents=True, exist_ok=True)
     original_path = output_dir / "original.wav"
     timeline_path = output_dir / "timeline.jsonl"
-    sf.write(original_path, original, SAMPLE_RATE, subtype="FLOAT")
+    # Check both files before writing: a reused bundle must never
+    # replace captured evidence (including direct/offline callers).
+    if original_path.exists() or timeline_path.exists():
+        raise FileExistsError("Evidence bundle already exists; choose a new --evidence-dir")
+    with original_path.open("xb") as audio_file:
+        sf.write(audio_file, original, SAMPLE_RATE, format="WAV", subtype="FLOAT")
     records = build_evidence_timeline_records(
         results,
         subtitle_events,
@@ -516,10 +536,8 @@ def write_evidence_bundle(
         processing_mode=processing_mode,
         speaker_mode=speaker_mode,
     )
-    timeline_path.write_text(
-        "".join(json.dumps(record, ensure_ascii=False) + "\n" for record in records),
-        encoding="utf-8",
-    )
+    with timeline_path.open("x", encoding="utf-8") as timeline_file:
+        timeline_file.writelines(json.dumps(record, ensure_ascii=False) + "\n" for record in records)
     return {
         "enabled": True,
         "schema_version": EVIDENCE_SCHEMA_VERSION,
@@ -667,6 +685,9 @@ def main(
         raise RuntimeError("Capture requires Windows WASAPI; local mode additionally requires CUDA")
     sys.stdout.reconfigure(encoding="utf-8")
 
+    if evidence_enabled:
+        reserve_evidence_directory(args.evidence_dir)
+
     monitor = RemoteGPUMonitor() if remote else base.GpuMonitor()
     remote_client = RemoteGPUClient(args.remote_server_url, args.remote_connect_timeout, args.remote_read_timeout) if remote else None
     monitor.start()
@@ -682,6 +703,9 @@ def main(
     websocket_server: Any | None = None
     websocket_stats: dict[str, Any] = {"enabled": False}
     session_id = uuid.uuid4().hex
+    trace_handler = None
+    if remote_client is not None:
+        remote_client.diagnostic_session_id = session_id
     event_sequence = itertools.count(1)
     state_lock = threading.Lock()
     audio_queue: queue.Queue[AudioWindow | object] = WindowQueue(
@@ -789,6 +813,10 @@ def main(
             f"reason={publication_reason}",
             flush=True,
         )
+        trace_event("publication_decision", session_id=session_id, window_id=event.window,
+                    speaker=event.speaker, utterance_id=event.utterance_id,
+                    status=event.status, reason=publication_reason, will_publish=will_publish,
+                    text=event.text, publication_text=event.publication_text)
         if not will_publish:
             return {}
         state = subtitle_states[event.speaker]
@@ -826,6 +854,7 @@ def main(
                 else 0.0
             ),
         }
+        subtitle_event["event_id"] = f"{session_id}:{subtitle_event['sequence']}"
         if websocket_server is not None:
             publication = websocket_server.publish(subtitle_event)
             subtitle_event["websocket_accepted"] = publication.accepted
@@ -837,6 +866,7 @@ def main(
                 f"{args.subtitle_event_queue_size}",
                 flush=True,
             )
+        trace_event("subtitle_dispatch", **subtitle_event)
         subtitle_events.append(subtitle_event)
         _notify_runtime_hook(
             runtime_hooks.on_subtitle if runtime_hooks is not None else None,
@@ -850,8 +880,17 @@ def main(
         return subtitle_event
 
     try:
+        if evidence_enabled:
+            trace_handler = start_trace(args.evidence_dir / "diagnostic.jsonl")
+        trace_event("session", session_id=session_id, window_seconds=args.window_seconds,
+                    stride_seconds=args.stride_seconds, speaker_mode=args.speaker_mode.value)
         if remote:
             health = remote_client.health()
+            trace_event("server_configuration", session_id=session_id,
+                        processing_profile=health.get("processing_profile"),
+                        stt_model=health.get("stt_model"),
+                        stt_options={key: health.get("stt_options", {}).get(key) for key in
+                                     ("language", "beam_size", "condition_on_previous_text")})
             monitor.observe(health["gpu_memory"])
             baseline_vram = separator_vram = models_vram = monitor.used_mib()
             print(f"Remote GPU ready: {args.remote_server_url}", flush=True)
@@ -1032,6 +1071,7 @@ def main(
                 if not already_counted:
                     dropped.append((stage, item.index))
                 drop_details.append(detail)
+            trace_event("window_drop", session_id=session_id, window_id=item.index, drop=detail)
             print("[WINDOW DROP] " + json.dumps(detail), flush=True)
 
         def discard_live_window(item: AudioWindow, stage: str, target: queue.Queue,
@@ -1435,6 +1475,7 @@ def main(
                                     "capture_to_failure_seconds": failed_at - item.capture_ended,
                                     "timing": dict(item.latency_timing),
                                 }
+                                trace_event("window_error", session_id=session_id, **failure_record)
                                 remote_failures.append(failure_record)
                                 print("[REMOTE FAILURE] " + json.dumps(failure_record), flush=True)
                                 separation_state["windows_skipped_after_failure"] += 1
@@ -2295,6 +2336,12 @@ def main(
                         }
                         if latency_diagnostic is not None:
                             metric["latency_diagnostics"] = latency_diagnostic
+                        trace_event("window_result", **{
+                            key: metric.get(key) for key in (
+                                "session_id", "window", "remote_request_id", "stream_start_seconds",
+                                "stream_end_seconds", "raw_transcripts", "transcripts", "vad",
+                                "assembly_events", "subtitle_state_events", "latency_diagnostics",
+                                "audio_queue_depth", "separated_queue_depth", "post_capture_latency_seconds")})
                         with state_lock:
                             results.append(metric)
                         _notify_runtime_hook(
@@ -2588,7 +2635,7 @@ def main(
                 ),
                 "exact_overlap_count": sum(
                     event["match_type"]
-                    in {"token_exact", "raw_exact", "normalized_exact", "boundary_exact"}
+                    in {"token_exact", "raw_exact", "normalized_exact", "boundary_exact", "finalized_tail_exact"}
                     for event in assembler_events
                 ),
                 "fuzzy_overlap_count": sum(
@@ -2632,6 +2679,7 @@ def main(
                                 "raw_exact",
                                 "normalized_exact",
                                 "boundary_exact",
+                                "finalized_tail_exact",
                             }
                             for event in assembler_events
                         ),
@@ -3128,6 +3176,10 @@ def main(
         if websocket_server is not None:
             websocket_server.stop()
         monitor.stop()
+        trace_event("session_end", session_id=session_id,
+                    error_types=[type(exc).__name__ for _, exc in errors],
+                    dropped_windows=len(dropped), processed_windows=len(results))
+        stop_trace(trace_handler)
 
 
 if __name__ == "__main__":
