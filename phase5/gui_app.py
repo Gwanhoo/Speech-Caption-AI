@@ -10,7 +10,7 @@ from typing import Any
 from typing_extensions import Self as _TypingExtensionsSelf  # noqa: F401
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex, QSize, Qt, QTimer, Signal, Slot
-from PySide6.QtGui import QCloseEvent, QColor, QFont
+from PySide6.QtGui import QCloseEvent, QColor, QFont, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QAbstractItemView,
@@ -666,24 +666,54 @@ def parse_launch_options(argv: list[str]) -> tuple[LiveCaptionConfig, list[str]]
     return config, qt_args
 
 
+
 def main(argv: list[str] | None = None) -> int:
     config, qt_args = parse_launch_options(sys.argv[1:] if argv is None else argv)
+
     try:
         if config.evidence_dir is not None:
             configure_gui_runtime(diagnostic_dir=config.evidence_dir)
         else:
             configure_gui_runtime()
+
         app = QApplication.instance() or QApplication([sys.argv[0], *qt_args])
+
+        # 개발 환경 / PyInstaller 배포 환경 모두 지원
+        if getattr(sys, "frozen", False):
+            icon_path = (
+                Path(sys._MEIPASS)
+                / "assets"
+                / "VOXLUX-minimal.ico"
+            )
+        else:
+            icon_path = (
+                Path(__file__).resolve().parent.parent
+                / "assets"
+                / "VOXLUX-minimal.ico"
+            )
+
+        icon = QIcon(str(icon_path)) if icon_path.is_file() else QIcon()
+
+        if not icon.isNull():
+            app.setWindowIcon(icon)
+
         window = MainWindow(config=config)
+
+        if not icon.isNull():
+            window.setWindowIcon(icon)
+
         window.show()
         return app.exec()
+
     except BaseException:
         # pythonw has no console for an uncaught GUI startup exception.
         LOGGER.exception("VOXLUX GUI startup failed")
         raise
+
     finally:
         shutdown_gui_runtime()
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

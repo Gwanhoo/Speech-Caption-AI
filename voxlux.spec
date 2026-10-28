@@ -1,7 +1,8 @@
+
 # -*- mode: python ; coding: utf-8 -*-
 """Minimal Windows client build for the Phase 5 VOXLUX GUI.
 
-This intentionally packages only the desktop client path.  Phase 4's GPU
+This intentionally packages only the desktop client path. Phase 4's GPU
 server, separation libraries, and local model checkpoints stay outside the
 Windows client distribution.
 """
@@ -25,7 +26,12 @@ a = Analysis(
         str(project_root / "phase2"),
     ],
     binaries=[],
-    datas=collect_data_files("soundcard"),
+    datas=collect_data_files("soundcard") + [
+        (
+            str(project_root / "assets" / "VOXLUX-minimal.ico"),
+            "assets",
+        ),
+    ],
     hiddenimports=["run_overlap_pipeline"],
     hookspath=[],
     hooksconfig={},
@@ -45,6 +51,7 @@ a = Analysis(
     ],
     noarchive=False,
 )
+
 pyz = PYZ(a.pure)
 
 exe = EXE(
@@ -54,6 +61,7 @@ exe = EXE(
     exclude_binaries=True,
     name="VOXLUX",
     console=False,
+    icon=str(project_root / "assets" / "VOXLUX-minimal.ico"),
 )
 
 coll = COLLECT(
