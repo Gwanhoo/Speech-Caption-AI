@@ -2,9 +2,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import unicodedata
 
 from PySide6.QtCore import QPoint, Qt, Slot
-from PySide6.QtGui import QColor, QFont, QFontMetrics, QGuiApplication, QMouseEvent
+from PySide6.QtGui import (
+    QColor, QFont, QFontMetrics, QGuiApplication, QMouseEvent, QResizeEvent,
+    QTextLayout, QTextOption,
+)
 from PySide6.QtWidgets import QFrame, QLabel, QLayout, QSizePolicy, QVBoxLayout, QWidget
 
 try:
@@ -34,6 +38,7 @@ class SubtitleOverlay(QWidget):
     """Draggable, transparent overlay that renders an existing UI snapshot."""
 
     MAX_ROWS = 3
+    MAX_DISPLAY_LINES = 3
     HORIZONTAL_MARGIN = 20
     VERTICAL_MARGIN = 8
     ROW_SPACING = 2
@@ -49,6 +54,7 @@ class SubtitleOverlay(QWidget):
         self._keep_empty_visible = False
         self._entries: tuple[SubtitleFeedEntry, ...] = ()
         self._source_entries: tuple[SubtitleFeedEntry, ...] = ()
+        self._display_rows: list[tuple[str, int]] = []
         self.setWindowTitle("AI 실시간 자막 Overlay")
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint
@@ -81,6 +87,8 @@ class SubtitleOverlay(QWidget):
                 Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
             )
             label.setWordWrap(True)
+            # Measure and render subtitle text literally, including '<...>'.
+            label.setTextFormat(Qt.TextFormat.PlainText)
             label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
             label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
@@ -203,21 +211,12 @@ class SubtitleOverlay(QWidget):
             self._set_window_height(self._required_height(()))
             return
         self._card.show()
-        desired_heights = [
-            self._entry_height(entry, self._text_width()) for entry in self._entries
-        ]
-        non_text_height = self._non_text_height(len(self._entries))
-        maximum_height = self._maximum_height()
-        height = min(maximum_height, non_text_height + sum(desired_heights))
-        available_text_height = max(1, height - non_text_height)
+        height = self._non_text_height(len(self._entries)) + sum(
+            row_height for _text, row_height in self._display_rows
+        )
         card_tooltip = ""
-        for index, desired_height in enumerate(desired_heights):
-            remaining_rows = len(desired_heights) - index - 1
-            row_height = min(desired_height, max(1, available_text_height - remaining_rows))
+        for index, (display_text, row_height) in enumerate(self._display_rows):
             label = self._labels[index]
-            display_text = self._display_text_for_height(
-                self._entries[index], self._text_width(), row_height
-            )
             label.setText(display_text)
             label.setToolTip(
                 self._entries[index].text
@@ -227,7 +226,6 @@ class SubtitleOverlay(QWidget):
             if display_text != self._entries[index].text:
                 card_tooltip = self._entries[index].text
             label.setFixedHeight(row_height)
-            available_text_height -= row_height
         self._card.setToolTip(card_tooltip)
         self._set_window_height(height)
 
@@ -259,16 +257,39 @@ class SubtitleOverlay(QWidget):
     def _fit_entries_to_screen(
         self, candidates: tuple[SubtitleFeedEntry, ...]
     ) -> tuple[SubtitleFeedEntry, ...]:
-        """Prefer the newest readable entries when several wrapped rows do not fit."""
+        """Allocate at most three rendered lines, newest first, in source order."""
         selected: list[SubtitleFeedEntry] = []
+        self._display_rows = []
         maximum_height = self._maximum_height()
+        width = self._text_width()
+        remaining_lines = self.MAX_DISPLAY_LINES
+        used_height = 0
         for entry in reversed(candidates):
-            proposed = [entry, *selected]
-            required_height = self._required_height(tuple(proposed))
-            if required_height > maximum_height and selected:
+            available_height = (
+                maximum_height - self._non_text_height(len(selected) + 1) - used_height
+            )
+            text = entry.text
+            # Keep older events whole; only the newest event needs B-1 elision.
+            if not selected:
+                text = self._display_text_for_height(
+                    entry, width, available_height, maximum_lines=remaining_lines
+                )
+            lines, height = self._measure_text(text, width)
+            if lines > remaining_lines or height > available_height:
                 break
-            selected = proposed
+            selected.insert(0, entry)
+            self._display_rows.insert(0, (text, height))
+            remaining_lines -= lines
+            used_height += height
+            if not remaining_lines:
+                break
         return tuple(selected)
+
+    def resizeEvent(self, event: QResizeEvent) -> None:  # noqa: N802
+        super().resizeEvent(event)
+        # Height changes are our own output; only width changes require reflow.
+        if event.size().width() != event.oldSize().width() and self._source_entries:
+            self.set_entries(self._source_entries)
 
     def _required_height(self, entries: tuple[SubtitleFeedEntry, ...]) -> int:
         if not entries:
@@ -298,49 +319,70 @@ class SubtitleOverlay(QWidget):
         font = QFont()
         font.setPointSize(self._style.font_size)
         font.setBold(self._style.bold)
-        return QFontMetrics(font).height()
+        return QFontMetrics(font, self).height()
 
     def _entry_height(self, entry: SubtitleFeedEntry, width: int) -> int:
+        return self._measure_text(entry.text, width)[1]
+
+    def _measure_text(self, text: str, width: int) -> tuple[int, int]:
+        """Count Qt plain-text WordWrap lines and measure their pixel height."""
         font = QFont()
         font.setPointSize(self._style.font_size)
         font.setBold(self._style.bold)
-        metrics = QFontMetrics(font)
+        metrics = QFontMetrics(font, self)
+        options = QTextOption()
+        options.setWrapMode(QTextOption.WrapMode.WordWrap)
+        line_count = 0
+        # QTextLayout handles soft wraps; QLabel treats '\n' as paragraph breaks.
+        for paragraph in text.split("\n"):
+            layout = QTextLayout(paragraph or " ", font, self)
+            layout.setTextOption(options)
+            layout.beginLayout()
+            while True:
+                line = layout.createLine()
+                if not line.isValid():
+                    break
+                line.setLineWidth(width)
+                line_count += 1
+            layout.endLayout()
         bounds = metrics.boundingRect(
             0,
             0,
             width,
             10000,
             int(Qt.TextFlag.TextWordWrap | Qt.AlignmentFlag.AlignHCenter),
-            entry.text,
+            text,
         )
-        return max(metrics.height(), bounds.height())
+        return max(1, line_count), max(metrics.height(), bounds.height())
 
     def _display_text_for_height(
-        self, entry: SubtitleFeedEntry, width: int, maximum_height: int
+        self, entry: SubtitleFeedEntry, width: int, maximum_height: int,
+        *, maximum_lines: int = MAX_DISPLAY_LINES,
     ) -> str:
-        """Return a whole-line display string when one entry exceeds the height cap."""
-        if self._entry_height(entry, width) <= maximum_height:
+        """Return the newest fitting part when one entry exceeds the height cap."""
+        lines, height = self._measure_text(entry.text, width)
+        if height <= maximum_height and lines <= maximum_lines:
             return entry.text
 
-        best_length = 0
+        best_start = len(entry.text)
         low, high = 1, len(entry.text)
         while low <= high:
             length = (low + high) // 2
-            candidate = entry.text[:length].rstrip() + "…"
-            candidate_entry = SubtitleFeedEntry(
-                speaker_id=entry.speaker_id,
-                utterance_id=entry.utterance_id,
-                sequence=entry.sequence,
-                status=entry.status,
-                text=candidate,
-            )
-            if self._entry_height(candidate_entry, width) <= maximum_height:
-                best_length = length
+            start = max(0, len(entry.text) - length)
+            # Do not leave a combining mark detached from its base character
+            # when the suffix starts in the middle of a Unicode grapheme.
+            while start > 0 and unicodedata.combining(entry.text[start]):
+                start -= 1
+            candidate = "…" + entry.text[start:].strip()
+            lines, height = self._measure_text(candidate, width)
+            if height <= maximum_height and lines <= maximum_lines:
+                best_start = start
                 low = length + 1
             else:
                 high = length - 1
 
-        return entry.text[:best_length].rstrip() + "…"
+        candidate = entry.text[best_start:].strip()
+        return "…" + candidate
 
     def mousePressEvent(self, event: QMouseEvent) -> None:  # noqa: N802
         if event.button() == Qt.MouseButton.LeftButton:

@@ -34,7 +34,7 @@ from phase5.live_caption_controller import (
 from remote_gpu_client import RemoteConnectionError, RemoteTimeoutError
 from PySide6.QtWidgets import QApplication, QLabel
 from PySide6.QtCore import QCoreApplication, QEvent, QPoint, QPointF, Qt
-from PySide6.QtGui import QColor, QMouseEvent
+from PySide6.QtGui import QColor, QFontMetrics, QMouseEvent
 from typing_extensions import Self as TypingExtensionsSelf
 
 
@@ -176,6 +176,16 @@ class GuiTests(unittest.TestCase):
             for row in range(window.subtitle_model.rowCount())
         ]
 
+    def assert_overlay_line_budget(self, overlay) -> None:
+        lines = 0
+        for label in overlay._labels[:len(overlay.entries)]:
+            metrics = QFontMetrics(label.font(), label)
+            height = label.heightForWidth(label.width())
+            lines += 1 + max(0, (height - metrics.height() + metrics.lineSpacing() - 1)
+                             // metrics.lineSpacing())
+            self.assertLessEqual(height, label.height())
+        self.assertLessEqual(lines, 3)
+
     def test_recorded_window_13_14_final_and_partial_keep_display_order(self) -> None:
         events = load_events(DEFAULT_TIMELINE)
         original = load_events(DEFAULT_TIMELINE)
@@ -196,9 +206,16 @@ class GuiTests(unittest.TestCase):
                         [(entry.utterance_id, entry.status) for entry in replay.model.entries],
                         expected[event["sequence"]],
                     )
-                    self.assertEqual(replay.overlay.entries, replay.model.entries)
+                    # B-2 may omit older FINALs to keep the rendered total at 3 lines.
+                    self.assertEqual(replay.overlay.entries[-1], replay.model.entries[-1])
+                    self.assertEqual(replay.overlay.entries,
+                                     replay.model.entries[-len(replay.overlay.entries):])
+                    self.assert_overlay_line_budget(replay.overlay)
                     for entry, label in zip(replay.overlay.entries, replay.overlay._labels):
-                        self.assertEqual(label.text(), entry.text)
+                        if label.text() != entry.text:
+                            self.assertTrue(label.text().startswith("…"))
+                            self.assertTrue(entry.text.endswith(label.text()[1:]))
+                            self.assertEqual(label.toolTip(), entry.text)
                         self.assertGreaterEqual(label.height(), label.heightForWidth(label.width()))
             self.assertEqual(replay.accepted_sequences, list(range(1, 15)))
             self.assertEqual(events, original)  # Wire timestamps/text/order untouched.
@@ -842,7 +859,9 @@ class GuiTests(unittest.TestCase):
             overlay.show()
             self.app.processEvents()
             visible = [label for label in overlay._labels if label.isVisible()]
-            self.assertEqual(len(visible), overlay.MAX_ROWS)
+            self.assertEqual(overlay.entries[-1], window.subtitle_model.entries[-1])
+            self.assertEqual(window.subtitle_model.rowCount(), 3)
+            self.assert_overlay_line_budget(overlay)
             self.assertGreater(overlay.height(), initial_height)
             self.assertTrue(all(label.wordWrap() for label in visible))
             self.assertTrue(
@@ -936,10 +955,32 @@ class GuiTests(unittest.TestCase):
             label = overlay._labels[0]
 
             self.assertEqual(overlay.entries, (entry,))
-            self.assertTrue(label.text().endswith("…"))
+            self.assertTrue(label.text().startswith("…"))
+            self.assertTrue(label.text().endswith("말줄임으로 표시해야 합니다."))
+            self.assertNotEqual(label.text(), entry.text)
+            self.assertEqual(entry.text, text)
             self.assertEqual(label.toolTip(), text)
             self.assertEqual(overlay._card.toolTip(), text)
             self.assertLessEqual(label.heightForWidth(label.width()), label.height())
+        finally:
+            window.close()
+
+    def test_short_overlay_caption_remains_unmodified(self) -> None:
+        window = MainWindow()
+        overlay = window._ensure_overlay()
+        entry = SubtitleFeedEntry(
+            speaker_id="speaker_0",
+            utterance_id=1,
+            sequence=1,
+            status="partial",
+            text="짧은 자막 그대로",
+        )
+        try:
+            overlay.set_entries((entry,))
+            overlay.show()
+            self.app.processEvents()
+            self.assertEqual(overlay._labels[0].text(), entry.text)
+            self.assertEqual(entry.text, "짧은 자막 그대로")
         finally:
             window.close()
 
