@@ -1,0 +1,4151 @@
+{
+  "head": "384b4c2cef815ecbff3e66fdb9ff42f73bca988d",
+  "source": "/workspace/voxlux_evidence_20261022",
+  "source_sha256": {
+    "original.wav": "78e0000486e959a10d5bd0fbe6bb793abe42bf5dd797c6890eac59ac78f15db5",
+    "timeline.jsonl": "a53803fdf0498c145c4c96c7cbfa94550a0e7baa83e448610dbdfd0614131766"
+  },
+  "session": {
+    "record_type": "session",
+    "schema_version": 1,
+    "processing_mode": "remote",
+    "speaker_mode": "single",
+    "audio": {
+      "path": "original.wav",
+      "format": "WAV FLOAT",
+      "sample_rate": 16000,
+      "channels": 1,
+      "sample_count": 640000,
+      "duration_seconds": 40.0
+    },
+    "window_seconds": 3,
+    "stride_seconds": 2,
+    "window_wav_directory": "windows"
+  },
+  "sample_rate": 16000,
+  "samples": 640000,
+  "duration": 40.0,
+  "record_counts": {
+    "session": 1,
+    "window": 19,
+    "subtitle_event": 21
+  },
+  "windows": [
+    {
+      "window": 0,
+      "start": 0.0,
+      "end": 3.0,
+      "raw": "",
+      "admitted": "",
+      "wav_rms": 0.0,
+      "recorded_rms": 0.0,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [],
+      "recorded_overlap": {},
+      "recomputed_overlap": {},
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 0,
+        "speaker": 0,
+        "raw": "",
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "",
+        "assembled": "",
+        "raw_length": 0,
+        "overlap_length": 0,
+        "new_length": 0,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 1.0900082997977734e-05,
+        "similarity": null,
+        "raw_fragment": "",
+        "new_fragment": "",
+        "utterance_hypothesis": "",
+        "session_text": "",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {}
+      },
+      "logged_state": []
+    },
+    {
+      "window": 1,
+      "start": 2.0,
+      "end": 5.0,
+      "raw": "",
+      "admitted": "",
+      "wav_rms": 0.0,
+      "recorded_rms": 0.0,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [],
+      "recorded_overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "recomputed_overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 1,
+        "speaker": 0,
+        "raw": "",
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "",
+        "assembled": "",
+        "raw_length": 0,
+        "overlap_length": 0,
+        "new_length": 0,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 1.0899966582655907e-05,
+        "similarity": null,
+        "raw_fragment": "",
+        "new_fragment": "",
+        "utterance_hypothesis": "",
+        "session_text": "",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": null,
+          "supported_tail_revision": false
+        }
+      },
+      "logged_state": []
+    },
+    {
+      "window": 2,
+      "start": 4.0,
+      "end": 7.0,
+      "raw": "",
+      "admitted": "",
+      "wav_rms": 0.0,
+      "recorded_rms": 0.0,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [],
+      "recorded_overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "recomputed_overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 2,
+        "speaker": 0,
+        "raw": "",
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "",
+        "assembled": "",
+        "raw_length": 0,
+        "overlap_length": 0,
+        "new_length": 0,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 1.2599979527294636e-05,
+        "similarity": null,
+        "raw_fragment": "",
+        "new_fragment": "",
+        "utterance_hypothesis": "",
+        "session_text": "",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": null,
+          "supported_tail_revision": false
+        }
+      },
+      "logged_state": []
+    },
+    {
+      "window": 3,
+      "start": 6.0,
+      "end": 9.0,
+      "raw": "",
+      "admitted": "",
+      "wav_rms": 0.0010436662705615163,
+      "recorded_rms": 0.0010436662705615163,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [],
+      "recorded_overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "recomputed_overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 3,
+        "speaker": 0,
+        "raw": "",
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "",
+        "assembled": "",
+        "raw_length": 0,
+        "overlap_length": 0,
+        "new_length": 0,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 1.0200077667832375e-05,
+        "similarity": null,
+        "raw_fragment": "",
+        "new_fragment": "",
+        "utterance_hypothesis": "",
+        "session_text": "",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": null,
+          "supported_tail_revision": false
+        }
+      },
+      "logged_state": []
+    },
+    {
+      "window": 4,
+      "start": 8.0,
+      "end": 11.0,
+      "raw": "웹사이트 개발의 논리",
+      "admitted": "웹사이트 개발의 논리",
+      "wav_rms": 0.07711358368396759,
+      "recorded_rms": 0.07711358368396759,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          8.962,
+          9.406
+        ],
+        [
+          10.05,
+          11.0
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "recomputed_overlap": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 4,
+        "speaker": 0,
+        "raw": "웹사이트 개발의 논리",
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "웹사이트 개발의 논리",
+        "assembled": "웹사이트 개발의 논리",
+        "raw_length": 9,
+        "overlap_length": 0,
+        "new_length": 9,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 4.780001472681761e-05,
+        "similarity": null,
+        "raw_fragment": "웹사이트 개발의 논리",
+        "new_fragment": "웹사이트 개발의 논리",
+        "utterance_hypothesis": "웹사이트 개발의 논리",
+        "session_text": "웹사이트 개발의 논리",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": null,
+          "supported_tail_revision": false
+        }
+      },
+      "logged_state": [
+        {
+          "window": 4,
+          "speaker": 0,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "start",
+          "raw_text": "웹사이트 개발의 논리",
+          "before": "",
+          "text": "웹사이트 개발의 논리",
+          "previous_raw": "",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 11,
+          "utterance_start_seconds": 11,
+          "finalize_reason": null,
+          "matching_seconds": 2.389994915574789e-05,
+          "stable_text": "",
+          "tentative_text": "웹사이트 개발의 논리",
+          "history_size": 1,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "웹사이트 개발의 논리",
+          "source_supported_text": "웹사이트 개발의 논리",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "웹사이트 개발의 논리",
+            "retained_prefix_length": 0,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 0,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 5,
+      "start": 10.0,
+      "end": 13.0,
+      "raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+      "admitted": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+      "wav_rms": 0.10128374397754669,
+      "recorded_rms": 0.10128374397754669,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          10.034,
+          13.0
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": true,
+        "tail_covered_by_current_prefix": true,
+        "previous_tail_overlap_interval": [
+          800,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          544,
+          16000
+        ],
+        "shared_tail_interval": [
+          800,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": "tail_started_in_overlap"
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": true,
+        "tail_covered_by_current_prefix": true,
+        "previous_tail_overlap_interval": [
+          800,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          544,
+          16000
+        ],
+        "shared_tail_interval": [
+          800,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": "tail_started_in_overlap"
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 5,
+        "speaker": 0,
+        "raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+        "previous": "웹사이트 개발의 논리",
+        "match_type": "supported_tail_replace",
+        "overlap": "이트 개발의",
+        "new": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+        "raw_length": 21,
+        "overlap_length": 5,
+        "new_length": 21,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.00176620006095618,
+        "similarity": 0.7692307692307693,
+        "raw_fragment": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+        "new_fragment": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": true,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": true,
+          "tail_covered_by_current_prefix": true,
+          "previous_tail_overlap_interval": [
+            800,
+            16000
+          ],
+          "current_prefix_overlap_interval": [
+            544,
+            16000
+          ],
+          "shared_tail_interval": [
+            800,
+            16000
+          ],
+          "continuous_tail_coverage": 1.0,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": false,
+          "tail_revision_geometry": "tail_started_in_overlap"
+        }
+      },
+      "logged_state": [
+        {
+          "window": 5,
+          "speaker": 0,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "replace",
+          "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "before": "웹사이트 개발의 논리",
+          "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "previous_raw": "웹사이트 개발의 논리",
+          "match_type": "hypothesis_correction",
+          "overlap_text": "",
+          "similarity": 0.4,
+          "stream_time_seconds": 13,
+          "utterance_start_seconds": 11,
+          "finalize_reason": null,
+          "matching_seconds": 5.630007945001125e-05,
+          "stable_text": "",
+          "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "history_size": 2,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+            "retained_prefix_length": 0,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 0,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 6,
+      "start": 12.0,
+      "end": 15.0,
+      "raw": "언어 PHP에서 발견된 취약점은",
+      "admitted": "언어 PHP에서 발견된 취약점은",
+      "wav_rms": 0.08962428569793701,
+      "recorded_rms": 0.08962428569793701,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          12.0,
+          14.75
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 6,
+        "speaker": 0,
+        "raw": "언어 PHP에서 발견된 취약점은",
+        "previous": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+        "match_type": "boundary_exact",
+        "overlap": "언어 PHP",
+        "new": "에서 발견된 취약점은",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+        "raw_length": 14,
+        "overlap_length": 5,
+        "new_length": 9,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.00030429998878389597,
+        "similarity": null,
+        "raw_fragment": "언어 PHP에서 발견된 취약점은",
+        "new_fragment": "에서 발견된 취약점은",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": true,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            16000
+          ],
+          "current_prefix_overlap_interval": [
+            0,
+            16000
+          ],
+          "shared_tail_interval": [
+            0,
+            16000
+          ],
+          "continuous_tail_coverage": 1.0,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": true,
+          "tail_revision_geometry": "continuous_tail_across_overlap"
+        }
+      },
+      "logged_state": [
+        {
+          "window": 6,
+          "speaker": 0,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "extend",
+          "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+          "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+          "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "match_type": "hypothesis_extension",
+          "overlap_text": "",
+          "similarity": 1.0,
+          "stream_time_seconds": 15,
+          "utterance_start_seconds": 11,
+          "finalize_reason": null,
+          "matching_seconds": 6.619992200285196e-05,
+          "stable_text": "",
+          "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+          "history_size": 3,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+          "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "에서 발견된 취약점은",
+            "retained_prefix_length": 21,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 21,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 7,
+      "start": 14.0,
+      "end": 17.0,
+      "raw": "최악점은 해커가 로그인이나 인증 없이",
+      "admitted": "최악점은 해커가 로그인이나 인증 없이",
+      "wav_rms": 0.09751347452402115,
+      "recorded_rms": 0.09751347452402115,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          14.0,
+          14.766
+        ],
+        [
+          15.026,
+          17.0
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          12000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          12256
+        ],
+        "shared_tail_interval": [
+          0,
+          12000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          12000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          12256
+        ],
+        "shared_tail_interval": [
+          0,
+          12000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 7,
+        "speaker": 0,
+        "raw": "최악점은 해커가 로그인이나 인증 없이",
+        "previous": "언어 PHP에서 발견된 취약점은",
+        "match_type": "none",
+        "overlap": "",
+        "new": "최악점은 해커가 로그인이나 인증 없이",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+        "raw_length": 16,
+        "overlap_length": 0,
+        "new_length": 16,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.0005151000805199146,
+        "similarity": 0.0,
+        "raw_fragment": "최악점은 해커가 로그인이나 인증 없이",
+        "new_fragment": "최악점은 해커가 로그인이나 인증 없이",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": false,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            12000
+          ],
+          "current_prefix_overlap_interval": [
+            0,
+            12256
+          ],
+          "shared_tail_interval": [
+            0,
+            12000
+          ],
+          "continuous_tail_coverage": 1.0,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": false,
+          "tail_revision_geometry": null
+        }
+      },
+      "logged_state": [
+        {
+          "window": 7,
+          "speaker": 0,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "extend",
+          "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+          "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+          "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+          "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+          "match_type": "hypothesis_extension",
+          "overlap_text": "",
+          "similarity": 1.0,
+          "stream_time_seconds": 17,
+          "utterance_start_seconds": 11,
+          "finalize_reason": null,
+          "matching_seconds": 8.82000895217061e-05,
+          "stable_text": "",
+          "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+          "history_size": 3,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+          "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "최악점은 해커가 로그인이나 인증 없이",
+            "retained_prefix_length": 30,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 30,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 8,
+      "start": 16.0,
+      "end": 19.0,
+      "raw": "인증 없이 외부에서 임의로 코드를 실행...",
+      "admitted": "인증 없이 외부에서 임의로 코드를 실행...",
+      "wav_rms": 0.10204397141933441,
+      "recorded_rms": 0.10204397141933441,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          16.0,
+          19.0
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 8,
+        "speaker": 0,
+        "raw": "인증 없이 외부에서 임의로 코드를 실행...",
+        "previous": "최악점은 해커가 로그인이나 인증 없이",
+        "match_type": "boundary_exact",
+        "overlap": "인증 없이",
+        "new": "외부에서 임의로 코드를 실행...",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+        "raw_length": 16,
+        "overlap_length": 4,
+        "new_length": 12,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.0004232999635860324,
+        "similarity": null,
+        "raw_fragment": "인증 없이 외부에서 임의로 코드를 실행...",
+        "new_fragment": "외부에서 임의로 코드를 실행...",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": true,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            16000
+          ],
+          "current_prefix_overlap_interval": [
+            0,
+            16000
+          ],
+          "shared_tail_interval": [
+            0,
+            16000
+          ],
+          "continuous_tail_coverage": 1.0,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": true,
+          "tail_revision_geometry": "continuous_tail_across_overlap"
+        }
+      },
+      "logged_state": [
+        {
+          "window": 8,
+          "speaker": 0,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "extend",
+          "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+          "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+          "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+          "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+          "match_type": "hypothesis_extension",
+          "overlap_text": "",
+          "similarity": 1.0,
+          "stream_time_seconds": 19,
+          "utterance_start_seconds": 11,
+          "finalize_reason": null,
+          "matching_seconds": 0.00010769988875836134,
+          "stable_text": "",
+          "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+          "history_size": 3,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+          "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "외부에서 임의로 코드를 실행...",
+            "retained_prefix_length": 46,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 46,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 9,
+      "start": 18.0,
+      "end": 21.0,
+      "raw": "의미로 코드를 실행하거나 시스템을 장악할 수",
+      "admitted": "의미로 코드를 실행하거나 시스템을 장악할 수",
+      "wav_rms": 0.09706255048513412,
+      "recorded_rms": 0.09706255048513412,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          18.0,
+          19.822
+        ],
+        [
+          19.954,
+          21.0
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 9,
+        "speaker": 0,
+        "raw": "의미로 코드를 실행하거나 시스템을 장악할 수",
+        "previous": "인증 없이 외부에서 임의로 코드를 실행...",
+        "match_type": "fuzzy",
+        "overlap": "의미로 코드를 실행하거나",
+        "new": "시스템을 장악할 수",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+        "raw_length": 19,
+        "overlap_length": 11,
+        "new_length": 8,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.0005058000097051263,
+        "similarity": 0.9333333333333333,
+        "raw_fragment": "의미로 코드를 실행하거나 시스템을 장악할 수",
+        "new_fragment": "시스템을 장악할 수",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": true,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            16000
+          ],
+          "current_prefix_overlap_interval": [
+            0,
+            16000
+          ],
+          "shared_tail_interval": [
+            0,
+            16000
+          ],
+          "continuous_tail_coverage": 1.0,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": true,
+          "tail_revision_geometry": "continuous_tail_across_overlap"
+        }
+      },
+      "logged_state": [
+        {
+          "window": 9,
+          "speaker": 0,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "extend",
+          "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+          "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+          "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+          "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+          "match_type": "hypothesis_extension",
+          "overlap_text": "",
+          "similarity": 1.0,
+          "stream_time_seconds": 21,
+          "utterance_start_seconds": 11,
+          "finalize_reason": null,
+          "matching_seconds": 0.00011800008360296488,
+          "stable_text": "",
+          "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+          "history_size": 3,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+          "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "시스템을 장악할 수",
+            "retained_prefix_length": 58,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 58,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 10,
+      "start": 20.0,
+      "end": 23.0,
+      "raw": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "admitted": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "wav_rms": 0.08639095723628998,
+      "recorded_rms": 0.08639095723628998,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          20.034,
+          22.718
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          544,
+          16000
+        ],
+        "shared_tail_interval": [
+          544,
+          16000
+        ],
+        "continuous_tail_coverage": 0.966,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          544,
+          16000
+        ],
+        "shared_tail_interval": [
+          544,
+          16000
+        ],
+        "continuous_tail_coverage": 0.966,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 10,
+        "speaker": 0,
+        "raw": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "previous": "의미로 코드를 실행하거나 시스템을 장악할 수",
+        "match_type": "token_exact",
+        "overlap": "시스템을 장악할 수",
+        "new": "있는 결함으로 알려졌습니다.",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "raw_length": 20,
+        "overlap_length": 8,
+        "new_length": 12,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.00040280004031956196,
+        "similarity": null,
+        "raw_fragment": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "new_fragment": "있는 결함으로 알려졌습니다.",
+        "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": true,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            16000
+          ],
+          "current_prefix_overlap_interval": [
+            544,
+            16000
+          ],
+          "shared_tail_interval": [
+            544,
+            16000
+          ],
+          "continuous_tail_coverage": 0.966,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": true,
+          "tail_revision_geometry": "continuous_tail_across_overlap"
+        }
+      },
+      "logged_state": [
+        {
+          "window": 10,
+          "speaker": 0,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "extend",
+          "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+          "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수",
+          "match_type": "hypothesis_extension",
+          "overlap_text": "",
+          "similarity": 1.0,
+          "stream_time_seconds": 23,
+          "utterance_start_seconds": 11,
+          "finalize_reason": null,
+          "matching_seconds": 0.00012910005170851946,
+          "stable_text": "",
+          "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "history_size": 3,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "있는 결함으로 알려졌습니다.",
+            "retained_prefix_length": 66,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 66,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 11,
+      "start": 22.0,
+      "end": 25.0,
+      "raw": "이번 사태 파급력이 큰 건",
+      "admitted": "이번 사태 파급력이 큰 건",
+      "wav_rms": 0.07255304604768753,
+      "recorded_rms": 0.07255304604768753,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          22.0,
+          22.702
+        ],
+        [
+          23.314,
+          25.0
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          11488
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          11232
+        ],
+        "shared_tail_interval": [
+          0,
+          11232
+        ],
+        "continuous_tail_coverage": 0.9777158774373259,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          11488
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          11232
+        ],
+        "shared_tail_interval": [
+          0,
+          11232
+        ],
+        "continuous_tail_coverage": 0.9777158774373259,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 11,
+        "speaker": 0,
+        "raw": "이번 사태 파급력이 큰 건",
+        "previous": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "match_type": "none",
+        "overlap": "",
+        "new": "이번 사태 파급력이 큰 건",
+        "assembled": "이번 사태 파급력이 큰 건",
+        "raw_length": 10,
+        "overlap_length": 0,
+        "new_length": 10,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.0006060999585315585,
+        "similarity": 0.0,
+        "raw_fragment": "이번 사태 파급력이 큰 건",
+        "new_fragment": "이번 사태 파급력이 큰 건",
+        "utterance_hypothesis": "이번 사태 파급력이 큰 건",
+        "session_text": "이번 사태 파급력이 큰 건",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "rollover_reason": "sentence_boundary_confirmed",
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": false,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            11488
+          ],
+          "current_prefix_overlap_interval": [
+            0,
+            11232
+          ],
+          "shared_tail_interval": [
+            0,
+            11232
+          ],
+          "continuous_tail_coverage": 0.9777158774373259,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": false,
+          "tail_revision_geometry": null
+        }
+      },
+      "logged_state": [
+        {
+          "window": 11,
+          "speaker": 0,
+          "utterance_id": 1,
+          "status": "final",
+          "action": "finalize",
+          "raw_text": "",
+          "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 25,
+          "utterance_start_seconds": 11,
+          "finalize_reason": "sentence_boundary_confirmed",
+          "matching_seconds": 0.0,
+          "stable_text": "",
+          "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "history_size": 3,
+          "stability_action": "tentative_retained_at_final",
+          "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "source_supported": false,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "finalize_without_new_evidence"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "reset"
+        },
+        {
+          "window": 11,
+          "speaker": 0,
+          "utterance_id": 2,
+          "status": "partial",
+          "action": "start",
+          "raw_text": "이번 사태 파급력이 큰 건",
+          "before": "",
+          "text": "이번 사태 파급력이 큰 건",
+          "previous_raw": "",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 25,
+          "utterance_start_seconds": 25,
+          "finalize_reason": null,
+          "matching_seconds": 2.0999927073717117e-05,
+          "stable_text": "",
+          "tentative_text": "이번 사태 파급력이 큰 건",
+          "history_size": 1,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "이번 사태 파급력이 큰 건",
+          "source_supported_text": "이번 사태 파급력이 큰 건",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "이번 사태 파급력이 큰 건",
+            "retained_prefix_length": 0,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 0,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 12,
+      "start": 24.0,
+      "end": 27.0,
+      "raw": "사급력이 큰 건 PHP가 인터넷 정보...",
+      "admitted": "사급력이 큰 건 PHP가 인터넷 정보...",
+      "wav_rms": 0.08471004664897919,
+      "recorded_rms": 0.08471004664897919,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          24.002,
+          25.118
+        ],
+        [
+          25.25,
+          26.206
+        ],
+        [
+          26.338,
+          27.0
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 12,
+        "speaker": 0,
+        "raw": "사급력이 큰 건 PHP가 인터넷 정보...",
+        "previous": "이번 사태 파급력이 큰 건",
+        "match_type": "fuzzy_replace",
+        "overlap": "사급력이 큰 건",
+        "new": "PHP가 인터넷 정보...",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보...",
+        "raw_length": 15,
+        "overlap_length": 6,
+        "new_length": 9,
+        "duplicate_only": false,
+        "suspicious_deletion": true,
+        "review_reasons": [
+          "overlap_at_minimum_threshold"
+        ],
+        "matching_seconds": 0.00038159999530762434,
+        "similarity": 0.8888888888888888,
+        "raw_fragment": "사급력이 큰 건 PHP가 인터넷 정보...",
+        "new_fragment": "PHP가 인터넷 정보...",
+        "utterance_hypothesis": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보...",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": true,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            16000
+          ],
+          "current_prefix_overlap_interval": [
+            32,
+            16000
+          ],
+          "shared_tail_interval": [
+            32,
+            16000
+          ],
+          "continuous_tail_coverage": 0.998,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": true,
+          "tail_revision_geometry": "continuous_tail_across_overlap"
+        }
+      },
+      "logged_state": [
+        {
+          "window": 12,
+          "speaker": 0,
+          "utterance_id": 2,
+          "status": "partial",
+          "action": "replace",
+          "raw_text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "before": "이번 사태 파급력이 큰 건",
+          "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "previous_raw": "이번 사태 파급력이 큰 건",
+          "match_type": "hypothesis_correction",
+          "overlap_text": "",
+          "similarity": 0.5925925925925926,
+          "stream_time_seconds": 27,
+          "utterance_start_seconds": 25,
+          "finalize_reason": null,
+          "matching_seconds": 8.380005601793528e-05,
+          "stable_text": "",
+          "tentative_text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "history_size": 2,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "source_supported_text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "사급력이 큰 건 PHP가 인터넷 정보...",
+            "retained_prefix_length": 3,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 2,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 13,
+      "start": 26.0,
+      "end": 29.0,
+      "raw": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+      "admitted": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+      "wav_rms": 0.08811774849891663,
+      "recorded_rms": 0.08811774849891663,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          26.354,
+          29.0
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": true,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          5408,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          5664,
+          16000
+        ],
+        "shared_tail_interval": [
+          5664,
+          16000
+        ],
+        "continuous_tail_coverage": 0.9758308157099698,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": true,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          5408,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          5664,
+          16000
+        ],
+        "shared_tail_interval": [
+          5664,
+          16000
+        ],
+        "continuous_tail_coverage": 0.9758308157099698,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 13,
+        "speaker": 0,
+        "raw": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+        "previous": "사급력이 큰 건 PHP가 인터넷 정보...",
+        "match_type": "none",
+        "overlap": "",
+        "new": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 인터넷 전반의 광범위하게 쓰이는 핵심.",
+        "raw_length": 16,
+        "overlap_length": 0,
+        "new_length": 16,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.000557500054128468,
+        "similarity": 0.0,
+        "raw_fragment": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+        "new_fragment": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+        "utterance_hypothesis": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 인터넷 전반의 광범위하게 쓰이는 핵심.",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+        "rollover_reason": "sentence_boundary_confirmed",
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": false,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": true,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            5408,
+            16000
+          ],
+          "current_prefix_overlap_interval": [
+            5664,
+            16000
+          ],
+          "shared_tail_interval": [
+            5664,
+            16000
+          ],
+          "continuous_tail_coverage": 0.9758308157099698,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": false,
+          "tail_revision_geometry": null
+        }
+      },
+      "logged_state": [
+        {
+          "window": 13,
+          "speaker": 0,
+          "utterance_id": 2,
+          "status": "final",
+          "action": "finalize",
+          "raw_text": "",
+          "before": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "previous_raw": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 29,
+          "utterance_start_seconds": 25,
+          "finalize_reason": "sentence_boundary_confirmed",
+          "matching_seconds": 0.0,
+          "stable_text": "",
+          "tentative_text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "history_size": 2,
+          "stability_action": "tentative_retained_at_final",
+          "publication_text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "source_supported_text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+          "source_supported": false,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "finalize_without_new_evidence"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "reset"
+        },
+        {
+          "window": 13,
+          "speaker": 0,
+          "utterance_id": 3,
+          "status": "partial",
+          "action": "start",
+          "raw_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "before": "",
+          "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "previous_raw": "",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 29,
+          "utterance_start_seconds": 29,
+          "finalize_reason": null,
+          "matching_seconds": 2.1799933165311813e-05,
+          "stable_text": "",
+          "tentative_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "history_size": 1,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "source_supported_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "retained_prefix_length": 0,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 0,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 14,
+      "start": 28.0,
+      "end": 31.0,
+      "raw": "이는 핵심 기술이기 때문입니다.",
+      "admitted": "이는 핵심 기술이기 때문입니다.",
+      "wav_rms": 0.06831739097833633,
+      "recorded_rms": 0.06831739097833633,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          28.002,
+          30.43
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 14,
+        "speaker": 0,
+        "raw": "이는 핵심 기술이기 때문입니다.",
+        "previous": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+        "match_type": "sentence_tail_exact",
+        "overlap": "이는 핵심",
+        "new": "기술이기 때문입니다.",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 기술이기 때문입니다.",
+        "raw_length": 13,
+        "overlap_length": 4,
+        "new_length": 9,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.00024569989182054996,
+        "similarity": null,
+        "raw_fragment": "이는 핵심 기술이기 때문입니다.",
+        "new_fragment": "기술이기 때문입니다.",
+        "utterance_hypothesis": "기술이기 때문입니다.",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 기술이기 때문입니다.",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+        "rollover_reason": "sentence_boundary_confirmed",
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": true,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            16000
+          ],
+          "current_prefix_overlap_interval": [
+            32,
+            16000
+          ],
+          "shared_tail_interval": [
+            32,
+            16000
+          ],
+          "continuous_tail_coverage": 0.998,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": true,
+          "tail_revision_geometry": "continuous_tail_across_overlap"
+        }
+      },
+      "logged_state": [
+        {
+          "window": 14,
+          "speaker": 0,
+          "utterance_id": 3,
+          "status": "final",
+          "action": "finalize",
+          "raw_text": "",
+          "before": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "previous_raw": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 31,
+          "utterance_start_seconds": 29,
+          "finalize_reason": "sentence_boundary_confirmed",
+          "matching_seconds": 0.0,
+          "stable_text": "",
+          "tentative_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "history_size": 1,
+          "stability_action": "tentative_retained_at_final",
+          "publication_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "source_supported_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "source_supported": false,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "finalize_without_new_evidence"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "reset"
+        },
+        {
+          "window": 14,
+          "speaker": 0,
+          "utterance_id": 4,
+          "status": "partial",
+          "action": "start",
+          "raw_text": "기술이기 때문입니다.",
+          "before": "",
+          "text": "기술이기 때문입니다.",
+          "previous_raw": "",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 31,
+          "utterance_start_seconds": 31,
+          "finalize_reason": null,
+          "matching_seconds": 1.8399907276034355e-05,
+          "stable_text": "",
+          "tentative_text": "기술이기 때문입니다.",
+          "history_size": 1,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "기술이기 때문입니다.",
+          "source_supported_text": "기술이기 때문입니다.",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "기술이기 때문입니다.",
+            "retained_prefix_length": 0,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 0,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 15,
+      "start": 30.0,
+      "end": 33.0,
+      "raw": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+      "admitted": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+      "wav_rms": 0.1064368262887001,
+      "recorded_rms": 0.1064368262887001,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          30.066,
+          30.446
+        ],
+        [
+          31.186,
+          33.0
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          6880
+        ],
+        "current_prefix_overlap_interval": [
+          1056,
+          7136
+        ],
+        "shared_tail_interval": [
+          1056,
+          6880
+        ],
+        "continuous_tail_coverage": 0.8465116279069768,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          6880
+        ],
+        "current_prefix_overlap_interval": [
+          1056,
+          7136
+        ],
+        "shared_tail_interval": [
+          1056,
+          6880
+        ],
+        "continuous_tail_coverage": 0.8465116279069768,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 15,
+        "speaker": 0,
+        "raw": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+        "previous": "기술이기 때문입니다.",
+        "match_type": "none",
+        "overlap": "",
+        "new": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 사용된 프로그래밍 언어를 식별할 수 있습니다.",
+        "raw_length": 19,
+        "overlap_length": 0,
+        "new_length": 19,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.0002945999149233103,
+        "similarity": 0.0,
+        "raw_fragment": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+        "new_fragment": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+        "utterance_hypothesis": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 사용된 프로그래밍 언어를 식별할 수 있습니다.",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "기술이기 때문입니다.",
+        "rollover_reason": "sentence_boundary_confirmed",
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": false,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            6880
+          ],
+          "current_prefix_overlap_interval": [
+            1056,
+            7136
+          ],
+          "shared_tail_interval": [
+            1056,
+            6880
+          ],
+          "continuous_tail_coverage": 0.8465116279069768,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": false,
+          "tail_revision_geometry": null
+        }
+      },
+      "logged_state": [
+        {
+          "window": 15,
+          "speaker": 0,
+          "utterance_id": 4,
+          "status": "final",
+          "action": "finalize",
+          "raw_text": "",
+          "before": "기술이기 때문입니다.",
+          "text": "기술이기 때문입니다.",
+          "previous_raw": "기술이기 때문입니다.",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 33,
+          "utterance_start_seconds": 31,
+          "finalize_reason": "sentence_boundary_confirmed",
+          "matching_seconds": 0.0,
+          "stable_text": "",
+          "tentative_text": "기술이기 때문입니다.",
+          "history_size": 1,
+          "stability_action": "tentative_retained_at_final",
+          "publication_text": "기술이기 때문입니다.",
+          "source_supported_text": "기술이기 때문입니다.",
+          "source_supported": false,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "finalize_without_new_evidence"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "reset"
+        },
+        {
+          "window": 15,
+          "speaker": 0,
+          "utterance_id": 5,
+          "status": "partial",
+          "action": "start",
+          "raw_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "before": "",
+          "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "previous_raw": "",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 33,
+          "utterance_start_seconds": 33,
+          "finalize_reason": null,
+          "matching_seconds": 2.1699932403862476e-05,
+          "stable_text": "",
+          "tentative_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "history_size": 1,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "source_supported_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "retained_prefix_length": 0,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 0,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 16,
+      "start": 32.0,
+      "end": 35.0,
+      "raw": "웹사이트에 75%가",
+      "admitted": "웹사이트에 75%가",
+      "wav_rms": 0.10384608805179596,
+      "recorded_rms": 0.10384608805179596,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          32.002,
+          35.0
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 16,
+        "speaker": 0,
+        "raw": "웹사이트에 75%가",
+        "previous": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+        "match_type": "none",
+        "overlap": "",
+        "new": "웹사이트에 75%가",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 웹사이트에 75%가",
+        "raw_length": 8,
+        "overlap_length": 0,
+        "new_length": 8,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.000444800010882318,
+        "similarity": 0.0,
+        "raw_fragment": "웹사이트에 75%가",
+        "new_fragment": "웹사이트에 75%가",
+        "utterance_hypothesis": "웹사이트에 75%가",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 웹사이트에 75%가",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+        "rollover_reason": "sentence_boundary_confirmed",
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": true,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            16000
+          ],
+          "current_prefix_overlap_interval": [
+            32,
+            16000
+          ],
+          "shared_tail_interval": [
+            32,
+            16000
+          ],
+          "continuous_tail_coverage": 0.998,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": true,
+          "tail_revision_geometry": "continuous_tail_across_overlap"
+        }
+      },
+      "logged_state": [
+        {
+          "window": 16,
+          "speaker": 0,
+          "utterance_id": 5,
+          "status": "final",
+          "action": "finalize",
+          "raw_text": "",
+          "before": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "previous_raw": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 35,
+          "utterance_start_seconds": 33,
+          "finalize_reason": "sentence_boundary_confirmed",
+          "matching_seconds": 0.0,
+          "stable_text": "",
+          "tentative_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "history_size": 1,
+          "stability_action": "tentative_retained_at_final",
+          "publication_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "source_supported_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "source_supported": false,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "finalize_without_new_evidence"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "reset"
+        },
+        {
+          "window": 16,
+          "speaker": 0,
+          "utterance_id": 6,
+          "status": "partial",
+          "action": "start",
+          "raw_text": "웹사이트에 75%가",
+          "before": "",
+          "text": "웹사이트에 75%가",
+          "previous_raw": "",
+          "match_type": "none",
+          "overlap_text": "",
+          "similarity": null,
+          "stream_time_seconds": 35,
+          "utterance_start_seconds": 35,
+          "finalize_reason": null,
+          "matching_seconds": 2.0699924789369106e-05,
+          "stable_text": "",
+          "tentative_text": "웹사이트에 75%가",
+          "history_size": 1,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "웹사이트에 75%가",
+          "source_supported_text": "웹사이트에 75%가",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "웹사이트에 75%가",
+            "retained_prefix_length": 0,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 0,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 17,
+      "start": 34.0,
+      "end": 37.0,
+      "raw": "75%가 PHP를 쓰고",
+      "admitted": "75%가 PHP를 쓰고",
+      "wav_rms": 0.08505838364362717,
+      "recorded_rms": 0.08505838364362717,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          34.002,
+          36.75
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 17,
+        "speaker": 0,
+        "raw": "75%가 PHP를 쓰고",
+        "previous": "웹사이트에 75%가",
+        "match_type": "boundary_exact",
+        "overlap": "75%가",
+        "new": "PHP를 쓰고",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있습니다. 웹사이트에 75%가 PHP를 쓰고",
+        "raw_length": 9,
+        "overlap_length": 3,
+        "new_length": 6,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.0001553000183776021,
+        "similarity": null,
+        "raw_fragment": "75%가 PHP를 쓰고",
+        "new_fragment": "PHP를 쓰고",
+        "utterance_hypothesis": "웹사이트에 75%가 PHP를 쓰고",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있습니다. 웹사이트에 75%가 PHP를 쓰고",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": true,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            16000
+          ],
+          "current_prefix_overlap_interval": [
+            32,
+            16000
+          ],
+          "shared_tail_interval": [
+            32,
+            16000
+          ],
+          "continuous_tail_coverage": 0.998,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": true,
+          "tail_revision_geometry": "continuous_tail_across_overlap"
+        }
+      },
+      "logged_state": [
+        {
+          "window": 17,
+          "speaker": 0,
+          "utterance_id": 6,
+          "status": "partial",
+          "action": "extend",
+          "raw_text": "웹사이트에 75%가 PHP를 쓰고",
+          "before": "웹사이트에 75%가",
+          "text": "웹사이트에 75%가 PHP를 쓰고",
+          "previous_raw": "웹사이트에 75%가",
+          "match_type": "hypothesis_extension",
+          "overlap_text": "",
+          "similarity": 1.0,
+          "stream_time_seconds": 37,
+          "utterance_start_seconds": 35,
+          "finalize_reason": null,
+          "matching_seconds": 4.9200025387108326e-05,
+          "stable_text": "",
+          "tentative_text": "웹사이트에 75%가 PHP를 쓰고",
+          "history_size": 2,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "웹사이트에 75%가 PHP를 쓰고",
+          "source_supported_text": "웹사이트에 75%가 PHP를 쓰고",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "PHP를 쓰고",
+            "retained_prefix_length": 8,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 8,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    },
+    {
+      "window": 18,
+      "start": 36.0,
+      "end": 39.0,
+      "raw": "필을 쓰고",
+      "admitted": "필을 쓰고",
+      "wav_rms": 0.04142829775810242,
+      "recorded_rms": 0.04142829775810242,
+      "rms_matches": true,
+      "window_wav_present": false,
+      "recorded_vad_global_seconds": [
+        [
+          36.002,
+          36.766
+        ]
+      ],
+      "recorded_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          12000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          12256
+        ],
+        "shared_tail_interval": [
+          32,
+          12000
+        ],
+        "continuous_tail_coverage": 0.9973333333333333,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "recomputed_overlap": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          12000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          12256
+        ],
+        "shared_tail_interval": [
+          32,
+          12000
+        ],
+        "continuous_tail_coverage": 0.9973333333333333,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "recorded_confirmed_prefix": 0,
+      "logged_assembly": {
+        "window": 18,
+        "speaker": 0,
+        "raw": "필을 쓰고",
+        "previous": "75%가 PHP를 쓰고",
+        "match_type": "none",
+        "overlap": "",
+        "new": "필을 쓰고",
+        "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있습니다. 웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+        "raw_length": 4,
+        "overlap_length": 0,
+        "new_length": 4,
+        "duplicate_only": false,
+        "suspicious_deletion": false,
+        "review_reasons": [],
+        "matching_seconds": 0.00011869997251778841,
+        "similarity": 0.0,
+        "raw_fragment": "필을 쓰고",
+        "new_fragment": "필을 쓰고",
+        "utterance_hypothesis": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+        "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있습니다. 웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null,
+        "audio_overlap_evidence": {
+          "shared_speech": true,
+          "supported_tail_revision": false,
+          "overlap_correlation": 1.0,
+          "previous_tail_in_overlap": false,
+          "tail_covered_by_current_prefix": false,
+          "previous_tail_overlap_interval": [
+            0,
+            12000
+          ],
+          "current_prefix_overlap_interval": [
+            32,
+            12256
+          ],
+          "shared_tail_interval": [
+            32,
+            12000
+          ],
+          "continuous_tail_coverage": 0.9973333333333333,
+          "continuous_tail_min_overlap_coverage": 0.95,
+          "continuous_tail_geometry_supported": false,
+          "tail_revision_geometry": null
+        }
+      },
+      "logged_state": [
+        {
+          "window": 18,
+          "speaker": 0,
+          "utterance_id": 6,
+          "status": "partial",
+          "action": "extend",
+          "raw_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+          "before": "웹사이트에 75%가 PHP를 쓰고",
+          "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+          "previous_raw": "웹사이트에 75%가 PHP를 쓰고",
+          "match_type": "hypothesis_extension",
+          "overlap_text": "",
+          "similarity": 1.0,
+          "stream_time_seconds": 39,
+          "utterance_start_seconds": 35,
+          "finalize_reason": null,
+          "matching_seconds": 5.479995161294937e-05,
+          "stable_text": "",
+          "tentative_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+          "history_size": 3,
+          "stability_action": "awaiting_independent_support",
+          "publication_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+          "source_supported_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+          "source_supported": true,
+          "require_final_support": true,
+          "support_update": {
+            "reason": "current_source_covers_unretained_text",
+            "source_text": "필을 쓰고",
+            "retained_prefix_length": 14,
+            "observed_suffix_matches": true,
+            "unobserved_prefix_length": 14,
+            "unsupported_gap_length": 0,
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          },
+          "candidate_provenance": "VALIDATED",
+          "candidate_transition": "keep"
+        }
+      ]
+    }
+  ],
+  "ground_truth": null,
+  "cer_wer": null,
+  "recorded_model_configuration": null,
+  "unprocessed_tail_seconds": [
+    39,
+    40.0
+  ],
+  "logged_publication_finals": [
+    {
+      "type": "subtitle",
+      "status": "final",
+      "action": "finalize",
+      "utterance_id": 1,
+      "sequence": 8,
+      "window_index": 11,
+      "speaker": "speaker_0",
+      "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "assembled_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "raw_text": "",
+      "overlap_text": "",
+      "match_type": "none",
+      "similarity": null,
+      "stable_text": "",
+      "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "history_size": 3,
+      "stability_action": "tentative_retained_at_final",
+      "finalize_reason": "sentence_boundary_confirmed",
+      "start_ms": 11000,
+      "end_ms": 25000,
+      "timestamp": 1792652938190,
+      "stt_to_enqueue_ms": 4.148800042457879,
+      "websocket_accepted": true,
+      "websocket_dropped_oldest": false,
+      "websocket_queue_depth": 1
+    },
+    {
+      "type": "subtitle",
+      "status": "final",
+      "action": "finalize",
+      "utterance_id": 2,
+      "sequence": 11,
+      "window_index": 13,
+      "speaker": "speaker_0",
+      "text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+      "assembled_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보...",
+      "raw_text": "",
+      "overlap_text": "",
+      "match_type": "none",
+      "similarity": null,
+      "stable_text": "",
+      "tentative_text": "이번 사급력이 큰 건 PHP가 인터넷 정보...",
+      "history_size": 2,
+      "stability_action": "tentative_retained_at_final",
+      "finalize_reason": "sentence_boundary_confirmed",
+      "start_ms": 25000,
+      "end_ms": 29000,
+      "timestamp": 1792652942962,
+      "stt_to_enqueue_ms": 3.392699989490211,
+      "websocket_accepted": true,
+      "websocket_dropped_oldest": false,
+      "websocket_queue_depth": 1
+    },
+    {
+      "type": "subtitle",
+      "status": "final",
+      "action": "finalize",
+      "utterance_id": 3,
+      "sequence": 13,
+      "window_index": 14,
+      "speaker": "speaker_0",
+      "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+      "assembled_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심.",
+      "raw_text": "",
+      "overlap_text": "",
+      "match_type": "none",
+      "similarity": null,
+      "stable_text": "",
+      "tentative_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+      "history_size": 1,
+      "stability_action": "tentative_retained_at_final",
+      "finalize_reason": "sentence_boundary_confirmed",
+      "start_ms": 29000,
+      "end_ms": 31000,
+      "timestamp": 1792652944230,
+      "stt_to_enqueue_ms": 3.2987999729812145,
+      "websocket_accepted": true,
+      "websocket_dropped_oldest": false,
+      "websocket_queue_depth": 1
+    },
+    {
+      "type": "subtitle",
+      "status": "final",
+      "action": "finalize",
+      "utterance_id": 4,
+      "sequence": 15,
+      "window_index": 15,
+      "speaker": "speaker_0",
+      "text": "기술이기 때문입니다.",
+      "assembled_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다.",
+      "raw_text": "",
+      "overlap_text": "",
+      "match_type": "none",
+      "similarity": null,
+      "stable_text": "",
+      "tentative_text": "기술이기 때문입니다.",
+      "history_size": 1,
+      "stability_action": "tentative_retained_at_final",
+      "finalize_reason": "sentence_boundary_confirmed",
+      "start_ms": 31000,
+      "end_ms": 33000,
+      "timestamp": 1792652948135,
+      "stt_to_enqueue_ms": 4.121899954043329,
+      "websocket_accepted": true,
+      "websocket_dropped_oldest": false,
+      "websocket_queue_depth": 1
+    },
+    {
+      "type": "subtitle",
+      "status": "final",
+      "action": "finalize",
+      "utterance_id": 5,
+      "sequence": 17,
+      "window_index": 16,
+      "speaker": "speaker_0",
+      "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+      "assembled_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있습니다.",
+      "raw_text": "",
+      "overlap_text": "",
+      "match_type": "none",
+      "similarity": null,
+      "stable_text": "",
+      "tentative_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+      "history_size": 1,
+      "stability_action": "tentative_retained_at_final",
+      "finalize_reason": "sentence_boundary_confirmed",
+      "start_ms": 33000,
+      "end_ms": 35000,
+      "timestamp": 1792652949980,
+      "stt_to_enqueue_ms": 4.135400056838989,
+      "websocket_accepted": true,
+      "websocket_dropped_oldest": false,
+      "websocket_queue_depth": 1
+    },
+    {
+      "type": "subtitle",
+      "status": "final",
+      "action": "finalize",
+      "utterance_id": 6,
+      "sequence": 21,
+      "window_index": 18,
+      "speaker": "speaker_0",
+      "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+      "assembled_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행... 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있습니다. 웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+      "raw_text": "",
+      "overlap_text": "",
+      "match_type": "none",
+      "similarity": null,
+      "stable_text": "",
+      "tentative_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+      "history_size": 3,
+      "stability_action": "tentative_retained_at_final",
+      "finalize_reason": "pipeline_end",
+      "start_ms": 35000,
+      "end_ms": 39000,
+      "timestamp": 1792652952658,
+      "stt_to_enqueue_ms": 0.0,
+      "websocket_accepted": true,
+      "websocket_dropped_oldest": false,
+      "websocket_queue_depth": 1
+    }
+  ],
+  "current_logged_raw_replay": {
+    "trace": [
+      {
+        "window": 0,
+        "assembly": {
+          "window": 0,
+          "speaker": 0,
+          "raw": "",
+          "previous": "",
+          "match_type": "none",
+          "overlap": "",
+          "new": "",
+          "assembled": "",
+          "raw_length": 0,
+          "overlap_length": 0,
+          "new_length": 0,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 1.699407584965229e-05,
+          "similarity": null,
+          "raw_fragment": "",
+          "new_fragment": "",
+          "utterance_hypothesis": "",
+          "session_text": "",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": []
+      },
+      {
+        "window": 1,
+        "assembly": {
+          "window": 1,
+          "speaker": 0,
+          "raw": "",
+          "previous": "",
+          "match_type": "none",
+          "overlap": "",
+          "new": "",
+          "assembled": "",
+          "raw_length": 0,
+          "overlap_length": 0,
+          "new_length": 0,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 1.155806239694357e-05,
+          "similarity": null,
+          "raw_fragment": "",
+          "new_fragment": "",
+          "utterance_hypothesis": "",
+          "session_text": "",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": []
+      },
+      {
+        "window": 2,
+        "assembly": {
+          "window": 2,
+          "speaker": 0,
+          "raw": "",
+          "previous": "",
+          "match_type": "none",
+          "overlap": "",
+          "new": "",
+          "assembled": "",
+          "raw_length": 0,
+          "overlap_length": 0,
+          "new_length": 0,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 6.96093775331974e-06,
+          "similarity": null,
+          "raw_fragment": "",
+          "new_fragment": "",
+          "utterance_hypothesis": "",
+          "session_text": "",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": []
+      },
+      {
+        "window": 3,
+        "assembly": {
+          "window": 3,
+          "speaker": 0,
+          "raw": "",
+          "previous": "",
+          "match_type": "none",
+          "overlap": "",
+          "new": "",
+          "assembled": "",
+          "raw_length": 0,
+          "overlap_length": 0,
+          "new_length": 0,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 5.3979456424713135e-06,
+          "similarity": null,
+          "raw_fragment": "",
+          "new_fragment": "",
+          "utterance_hypothesis": "",
+          "session_text": "",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": []
+      },
+      {
+        "window": 4,
+        "assembly": {
+          "window": 4,
+          "speaker": 0,
+          "raw": "웹사이트 개발의 논리",
+          "previous": "",
+          "match_type": "none",
+          "overlap": "",
+          "new": "웹사이트 개발의 논리",
+          "assembled": "웹사이트 개발의 논리",
+          "raw_length": 9,
+          "overlap_length": 0,
+          "new_length": 9,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 1.9271974451839924e-05,
+          "similarity": null,
+          "raw_fragment": "웹사이트 개발의 논리",
+          "new_fragment": "웹사이트 개발의 논리",
+          "utterance_hypothesis": "웹사이트 개발의 논리",
+          "session_text": "웹사이트 개발의 논리",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": [
+          {
+            "window": 4,
+            "speaker": 0,
+            "utterance_id": 1,
+            "status": "partial",
+            "action": "start",
+            "raw_text": "웹사이트 개발의 논리",
+            "before": "",
+            "text": "웹사이트 개발의 논리",
+            "previous_raw": "",
+            "match_type": "none",
+            "overlap_text": "",
+            "similarity": null,
+            "stream_time_seconds": 11,
+            "utterance_start_seconds": 11,
+            "finalize_reason": null,
+            "matching_seconds": 3.3781048841774464e-05,
+            "stable_text": "",
+            "tentative_text": "웹사이트 개발의 논리",
+            "history_size": 1,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "웹사이트 개발의 논리",
+            "source_supported_text": "웹사이트 개발의 논리",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "웹사이트 개발의 논리",
+              "retained_prefix_length": 0,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 0,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 5,
+        "assembly": {
+          "window": 5,
+          "speaker": 0,
+          "raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "previous": "웹사이트 개발의 논리",
+          "match_type": "supported_tail_replace",
+          "overlap": "이트 개발의",
+          "new": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "raw_length": 21,
+          "overlap_length": 5,
+          "new_length": 21,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.039811205002479255,
+          "similarity": 0.7692307692307693,
+          "raw_fragment": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "new_fragment": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": [
+          {
+            "window": 5,
+            "speaker": 0,
+            "utterance_id": 1,
+            "status": "partial",
+            "action": "replace",
+            "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+            "before": "웹사이트 개발의 논리",
+            "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+            "previous_raw": "웹사이트 개발의 논리",
+            "match_type": "hypothesis_correction",
+            "overlap_text": "",
+            "similarity": 0.4,
+            "stream_time_seconds": 13,
+            "utterance_start_seconds": 11,
+            "finalize_reason": null,
+            "matching_seconds": 0.00010581302922219038,
+            "stable_text": "",
+            "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+            "history_size": 2,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+            "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+              "retained_prefix_length": 0,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 0,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 6,
+        "assembly": {
+          "window": 6,
+          "speaker": 0,
+          "raw": "언어 PHP에서 발견된 취약점은",
+          "previous": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+          "match_type": "boundary_exact",
+          "overlap": "언어 PHP",
+          "new": "에서 발견된 취약점은",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+          "raw_length": 14,
+          "overlap_length": 5,
+          "new_length": 9,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.000567132025025785,
+          "similarity": null,
+          "raw_fragment": "언어 PHP에서 발견된 취약점은",
+          "new_fragment": "에서 발견된 취약점은",
+          "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": [
+          {
+            "window": 6,
+            "speaker": 0,
+            "utterance_id": 1,
+            "status": "partial",
+            "action": "extend",
+            "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+            "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+            "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+            "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP",
+            "match_type": "hypothesis_extension",
+            "overlap_text": "",
+            "similarity": 1.0,
+            "stream_time_seconds": 15,
+            "utterance_start_seconds": 11,
+            "finalize_reason": null,
+            "matching_seconds": 0.00012033095117658377,
+            "stable_text": "",
+            "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+            "history_size": 3,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+            "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "에서 발견된 취약점은",
+              "retained_prefix_length": 21,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 21,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 7,
+        "assembly": {
+          "window": 7,
+          "speaker": 0,
+          "raw": "최악점은 해커가 로그인이나 인증 없이",
+          "previous": "언어 PHP에서 발견된 취약점은",
+          "match_type": "none",
+          "overlap": "",
+          "new": "최악점은 해커가 로그인이나 인증 없이",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+          "raw_length": 16,
+          "overlap_length": 0,
+          "new_length": 16,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.0010729869827628136,
+          "similarity": 0.0,
+          "raw_fragment": "최악점은 해커가 로그인이나 인증 없이",
+          "new_fragment": "최악점은 해커가 로그인이나 인증 없이",
+          "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": [
+          {
+            "window": 7,
+            "speaker": 0,
+            "utterance_id": 1,
+            "status": "partial",
+            "action": "extend",
+            "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+            "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+            "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+            "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은",
+            "match_type": "hypothesis_extension",
+            "overlap_text": "",
+            "similarity": 1.0,
+            "stream_time_seconds": 17,
+            "utterance_start_seconds": 11,
+            "finalize_reason": null,
+            "matching_seconds": 0.00016831397078931332,
+            "stable_text": "",
+            "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+            "history_size": 3,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+            "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "최악점은 해커가 로그인이나 인증 없이",
+              "retained_prefix_length": 30,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 30,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 8,
+        "assembly": {
+          "window": 8,
+          "speaker": 0,
+          "raw": "인증 없이 외부에서 임의로 코드를 실행...",
+          "previous": "최악점은 해커가 로그인이나 인증 없이",
+          "match_type": "boundary_exact",
+          "overlap": "인증 없이",
+          "new": "외부에서 임의로 코드를 실행...",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+          "raw_length": 16,
+          "overlap_length": 4,
+          "new_length": 12,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.0008230230305343866,
+          "similarity": null,
+          "raw_fragment": "인증 없이 외부에서 임의로 코드를 실행...",
+          "new_fragment": "외부에서 임의로 코드를 실행...",
+          "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": [
+          {
+            "window": 8,
+            "speaker": 0,
+            "utterance_id": 1,
+            "status": "partial",
+            "action": "extend",
+            "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+            "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+            "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+            "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이",
+            "match_type": "hypothesis_extension",
+            "overlap_text": "",
+            "similarity": 1.0,
+            "stream_time_seconds": 19,
+            "utterance_start_seconds": 11,
+            "finalize_reason": null,
+            "matching_seconds": 0.00020687701180577278,
+            "stable_text": "",
+            "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+            "history_size": 3,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+            "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "외부에서 임의로 코드를 실행...",
+              "retained_prefix_length": 46,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 46,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 9,
+        "assembly": {
+          "window": 9,
+          "speaker": 0,
+          "raw": "의미로 코드를 실행하거나 시스템을 장악할 수",
+          "previous": "인증 없이 외부에서 임의로 코드를 실행...",
+          "match_type": "fuzzy",
+          "overlap": "의미로 코드를 실행",
+          "new": "하거나 시스템을 장악할 수",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수",
+          "raw_length": 19,
+          "overlap_length": 8,
+          "new_length": 11,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.002464406075887382,
+          "similarity": 0.9333333333333333,
+          "raw_fragment": "의미로 코드를 실행하거나 시스템을 장악할 수",
+          "new_fragment": "하거나 시스템을 장악할 수",
+          "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": [
+          {
+            "window": 9,
+            "speaker": 0,
+            "utterance_id": 1,
+            "status": "partial",
+            "action": "extend",
+            "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수",
+            "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+            "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수",
+            "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행...",
+            "match_type": "hypothesis_extension",
+            "overlap_text": "",
+            "similarity": 1.0,
+            "stream_time_seconds": 21,
+            "utterance_start_seconds": 11,
+            "finalize_reason": null,
+            "matching_seconds": 0.00012176693417131901,
+            "stable_text": "",
+            "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수",
+            "history_size": 3,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수",
+            "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "하거나 시스템을 장악할 수",
+              "retained_prefix_length": 58,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 58,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 10,
+        "assembly": {
+          "window": 10,
+          "speaker": 0,
+          "raw": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "previous": "의미로 코드를 실행하거나 시스템을 장악할 수",
+          "match_type": "token_exact",
+          "overlap": "시스템을 장악할 수",
+          "new": "있는 결함으로 알려졌습니다.",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "raw_length": 20,
+          "overlap_length": 8,
+          "new_length": 12,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.0004484750097617507,
+          "similarity": null,
+          "raw_fragment": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "new_fragment": "있는 결함으로 알려졌습니다.",
+          "utterance_hypothesis": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": [
+          {
+            "window": 10,
+            "speaker": 0,
+            "utterance_id": 1,
+            "status": "partial",
+            "action": "extend",
+            "raw_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+            "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수",
+            "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+            "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수",
+            "match_type": "hypothesis_extension",
+            "overlap_text": "",
+            "similarity": 1.0,
+            "stream_time_seconds": 23,
+            "utterance_start_seconds": 11,
+            "finalize_reason": null,
+            "matching_seconds": 0.0001320600276812911,
+            "stable_text": "",
+            "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+            "history_size": 3,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+            "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "있는 결함으로 알려졌습니다.",
+              "retained_prefix_length": 69,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 69,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 11,
+        "assembly": {
+          "window": 11,
+          "speaker": 0,
+          "raw": "이번 사태 파급력이 큰 건",
+          "previous": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "match_type": "none",
+          "overlap": "",
+          "new": "이번 사태 파급력이 큰 건",
+          "assembled": "이번 사태 파급력이 큰 건",
+          "raw_length": 10,
+          "overlap_length": 0,
+          "new_length": 10,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.0005677420413121581,
+          "similarity": 0.0,
+          "raw_fragment": "이번 사태 파급력이 큰 건",
+          "new_fragment": "이번 사태 파급력이 큰 건",
+          "utterance_hypothesis": "이번 사태 파급력이 큰 건",
+          "session_text": "이번 사태 파급력이 큰 건",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "rollover_reason": "sentence_boundary_confirmed"
+        },
+        "state_events": [
+          {
+            "window": 11,
+            "speaker": 0,
+            "utterance_id": 1,
+            "status": "final",
+            "action": "finalize",
+            "raw_text": "",
+            "before": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+            "text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+            "previous_raw": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+            "match_type": "none",
+            "overlap_text": "",
+            "similarity": null,
+            "stream_time_seconds": 25,
+            "utterance_start_seconds": 11,
+            "finalize_reason": "sentence_boundary_confirmed",
+            "matching_seconds": 0.0,
+            "stable_text": "",
+            "tentative_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+            "history_size": 3,
+            "stability_action": "tentative_retained_at_final",
+            "publication_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+            "source_supported_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+            "source_supported": false,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "finalize_without_new_evidence"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "reset"
+          },
+          {
+            "window": 11,
+            "speaker": 0,
+            "utterance_id": 2,
+            "status": "partial",
+            "action": "start",
+            "raw_text": "이번 사태 파급력이 큰 건",
+            "before": "",
+            "text": "이번 사태 파급력이 큰 건",
+            "previous_raw": "",
+            "match_type": "none",
+            "overlap_text": "",
+            "similarity": null,
+            "stream_time_seconds": 25,
+            "utterance_start_seconds": 25,
+            "finalize_reason": null,
+            "matching_seconds": 1.5672994777560234e-05,
+            "stable_text": "",
+            "tentative_text": "이번 사태 파급력이 큰 건",
+            "history_size": 1,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "이번 사태 파급력이 큰 건",
+            "source_supported_text": "이번 사태 파급력이 큰 건",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "이번 사태 파급력이 큰 건",
+              "retained_prefix_length": 0,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 0,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 12,
+        "assembly": {
+          "window": 12,
+          "speaker": 0,
+          "raw": "사급력이 큰 건 PHP가 인터넷 정보...",
+          "previous": "이번 사태 파급력이 큰 건",
+          "match_type": "fuzzy",
+          "overlap": "사급력이 큰 건",
+          "new": "PHP가 인터넷 정보...",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+          "raw_length": 15,
+          "overlap_length": 6,
+          "new_length": 9,
+          "duplicate_only": false,
+          "suspicious_deletion": true,
+          "review_reasons": [
+            "overlap_at_minimum_threshold"
+          ],
+          "matching_seconds": 0.0004035260062664747,
+          "similarity": 0.8888888888888888,
+          "raw_fragment": "사급력이 큰 건 PHP가 인터넷 정보...",
+          "new_fragment": "PHP가 인터넷 정보...",
+          "utterance_hypothesis": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": [
+          {
+            "window": 12,
+            "speaker": 0,
+            "utterance_id": 2,
+            "status": "partial",
+            "action": "extend",
+            "raw_text": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+            "before": "이번 사태 파급력이 큰 건",
+            "text": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+            "previous_raw": "이번 사태 파급력이 큰 건",
+            "match_type": "hypothesis_extension",
+            "overlap_text": "",
+            "similarity": 1.0,
+            "stream_time_seconds": 27,
+            "utterance_start_seconds": 25,
+            "finalize_reason": null,
+            "matching_seconds": 5.144299939274788e-05,
+            "stable_text": "",
+            "tentative_text": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+            "history_size": 2,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+            "source_supported_text": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "PHP가 인터넷 정보...",
+              "retained_prefix_length": 10,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 10,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 13,
+        "assembly": {
+          "window": 13,
+          "speaker": 0,
+          "raw": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "previous": "사급력이 큰 건 PHP가 인터넷 정보...",
+          "match_type": "none",
+          "overlap": "",
+          "new": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "raw_length": 16,
+          "overlap_length": 0,
+          "new_length": 16,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.08831389097031206,
+          "similarity": 0.0,
+          "raw_fragment": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "new_fragment": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "utterance_hypothesis": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+          "rollover_reason": "sentence_boundary_confirmed"
+        },
+        "state_events": [
+          {
+            "window": 13,
+            "speaker": 0,
+            "utterance_id": 2,
+            "status": "final",
+            "action": "finalize",
+            "raw_text": "",
+            "before": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+            "text": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+            "previous_raw": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+            "match_type": "none",
+            "overlap_text": "",
+            "similarity": null,
+            "stream_time_seconds": 29,
+            "utterance_start_seconds": 25,
+            "finalize_reason": "sentence_boundary_confirmed",
+            "matching_seconds": 0.0,
+            "stable_text": "",
+            "tentative_text": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+            "history_size": 2,
+            "stability_action": "tentative_retained_at_final",
+            "publication_text": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+            "source_supported_text": "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+            "source_supported": false,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "finalize_without_new_evidence"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "reset"
+          },
+          {
+            "window": 13,
+            "speaker": 0,
+            "utterance_id": 3,
+            "status": "partial",
+            "action": "start",
+            "raw_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "before": "",
+            "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "previous_raw": "",
+            "match_type": "none",
+            "overlap_text": "",
+            "similarity": null,
+            "stream_time_seconds": 29,
+            "utterance_start_seconds": 29,
+            "finalize_reason": null,
+            "matching_seconds": 2.0491075702011585e-05,
+            "stable_text": "",
+            "tentative_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "history_size": 1,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "source_supported_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+              "retained_prefix_length": 0,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 0,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 14,
+        "assembly": {
+          "window": 14,
+          "speaker": 0,
+          "raw": "이는 핵심 기술이기 때문입니다.",
+          "previous": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "match_type": "sentence_tail_exact",
+          "overlap": "이는 핵심",
+          "new": "기술이기 때문입니다.",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보... 기술이기 때문입니다.",
+          "raw_length": 13,
+          "overlap_length": 4,
+          "new_length": 9,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.00023719400633126497,
+          "similarity": null,
+          "raw_fragment": "이는 핵심 기술이기 때문입니다.",
+          "new_fragment": "기술이기 때문입니다.",
+          "utterance_hypothesis": "기술이기 때문입니다.",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보... 기술이기 때문입니다.",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+          "rollover_reason": "sentence_boundary_confirmed"
+        },
+        "state_events": [
+          {
+            "window": 14,
+            "speaker": 0,
+            "utterance_id": 3,
+            "status": "final",
+            "action": "finalize",
+            "raw_text": "",
+            "before": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "previous_raw": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "match_type": "none",
+            "overlap_text": "",
+            "similarity": null,
+            "stream_time_seconds": 31,
+            "utterance_start_seconds": 29,
+            "finalize_reason": "sentence_boundary_confirmed",
+            "matching_seconds": 0.0,
+            "stable_text": "",
+            "tentative_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "history_size": 1,
+            "stability_action": "tentative_retained_at_final",
+            "publication_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "source_supported_text": "인터넷 전반의 광범위하게 쓰이는 핵심.",
+            "source_supported": false,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "finalize_without_new_evidence"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "reset"
+          },
+          {
+            "window": 14,
+            "speaker": 0,
+            "utterance_id": 4,
+            "status": "partial",
+            "action": "start",
+            "raw_text": "기술이기 때문입니다.",
+            "before": "",
+            "text": "기술이기 때문입니다.",
+            "previous_raw": "",
+            "match_type": "none",
+            "overlap_text": "",
+            "similarity": null,
+            "stream_time_seconds": 31,
+            "utterance_start_seconds": 31,
+            "finalize_reason": null,
+            "matching_seconds": 1.2734089978039265e-05,
+            "stable_text": "",
+            "tentative_text": "기술이기 때문입니다.",
+            "history_size": 1,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "기술이기 때문입니다.",
+            "source_supported_text": "기술이기 때문입니다.",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "기술이기 때문입니다.",
+              "retained_prefix_length": 0,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 0,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 15,
+        "assembly": {
+          "window": 15,
+          "speaker": 0,
+          "raw": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "previous": "기술이기 때문입니다.",
+          "match_type": "none",
+          "overlap": "",
+          "new": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "raw_length": 19,
+          "overlap_length": 0,
+          "new_length": 19,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.00028560496866703033,
+          "similarity": 0.0,
+          "raw_fragment": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "new_fragment": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "utterance_hypothesis": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "기술이기 때문입니다.",
+          "rollover_reason": "sentence_boundary_confirmed"
+        },
+        "state_events": [
+          {
+            "window": 15,
+            "speaker": 0,
+            "utterance_id": 4,
+            "status": "final",
+            "action": "finalize",
+            "raw_text": "",
+            "before": "기술이기 때문입니다.",
+            "text": "기술이기 때문입니다.",
+            "previous_raw": "기술이기 때문입니다.",
+            "match_type": "none",
+            "overlap_text": "",
+            "similarity": null,
+            "stream_time_seconds": 33,
+            "utterance_start_seconds": 31,
+            "finalize_reason": "sentence_boundary_confirmed",
+            "matching_seconds": 0.0,
+            "stable_text": "",
+            "tentative_text": "기술이기 때문입니다.",
+            "history_size": 1,
+            "stability_action": "tentative_retained_at_final",
+            "publication_text": "기술이기 때문입니다.",
+            "source_supported_text": "기술이기 때문입니다.",
+            "source_supported": false,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "finalize_without_new_evidence"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "reset"
+          },
+          {
+            "window": 15,
+            "speaker": 0,
+            "utterance_id": 5,
+            "status": "partial",
+            "action": "start",
+            "raw_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "before": "",
+            "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "previous_raw": "",
+            "match_type": "none",
+            "overlap_text": "",
+            "similarity": null,
+            "stream_time_seconds": 33,
+            "utterance_start_seconds": 33,
+            "finalize_reason": null,
+            "matching_seconds": 1.5627010725438595e-05,
+            "stable_text": "",
+            "tentative_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "history_size": 1,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "source_supported_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+              "retained_prefix_length": 0,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 0,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 16,
+        "assembly": {
+          "window": 16,
+          "speaker": 0,
+          "raw": "웹사이트에 75%가",
+          "previous": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "match_type": "none",
+          "overlap": "",
+          "new": "웹사이트에 75%가",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 웹사이트에 75%가",
+          "raw_length": 8,
+          "overlap_length": 0,
+          "new_length": 8,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.0004794679116457701,
+          "similarity": 0.0,
+          "raw_fragment": "웹사이트에 75%가",
+          "new_fragment": "웹사이트에 75%가",
+          "utterance_hypothesis": "웹사이트에 75%가",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 웹사이트에 75%가",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+          "rollover_reason": "sentence_boundary_confirmed"
+        },
+        "state_events": [
+          {
+            "window": 16,
+            "speaker": 0,
+            "utterance_id": 5,
+            "status": "final",
+            "action": "finalize",
+            "raw_text": "",
+            "before": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "previous_raw": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "match_type": "none",
+            "overlap_text": "",
+            "similarity": null,
+            "stream_time_seconds": 35,
+            "utterance_start_seconds": 33,
+            "finalize_reason": "sentence_boundary_confirmed",
+            "matching_seconds": 0.0,
+            "stable_text": "",
+            "tentative_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "history_size": 1,
+            "stability_action": "tentative_retained_at_final",
+            "publication_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "source_supported_text": "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+            "source_supported": false,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "finalize_without_new_evidence"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "reset"
+          },
+          {
+            "window": 16,
+            "speaker": 0,
+            "utterance_id": 6,
+            "status": "partial",
+            "action": "start",
+            "raw_text": "웹사이트에 75%가",
+            "before": "",
+            "text": "웹사이트에 75%가",
+            "previous_raw": "",
+            "match_type": "none",
+            "overlap_text": "",
+            "similarity": null,
+            "stream_time_seconds": 35,
+            "utterance_start_seconds": 35,
+            "finalize_reason": null,
+            "matching_seconds": 1.249497290700674e-05,
+            "stable_text": "",
+            "tentative_text": "웹사이트에 75%가",
+            "history_size": 1,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "웹사이트에 75%가",
+            "source_supported_text": "웹사이트에 75%가",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "웹사이트에 75%가",
+              "retained_prefix_length": 0,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 0,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 17,
+        "assembly": {
+          "window": 17,
+          "speaker": 0,
+          "raw": "75%가 PHP를 쓰고",
+          "previous": "웹사이트에 75%가",
+          "match_type": "boundary_exact",
+          "overlap": "75%가",
+          "new": "PHP를 쓰고",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있습니다. 웹사이트에 75%가 PHP를 쓰고",
+          "raw_length": 9,
+          "overlap_length": 3,
+          "new_length": 6,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 0.00013276899699121714,
+          "similarity": null,
+          "raw_fragment": "75%가 PHP를 쓰고",
+          "new_fragment": "PHP를 쓰고",
+          "utterance_hypothesis": "웹사이트에 75%가 PHP를 쓰고",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있습니다. 웹사이트에 75%가 PHP를 쓰고",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": [
+          {
+            "window": 17,
+            "speaker": 0,
+            "utterance_id": 6,
+            "status": "partial",
+            "action": "extend",
+            "raw_text": "웹사이트에 75%가 PHP를 쓰고",
+            "before": "웹사이트에 75%가",
+            "text": "웹사이트에 75%가 PHP를 쓰고",
+            "previous_raw": "웹사이트에 75%가",
+            "match_type": "hypothesis_extension",
+            "overlap_text": "",
+            "similarity": 1.0,
+            "stream_time_seconds": 37,
+            "utterance_start_seconds": 35,
+            "finalize_reason": null,
+            "matching_seconds": 4.04199818149209e-05,
+            "stable_text": "",
+            "tentative_text": "웹사이트에 75%가 PHP를 쓰고",
+            "history_size": 2,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "웹사이트에 75%가 PHP를 쓰고",
+            "source_supported_text": "웹사이트에 75%가 PHP를 쓰고",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "PHP를 쓰고",
+              "retained_prefix_length": 8,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 8,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      },
+      {
+        "window": 18,
+        "assembly": {
+          "window": 18,
+          "speaker": 0,
+          "raw": "필을 쓰고",
+          "previous": "75%가 PHP를 쓰고",
+          "match_type": "none",
+          "overlap": "",
+          "new": "필을 쓰고",
+          "assembled": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있습니다. 웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+          "raw_length": 4,
+          "overlap_length": 0,
+          "new_length": 4,
+          "duplicate_only": false,
+          "suspicious_deletion": false,
+          "review_reasons": [],
+          "matching_seconds": 9.630690328776836e-05,
+          "similarity": 0.0,
+          "raw_fragment": "필을 쓰고",
+          "new_fragment": "필을 쓰고",
+          "utterance_hypothesis": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+          "session_text": "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다. 이번 사태 파급력이 큰 건 PHP가 인터넷 정보... 인터넷 전반의 광범위하게 쓰이는 핵심. 기술이기 때문입니다. 사용된 프로그래밍 언어를 식별할 수 있습니다. 웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+          "confirmed_prefix_length": 0,
+          "rollover_text": "",
+          "rollover_reason": null
+        },
+        "state_events": [
+          {
+            "window": 18,
+            "speaker": 0,
+            "utterance_id": 6,
+            "status": "partial",
+            "action": "extend",
+            "raw_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+            "before": "웹사이트에 75%가 PHP를 쓰고",
+            "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+            "previous_raw": "웹사이트에 75%가 PHP를 쓰고",
+            "match_type": "hypothesis_extension",
+            "overlap_text": "",
+            "similarity": 1.0,
+            "stream_time_seconds": 39,
+            "utterance_start_seconds": 35,
+            "finalize_reason": null,
+            "matching_seconds": 4.4659944251179695e-05,
+            "stable_text": "",
+            "tentative_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+            "history_size": 3,
+            "stability_action": "awaiting_independent_support",
+            "publication_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+            "source_supported_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+            "source_supported": true,
+            "require_final_support": true,
+            "support_update": {
+              "reason": "current_source_covers_unretained_text",
+              "source_text": "필을 쓰고",
+              "retained_prefix_length": 14,
+              "observed_suffix_matches": true,
+              "unobserved_prefix_length": 14,
+              "unsupported_gap_length": 0,
+              "candidate_provenance": "VALIDATED",
+              "candidate_transition": "keep"
+            },
+            "candidate_provenance": "VALIDATED",
+            "candidate_transition": "keep"
+          }
+        ]
+      }
+    ],
+    "flush": {
+      "window": 18,
+      "speaker": 0,
+      "utterance_id": 6,
+      "status": "final",
+      "action": "finalize",
+      "raw_text": "",
+      "before": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+      "text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+      "previous_raw": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+      "match_type": "none",
+      "overlap_text": "",
+      "similarity": null,
+      "stream_time_seconds": 39,
+      "utterance_start_seconds": 35,
+      "finalize_reason": "pipeline_end",
+      "matching_seconds": 0.0,
+      "stable_text": "",
+      "tentative_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+      "history_size": 3,
+      "stability_action": "tentative_retained_at_final",
+      "publication_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+      "source_supported_text": "웹사이트에 75%가 PHP를 쓰고 필을 쓰고",
+      "source_supported": false,
+      "require_final_support": true,
+      "support_update": {
+        "reason": "finalize_without_new_evidence"
+      },
+      "candidate_provenance": "VALIDATED",
+      "candidate_transition": "reset"
+    },
+    "finals": [
+      "타이트 개발의 널리스 2는 프로그래밍 언어 PHP에서 발견된 취약점은 최악점은 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "이번 사태 파급력이 큰 건 PHP가 인터넷 정보...",
+      "인터넷 전반의 광범위하게 쓰이는 핵심.",
+      "기술이기 때문입니다.",
+      "사용된 프로그래밍 언어를 식별할 수 있습니다.",
+      "웹사이트에 75%가 PHP를 쓰고 필을 쓰고"
+    ]
+  },
+  "cpu_ms_per_19_window_replay_including_trace_build": {
+    "n": 200,
+    "mean": 6.859291717410088,
+    "p50": 6.860145542304963,
+    "p95": 6.918827589834109
+  }
+}

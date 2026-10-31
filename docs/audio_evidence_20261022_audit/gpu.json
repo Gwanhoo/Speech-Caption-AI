@@ -1,0 +1,4138 @@
+{
+  "model": "/workspace/Speech-Caption-AI/checkpoints/faster-whisper/models--mobiuslabsgmbh--faster-whisper-large-v3-turbo/snapshots/0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
+  "faster_whisper_version": "1.2.1",
+  "options": {
+    "language": "ko",
+    "beam_size": 5,
+    "condition_on_previous_text": false
+  },
+  "compute_type": "float16",
+  "before": {
+    "used_mib": 2311,
+    "free_mib": 21804,
+    "utilization": 0
+  },
+  "reference": null,
+  "note": "New model estimates, not annotations of the historical RAW.",
+  "runs": [
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 4,
+      "stt_seconds": 0.3510417089564726,
+      "raw": "웹사이트 개발의 논리성은",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.46,
+          "text": " 웹사이트 개발의 논리성은",
+          "tokens": [
+            50365,
+            6891,
+            117,
+            5727,
+            40547,
+            30185,
+            17248,
+            2785,
+            8727,
+            1870,
+            2250,
+            8631,
+            2124,
+            50538
+          ],
+          "avg_logprob": -0.49062499205271404,
+          "compression_ratio": 0.7608695652173914,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 5,
+      "stt_seconds": 0.4045584270497784,
+      "raw": "사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.96,
+          "text": " 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP",
+          "tokens": [
+            50365,
+            4744,
+            40547,
+            30185,
+            17248,
+            1517,
+            3214,
+            2998,
+            2250,
+            17373,
+            20813,
+            27758,
+            10557,
+            14387,
+            108,
+            235,
+            16738,
+            3103,
+            47298,
+            50513
+          ],
+          "avg_logprob": -0.0939825177192688,
+          "compression_ratio": 0.8513513513513513,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 6,
+      "stt_seconds": 0.3485875240294263,
+      "raw": "언어 PHP에서 발견된 취약점은",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 언어 PHP에서 발견된 취약점은",
+          "tokens": [
+            50365,
+            16738,
+            3103,
+            47298,
+            4885,
+            13825,
+            1368,
+            1698,
+            14987,
+            28880,
+            19970,
+            15046,
+            2124,
+            50515
+          ],
+          "avg_logprob": -0.2994791785875956,
+          "compression_ratio": 0.78,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 7,
+      "stt_seconds": 0.17263612698297948,
+      "raw": "최악점은 해커가 로그인이나 인증 없이",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.94,
+          "text": " 최악점은 해커가 로그인이나 인증 없이",
+          "tokens": [
+            50365,
+            14571,
+            22886,
+            15046,
+            2124,
+            7960,
+            119,
+            97,
+            1453,
+            26142,
+            22069,
+            4215,
+            21672,
+            9385,
+            28970,
+            33353,
+            50512
+          ],
+          "avg_logprob": -0.12152778108914693,
+          "compression_ratio": 0.8813559322033898,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 8,
+      "stt_seconds": 0.17322754708584398,
+      "raw": "인증 없이 외부에서 임의로 코드를 실행",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 인증 없이 외부에서 임의로 코드를 실행",
+          "tokens": [
+            50365,
+            9385,
+            28970,
+            33353,
+            4186,
+            1397,
+            6301,
+            4885,
+            43216,
+            673,
+            1894,
+            1955,
+            31512,
+            43871,
+            37403,
+            244,
+            231,
+            50515
+          ],
+          "avg_logprob": -0.30139802004161637,
+          "compression_ratio": 0.828125,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 9,
+      "stt_seconds": 0.20421015401370823,
+      "raw": "임의로 코드를 실행하거나 시스템을 장악할 수 있는",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 임의로 코드를 실행하거나 시스템을 장악할 수 있는",
+          "tokens": [
+            50365,
+            43216,
+            673,
+            1894,
+            1955,
+            31512,
+            43871,
+            37403,
+            244,
+            231,
+            2240,
+            26287,
+            5710,
+            9605,
+            227,
+            250,
+            1638,
+            12280,
+            22886,
+            7999,
+            4446,
+            7153,
+            50515
+          ],
+          "avg_logprob": -0.2451171986758709,
+          "compression_ratio": 0.9078947368421053,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 10,
+      "stt_seconds": 0.1651608709944412,
+      "raw": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.48,
+          "text": " 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "tokens": [
+            50365,
+            5710,
+            9605,
+            227,
+            250,
+            1638,
+            12280,
+            22886,
+            7999,
+            4446,
+            7153,
+            15561,
+            25249,
+            4130,
+            38654,
+            25001,
+            3115,
+            13,
+            50489
+          ],
+          "avg_logprob": -0.11035155914723874,
+          "compression_ratio": 0.8571428571428571,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 11,
+      "stt_seconds": 0.1828695620642975,
+      "raw": "이번 사태 파급력이 큰 건",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.9,
+          "text": " 이번 사태 파급력이 큰 건",
+          "tokens": [
+            50365,
+            16299,
+            4744,
+            20141,
+            15390,
+            21347,
+            21946,
+            1129,
+            21307,
+            13507,
+            50510
+          ],
+          "avg_logprob": -0.20979817335804304,
+          "compression_ratio": 0.7555555555555555,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 12,
+      "stt_seconds": 0.16042163292877376,
+      "raw": "파급력이 큰 건 php가 인터넷 전문",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.08,
+          "text": " 파급력이 큰 건 php가 인터넷 전문",
+          "tokens": [
+            50365,
+            15390,
+            21347,
+            21946,
+            1129,
+            21307,
+            13507,
+            903,
+            79,
+            1453,
+            47491,
+            226,
+            115,
+            19617,
+            8357,
+            50519
+          ],
+          "avg_logprob": -0.4294577205882353,
+          "compression_ratio": 0.8,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 13,
+      "stt_seconds": 0.16854911798145622,
+      "raw": "인터넷 전반에 광범위하게 쓰이는 핵심",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 인터넷 전반에 광범위하게 쓰이는 핵심",
+          "tokens": [
+            50365,
+            47491,
+            226,
+            115,
+            19617,
+            22196,
+            1517,
+            26517,
+            15810,
+            242,
+            14098,
+            8601,
+            17373,
+            20813,
+            1362,
+            113,
+            12766,
+            50515
+          ],
+          "avg_logprob": -0.05694901472643802,
+          "compression_ratio": 0.8253968253968254,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 14,
+      "stt_seconds": 0.20508488302584738,
+      "raw": "쓰이는 핵심 기술이기 때문입니다.",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 4.0,
+          "text": " 쓰이는 핵심 기술이기 때문입니다.",
+          "tokens": [
+            50365,
+            17373,
+            20813,
+            1362,
+            113,
+            12766,
+            7047,
+            21619,
+            1129,
+            2401,
+            11406,
+            7416,
+            13,
+            50565
+          ],
+          "avg_logprob": -0.28697917064030964,
+          "compression_ratio": 0.8363636363636363,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 15,
+      "stt_seconds": 0.163077695062384,
+      "raw": "사용된 프로그래밍 언어를 식별하며",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 사용된 프로그래밍 언어를 식별하며",
+          "tokens": [
+            50365,
+            14422,
+            27930,
+            27758,
+            10557,
+            14387,
+            108,
+            235,
+            16738,
+            47487,
+            19675,
+            37604,
+            8037,
+            18095,
+            50515
+          ],
+          "avg_logprob": -0.2103271521627903,
+          "compression_ratio": 0.8135593220338984,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 16,
+      "stt_seconds": 0.17329784808680415,
+      "raw": "프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+          "tokens": [
+            50365,
+            32051,
+            29494,
+            108,
+            235,
+            16738,
+            47487,
+            19675,
+            37604,
+            7999,
+            4446,
+            7153,
+            6891,
+            117,
+            5727,
+            40547,
+            2785,
+            9562,
+            4,
+            50515
+          ],
+          "avg_logprob": -0.2416294529324486,
+          "compression_ratio": 0.8450704225352113,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 17,
+      "stt_seconds": 0.1872820749413222,
+      "raw": "75%가 php를 쓰고",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 75%가 php를 쓰고",
+          "tokens": [
+            50365,
+            9562,
+            4,
+            1453,
+            903,
+            79,
+            11297,
+            43303,
+            50515
+          ],
+          "avg_logprob": -0.5464843690395356,
+          "compression_ratio": 0.6896551724137931,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": false,
+      "window": 18,
+      "stt_seconds": 0.1392908759880811,
+      "raw": "를 쓰고",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.0,
+          "text": " 를 쓰고",
+          "tokens": [
+            50365,
+            531,
+            2429,
+            43303,
+            50465
+          ],
+          "avg_logprob": -0.5983073016007742,
+          "compression_ratio": 0.5263157894736842,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 4,
+      "stt_seconds": 0.18276594602502882,
+      "raw": "웹사이트 개발의 논리성은",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 웹사이트 개발의 논리성은",
+          "tokens": [
+            50365,
+            6891,
+            117,
+            5727,
+            40547,
+            30185,
+            17248,
+            2785,
+            8727,
+            1870,
+            2250,
+            8631,
+            2124,
+            50538
+          ],
+          "avg_logprob": -0.49062499205271404,
+          "compression_ratio": 0.7608695652173914,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 1.58,
+              "word": " 웹사이트",
+              "probability": 0.989013671875
+            },
+            {
+              "start": 1.58,
+              "end": 2.62,
+              "word": " 개발의",
+              "probability": 0.7964680989583334
+            },
+            {
+              "start": 2.62,
+              "end": 2.98,
+              "word": " 논리성은",
+              "probability": 0.6760009765625
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 5,
+      "stt_seconds": 0.20161548804026097,
+      "raw": "사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.8,
+          "text": " 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP",
+          "tokens": [
+            50365,
+            4744,
+            40547,
+            30185,
+            17248,
+            1517,
+            3214,
+            2998,
+            2250,
+            17373,
+            20813,
+            27758,
+            10557,
+            14387,
+            108,
+            235,
+            16738,
+            3103,
+            47298,
+            50513
+          ],
+          "avg_logprob": -0.0939825177192688,
+          "compression_ratio": 0.8513513513513513,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.24,
+              "word": " 사이트",
+              "probability": 0.964111328125
+            },
+            {
+              "start": 0.24,
+              "end": 0.62,
+              "word": " 개발에",
+              "probability": 0.9934895833333334
+            },
+            {
+              "start": 0.62,
+              "end": 0.94,
+              "word": " 널리",
+              "probability": 0.99267578125
+            },
+            {
+              "start": 0.94,
+              "end": 1.28,
+              "word": " 쓰이는",
+              "probability": 0.999267578125
+            },
+            {
+              "start": 1.28,
+              "end": 2.08,
+              "word": " 프로그래밍",
+              "probability": 0.9978515625
+            },
+            {
+              "start": 2.08,
+              "end": 2.38,
+              "word": " 언어",
+              "probability": 0.99755859375
+            },
+            {
+              "start": 2.38,
+              "end": 2.8,
+              "word": " PHP",
+              "probability": 0.7998046875
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 6,
+      "stt_seconds": 0.17178686906117946,
+      "raw": "언어 PHP에서 발견된 취약점은",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.58,
+          "text": " 언어 PHP에서 발견된 취약점은",
+          "tokens": [
+            50365,
+            16738,
+            3103,
+            47298,
+            4885,
+            13825,
+            1368,
+            1698,
+            14987,
+            28880,
+            19970,
+            15046,
+            2124,
+            50515
+          ],
+          "avg_logprob": -0.2994791785875956,
+          "compression_ratio": 0.78,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.42,
+              "word": " 언어",
+              "probability": 0.6702880859375
+            },
+            {
+              "start": 0.42,
+              "end": 1.24,
+              "word": " PHP에서",
+              "probability": 0.754150390625
+            },
+            {
+              "start": 1.24,
+              "end": 1.84,
+              "word": " 발견된",
+              "probability": 0.9949951171875
+            },
+            {
+              "start": 1.84,
+              "end": 2.58,
+              "word": " 취약점은",
+              "probability": 0.9371337890625
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 7,
+      "stt_seconds": 0.21579941699746996,
+      "raw": "최악점은 해커가 로그인이나 인증 없이",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.88,
+          "text": " 최악점은 해커가 로그인이나 인증 없이",
+          "tokens": [
+            50365,
+            14571,
+            22886,
+            15046,
+            2124,
+            7960,
+            119,
+            97,
+            1453,
+            26142,
+            22069,
+            4215,
+            21672,
+            9385,
+            28970,
+            33353,
+            50512
+          ],
+          "avg_logprob": -0.12152778108914693,
+          "compression_ratio": 0.8813559322033898,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.6,
+              "word": " 최악점은",
+              "probability": 0.77899169921875
+            },
+            {
+              "start": 0.6,
+              "end": 1.5,
+              "word": " 해커가",
+              "probability": 0.99658203125
+            },
+            {
+              "start": 1.5,
+              "end": 2.26,
+              "word": " 로그인이나",
+              "probability": 0.9990234375
+            },
+            {
+              "start": 2.26,
+              "end": 2.62,
+              "word": " 인증",
+              "probability": 0.999267578125
+            },
+            {
+              "start": 2.62,
+              "end": 2.88,
+              "word": " 없이",
+              "probability": 0.95703125
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 8,
+      "stt_seconds": 0.17591518408153206,
+      "raw": "인증 없이 외부에서 임의로 코드를 실행",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 인증 없이 외부에서 임의로 코드를 실행",
+          "tokens": [
+            50365,
+            9385,
+            28970,
+            33353,
+            4186,
+            1397,
+            6301,
+            4885,
+            43216,
+            673,
+            1894,
+            1955,
+            31512,
+            43871,
+            37403,
+            244,
+            231,
+            50515
+          ],
+          "avg_logprob": -0.30139802004161637,
+          "compression_ratio": 0.828125,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.62,
+              "word": " 인증",
+              "probability": 0.3954620361328125
+            },
+            {
+              "start": 0.62,
+              "end": 0.9,
+              "word": " 없이",
+              "probability": 0.79150390625
+            },
+            {
+              "start": 0.9,
+              "end": 1.8,
+              "word": " 외부에서",
+              "probability": 0.9976806640625
+            },
+            {
+              "start": 1.8,
+              "end": 2.32,
+              "word": " 임의로",
+              "probability": 0.9970703125
+            },
+            {
+              "start": 2.32,
+              "end": 2.72,
+              "word": " 코드를",
+              "probability": 0.994384765625
+            },
+            {
+              "start": 2.72,
+              "end": 2.98,
+              "word": " 실행",
+              "probability": 0.9664713541666666
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 9,
+      "stt_seconds": 0.2077629379928112,
+      "raw": "임의로 코드를 실행하거나 시스템을 장악할 수 있는",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 임의로 코드를 실행하거나 시스템을 장악할 수 있는",
+          "tokens": [
+            50365,
+            43216,
+            673,
+            1894,
+            1955,
+            31512,
+            43871,
+            37403,
+            244,
+            231,
+            2240,
+            26287,
+            5710,
+            9605,
+            227,
+            250,
+            1638,
+            12280,
+            22886,
+            7999,
+            4446,
+            7153,
+            50515
+          ],
+          "avg_logprob": -0.2451171986758709,
+          "compression_ratio": 0.9078947368421053,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.34,
+              "word": " 임의로",
+              "probability": 0.80987548828125
+            },
+            {
+              "start": 0.34,
+              "end": 0.74,
+              "word": " 코드를",
+              "probability": 0.9931640625
+            },
+            {
+              "start": 0.74,
+              "end": 1.52,
+              "word": " 실행하거나",
+              "probability": 0.99609375
+            },
+            {
+              "start": 1.52,
+              "end": 2.5,
+              "word": " 시스템을",
+              "probability": 0.9966796875
+            },
+            {
+              "start": 2.5,
+              "end": 2.92,
+              "word": " 장악할",
+              "probability": 0.9889322916666666
+            },
+            {
+              "start": 2.92,
+              "end": 2.98,
+              "word": " 수",
+              "probability": 0.93212890625
+            },
+            {
+              "start": 2.98,
+              "end": 2.98,
+              "word": " 있는",
+              "probability": 0.308349609375
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 10,
+      "stt_seconds": 0.17074253398459405,
+      "raw": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.44,
+          "text": " 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "tokens": [
+            50365,
+            5710,
+            9605,
+            227,
+            250,
+            1638,
+            12280,
+            22886,
+            7999,
+            4446,
+            7153,
+            15561,
+            25249,
+            4130,
+            38654,
+            25001,
+            3115,
+            13,
+            50489
+          ],
+          "avg_logprob": -0.11035155914723874,
+          "compression_ratio": 0.8571428571428571,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.5,
+              "word": " 시스템을",
+              "probability": 0.993359375
+            },
+            {
+              "start": 0.5,
+              "end": 0.96,
+              "word": " 장악할",
+              "probability": 0.9931640625
+            },
+            {
+              "start": 0.96,
+              "end": 1.04,
+              "word": " 수",
+              "probability": 0.994140625
+            },
+            {
+              "start": 1.04,
+              "end": 1.22,
+              "word": " 있는",
+              "probability": 0.9931640625
+            },
+            {
+              "start": 1.22,
+              "end": 1.68,
+              "word": " 결함으로",
+              "probability": 0.9910481770833334
+            },
+            {
+              "start": 1.68,
+              "end": 2.44,
+              "word": " 알려졌습니다.",
+              "probability": 0.9967447916666666
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 11,
+      "stt_seconds": 0.1972430390305817,
+      "raw": "이번 사태 파급력이 큰 건",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.86,
+          "text": " 이번 사태 파급력이 큰 건",
+          "tokens": [
+            50365,
+            16299,
+            4744,
+            20141,
+            15390,
+            21347,
+            21946,
+            1129,
+            21307,
+            13507,
+            50510
+          ],
+          "avg_logprob": -0.20979817335804304,
+          "compression_ratio": 0.7555555555555555,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 1.48,
+              "word": " 이번",
+              "probability": 0.984375
+            },
+            {
+              "start": 1.48,
+              "end": 1.86,
+              "word": " 사태",
+              "probability": 0.998291015625
+            },
+            {
+              "start": 1.86,
+              "end": 2.44,
+              "word": " 파급력이",
+              "probability": 0.9376220703125
+            },
+            {
+              "start": 2.44,
+              "end": 2.62,
+              "word": " 큰",
+              "probability": 0.99951171875
+            },
+            {
+              "start": 2.62,
+              "end": 2.86,
+              "word": " 건",
+              "probability": 0.97998046875
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 12,
+      "stt_seconds": 0.16711062600370497,
+      "raw": "파급력이 큰 건 php가 인터넷 전문",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 파급력이 큰 건 php가 인터넷 전문",
+          "tokens": [
+            50365,
+            15390,
+            21347,
+            21946,
+            1129,
+            21307,
+            13507,
+            903,
+            79,
+            1453,
+            47491,
+            226,
+            115,
+            19617,
+            8357,
+            50519
+          ],
+          "avg_logprob": -0.4294577205882353,
+          "compression_ratio": 0.8,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.44,
+              "word": " 파급력이",
+              "probability": 0.81195068359375
+            },
+            {
+              "start": 0.44,
+              "end": 0.62,
+              "word": " 큰",
+              "probability": 0.9970703125
+            },
+            {
+              "start": 0.62,
+              "end": 0.9,
+              "word": " 건",
+              "probability": 0.72509765625
+            },
+            {
+              "start": 0.9,
+              "end": 2.0,
+              "word": " php가",
+              "probability": 0.8126627604166666
+            },
+            {
+              "start": 2.0,
+              "end": 2.82,
+              "word": " 인터넷",
+              "probability": 0.9801432291666666
+            },
+            {
+              "start": 2.82,
+              "end": 2.98,
+              "word": " 전문",
+              "probability": 0.54083251953125
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 13,
+      "stt_seconds": 0.17372772004455328,
+      "raw": "인터넷 전반에 광범위하게 쓰이는 핵심",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 인터넷 전반에 광범위하게 쓰이는 핵심",
+          "tokens": [
+            50365,
+            47491,
+            226,
+            115,
+            19617,
+            22196,
+            1517,
+            26517,
+            15810,
+            242,
+            14098,
+            8601,
+            17373,
+            20813,
+            1362,
+            113,
+            12766,
+            50515
+          ],
+          "avg_logprob": -0.05694901472643802,
+          "compression_ratio": 0.8253968253968254,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.84,
+              "word": " 인터넷",
+              "probability": 0.99853515625
+            },
+            {
+              "start": 0.84,
+              "end": 1.3,
+              "word": " 전반에",
+              "probability": 0.9866536458333334
+            },
+            {
+              "start": 1.3,
+              "end": 2.06,
+              "word": " 광범위하게",
+              "probability": 0.9935546875
+            },
+            {
+              "start": 2.06,
+              "end": 2.44,
+              "word": " 쓰이는",
+              "probability": 0.99951171875
+            },
+            {
+              "start": 2.44,
+              "end": 2.98,
+              "word": " 핵심",
+              "probability": 0.9993489583333334
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 14,
+      "stt_seconds": 0.1670302909333259,
+      "raw": "쓰이는 핵심 기술이기 때문입니다.",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.06,
+          "text": " 쓰이는 핵심 기술이기 때문입니다.",
+          "tokens": [
+            50365,
+            17373,
+            20813,
+            1362,
+            113,
+            12766,
+            7047,
+            21619,
+            1129,
+            2401,
+            11406,
+            7416,
+            13,
+            50565
+          ],
+          "avg_logprob": -0.28697917064030964,
+          "compression_ratio": 0.8363636363636363,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.4,
+              "word": " 쓰이는",
+              "probability": 0.838134765625
+            },
+            {
+              "start": 0.4,
+              "end": 1.04,
+              "word": " 핵심",
+              "probability": 0.9970703125
+            },
+            {
+              "start": 1.04,
+              "end": 1.56,
+              "word": " 기술이기",
+              "probability": 0.9637451171875
+            },
+            {
+              "start": 1.56,
+              "end": 2.06,
+              "word": " 때문입니다.",
+              "probability": 0.987060546875
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 15,
+      "stt_seconds": 0.1685335770016536,
+      "raw": "사용된 프로그래밍 언어를 식별하며",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 사용된 프로그래밍 언어를 식별하며",
+          "tokens": [
+            50365,
+            14422,
+            27930,
+            27758,
+            10557,
+            14387,
+            108,
+            235,
+            16738,
+            47487,
+            19675,
+            37604,
+            8037,
+            18095,
+            50515
+          ],
+          "avg_logprob": -0.2103271521627903,
+          "compression_ratio": 0.8135593220338984,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 1.62,
+              "word": " 사용된",
+              "probability": 0.97021484375
+            },
+            {
+              "start": 1.62,
+              "end": 2.28,
+              "word": " 프로그래밍",
+              "probability": 0.99794921875
+            },
+            {
+              "start": 2.28,
+              "end": 2.62,
+              "word": " 언어를",
+              "probability": 0.998779296875
+            },
+            {
+              "start": 2.62,
+              "end": 2.98,
+              "word": " 식별하며",
+              "probability": 0.7020263671875
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 16,
+      "stt_seconds": 0.2169318109517917,
+      "raw": "프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.84,
+          "text": " 프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+          "tokens": [
+            50365,
+            32051,
+            29494,
+            108,
+            235,
+            16738,
+            47487,
+            19675,
+            37604,
+            7999,
+            4446,
+            7153,
+            6891,
+            117,
+            5727,
+            40547,
+            2785,
+            9562,
+            4,
+            50515
+          ],
+          "avg_logprob": -0.2416294529324486,
+          "compression_ratio": 0.8450704225352113,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.28,
+              "word": " 프레밍",
+              "probability": 0.6408767700195312
+            },
+            {
+              "start": 0.28,
+              "end": 0.62,
+              "word": " 언어를",
+              "probability": 0.99560546875
+            },
+            {
+              "start": 0.62,
+              "end": 1.08,
+              "word": " 식별할",
+              "probability": 0.9967447916666666
+            },
+            {
+              "start": 1.08,
+              "end": 1.16,
+              "word": " 수",
+              "probability": 0.99853515625
+            },
+            {
+              "start": 1.16,
+              "end": 1.4,
+              "word": " 있는",
+              "probability": 0.99658203125
+            },
+            {
+              "start": 1.4,
+              "end": 2.22,
+              "word": " 웹사이트의",
+              "probability": 0.98935546875
+            },
+            {
+              "start": 2.22,
+              "end": 2.68,
+              "word": " 75",
+              "probability": 0.9970703125
+            },
+            {
+              "start": 2.68,
+              "end": 2.84,
+              "word": "%",
+              "probability": 0.9541015625
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 17,
+      "stt_seconds": 0.1549369749845937,
+      "raw": "75%가 php를 쓰고",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.42,
+          "text": " 75%가 php를 쓰고",
+          "tokens": [
+            50365,
+            9562,
+            4,
+            1453,
+            903,
+            79,
+            11297,
+            43303,
+            50515
+          ],
+          "avg_logprob": -0.5464843690395356,
+          "compression_ratio": 0.6896551724137931,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.72,
+              "word": " 75",
+              "probability": 0.1065673828125
+            },
+            {
+              "start": 0.72,
+              "end": 1.4,
+              "word": "%가",
+              "probability": 0.9951171875
+            },
+            {
+              "start": 1.4,
+              "end": 2.16,
+              "word": " php를",
+              "probability": 0.86376953125
+            },
+            {
+              "start": 2.16,
+              "end": 2.42,
+              "word": " 쓰고",
+              "probability": 0.994140625
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 0,
+      "word_timestamps": true,
+      "window": 18,
+      "stt_seconds": 0.14628823299426585,
+      "raw": "를 쓰고",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 0.44,
+          "text": " 를 쓰고",
+          "tokens": [
+            50365,
+            531,
+            2429,
+            43303,
+            50465
+          ],
+          "avg_logprob": -0.5983073016007742,
+          "compression_ratio": 0.5263157894736842,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.2,
+              "word": " 를",
+              "probability": 0.619384765625
+            },
+            {
+              "start": 0.2,
+              "end": 0.44,
+              "word": " 쓰고",
+              "probability": 0.986328125
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 4,
+      "stt_seconds": 0.22589300805702806,
+      "raw": "웹사이트 개발의 논리성은",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 웹사이트 개발의 논리성은",
+          "tokens": [
+            50365,
+            6891,
+            117,
+            5727,
+            40547,
+            30185,
+            17248,
+            2785,
+            8727,
+            1870,
+            2250,
+            8631,
+            2124,
+            50538
+          ],
+          "avg_logprob": -0.49062499205271404,
+          "compression_ratio": 0.7608695652173914,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 1.58,
+              "word": " 웹사이트",
+              "probability": 0.989013671875
+            },
+            {
+              "start": 1.58,
+              "end": 2.62,
+              "word": " 개발의",
+              "probability": 0.7964680989583334
+            },
+            {
+              "start": 2.62,
+              "end": 2.98,
+              "word": " 논리성은",
+              "probability": 0.6760009765625
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 5,
+      "stt_seconds": 0.1752764779375866,
+      "raw": "사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.8,
+          "text": " 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP",
+          "tokens": [
+            50365,
+            4744,
+            40547,
+            30185,
+            17248,
+            1517,
+            3214,
+            2998,
+            2250,
+            17373,
+            20813,
+            27758,
+            10557,
+            14387,
+            108,
+            235,
+            16738,
+            3103,
+            47298,
+            50513
+          ],
+          "avg_logprob": -0.0939825177192688,
+          "compression_ratio": 0.8513513513513513,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.24,
+              "word": " 사이트",
+              "probability": 0.964111328125
+            },
+            {
+              "start": 0.24,
+              "end": 0.62,
+              "word": " 개발에",
+              "probability": 0.9934895833333334
+            },
+            {
+              "start": 0.62,
+              "end": 0.94,
+              "word": " 널리",
+              "probability": 0.99267578125
+            },
+            {
+              "start": 0.94,
+              "end": 1.28,
+              "word": " 쓰이는",
+              "probability": 0.999267578125
+            },
+            {
+              "start": 1.28,
+              "end": 2.08,
+              "word": " 프로그래밍",
+              "probability": 0.9978515625
+            },
+            {
+              "start": 2.08,
+              "end": 2.38,
+              "word": " 언어",
+              "probability": 0.99755859375
+            },
+            {
+              "start": 2.38,
+              "end": 2.8,
+              "word": " PHP",
+              "probability": 0.7998046875
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 6,
+      "stt_seconds": 0.17845007602591068,
+      "raw": "언어 PHP에서 발견된 취약점은",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.58,
+          "text": " 언어 PHP에서 발견된 취약점은",
+          "tokens": [
+            50365,
+            16738,
+            3103,
+            47298,
+            4885,
+            13825,
+            1368,
+            1698,
+            14987,
+            28880,
+            19970,
+            15046,
+            2124,
+            50515
+          ],
+          "avg_logprob": -0.2994791785875956,
+          "compression_ratio": 0.78,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.42,
+              "word": " 언어",
+              "probability": 0.6702880859375
+            },
+            {
+              "start": 0.42,
+              "end": 1.24,
+              "word": " PHP에서",
+              "probability": 0.754150390625
+            },
+            {
+              "start": 1.24,
+              "end": 1.84,
+              "word": " 발견된",
+              "probability": 0.9949951171875
+            },
+            {
+              "start": 1.84,
+              "end": 2.58,
+              "word": " 취약점은",
+              "probability": 0.9371337890625
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 7,
+      "stt_seconds": 0.17671232903376222,
+      "raw": "최악점은 해커가 로그인이나 인증 없이",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.88,
+          "text": " 최악점은 해커가 로그인이나 인증 없이",
+          "tokens": [
+            50365,
+            14571,
+            22886,
+            15046,
+            2124,
+            7960,
+            119,
+            97,
+            1453,
+            26142,
+            22069,
+            4215,
+            21672,
+            9385,
+            28970,
+            33353,
+            50512
+          ],
+          "avg_logprob": -0.12152778108914693,
+          "compression_ratio": 0.8813559322033898,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.6,
+              "word": " 최악점은",
+              "probability": 0.77899169921875
+            },
+            {
+              "start": 0.6,
+              "end": 1.5,
+              "word": " 해커가",
+              "probability": 0.99658203125
+            },
+            {
+              "start": 1.5,
+              "end": 2.26,
+              "word": " 로그인이나",
+              "probability": 0.9990234375
+            },
+            {
+              "start": 2.26,
+              "end": 2.62,
+              "word": " 인증",
+              "probability": 0.999267578125
+            },
+            {
+              "start": 2.62,
+              "end": 2.88,
+              "word": " 없이",
+              "probability": 0.95703125
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 8,
+      "stt_seconds": 0.21642990305554122,
+      "raw": "인증 없이 외부에서 임의로 코드를 실행",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 인증 없이 외부에서 임의로 코드를 실행",
+          "tokens": [
+            50365,
+            9385,
+            28970,
+            33353,
+            4186,
+            1397,
+            6301,
+            4885,
+            43216,
+            673,
+            1894,
+            1955,
+            31512,
+            43871,
+            37403,
+            244,
+            231,
+            50515
+          ],
+          "avg_logprob": -0.30139802004161637,
+          "compression_ratio": 0.828125,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.62,
+              "word": " 인증",
+              "probability": 0.3954620361328125
+            },
+            {
+              "start": 0.62,
+              "end": 0.9,
+              "word": " 없이",
+              "probability": 0.79150390625
+            },
+            {
+              "start": 0.9,
+              "end": 1.8,
+              "word": " 외부에서",
+              "probability": 0.9976806640625
+            },
+            {
+              "start": 1.8,
+              "end": 2.32,
+              "word": " 임의로",
+              "probability": 0.9970703125
+            },
+            {
+              "start": 2.32,
+              "end": 2.72,
+              "word": " 코드를",
+              "probability": 0.994384765625
+            },
+            {
+              "start": 2.72,
+              "end": 2.98,
+              "word": " 실행",
+              "probability": 0.9664713541666666
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 9,
+      "stt_seconds": 0.1759500710759312,
+      "raw": "임의로 코드를 실행하거나 시스템을 장악할 수 있는",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 임의로 코드를 실행하거나 시스템을 장악할 수 있는",
+          "tokens": [
+            50365,
+            43216,
+            673,
+            1894,
+            1955,
+            31512,
+            43871,
+            37403,
+            244,
+            231,
+            2240,
+            26287,
+            5710,
+            9605,
+            227,
+            250,
+            1638,
+            12280,
+            22886,
+            7999,
+            4446,
+            7153,
+            50515
+          ],
+          "avg_logprob": -0.2451171986758709,
+          "compression_ratio": 0.9078947368421053,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.34,
+              "word": " 임의로",
+              "probability": 0.80987548828125
+            },
+            {
+              "start": 0.34,
+              "end": 0.74,
+              "word": " 코드를",
+              "probability": 0.9931640625
+            },
+            {
+              "start": 0.74,
+              "end": 1.52,
+              "word": " 실행하거나",
+              "probability": 0.99609375
+            },
+            {
+              "start": 1.52,
+              "end": 2.5,
+              "word": " 시스템을",
+              "probability": 0.9966796875
+            },
+            {
+              "start": 2.5,
+              "end": 2.92,
+              "word": " 장악할",
+              "probability": 0.9889322916666666
+            },
+            {
+              "start": 2.92,
+              "end": 2.98,
+              "word": " 수",
+              "probability": 0.93212890625
+            },
+            {
+              "start": 2.98,
+              "end": 2.98,
+              "word": " 있는",
+              "probability": 0.308349609375
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 10,
+      "stt_seconds": 0.19054757803678513,
+      "raw": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.44,
+          "text": " 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "tokens": [
+            50365,
+            5710,
+            9605,
+            227,
+            250,
+            1638,
+            12280,
+            22886,
+            7999,
+            4446,
+            7153,
+            15561,
+            25249,
+            4130,
+            38654,
+            25001,
+            3115,
+            13,
+            50489
+          ],
+          "avg_logprob": -0.11035155914723874,
+          "compression_ratio": 0.8571428571428571,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.5,
+              "word": " 시스템을",
+              "probability": 0.993359375
+            },
+            {
+              "start": 0.5,
+              "end": 0.96,
+              "word": " 장악할",
+              "probability": 0.9931640625
+            },
+            {
+              "start": 0.96,
+              "end": 1.04,
+              "word": " 수",
+              "probability": 0.994140625
+            },
+            {
+              "start": 1.04,
+              "end": 1.22,
+              "word": " 있는",
+              "probability": 0.9931640625
+            },
+            {
+              "start": 1.22,
+              "end": 1.68,
+              "word": " 결함으로",
+              "probability": 0.9910481770833334
+            },
+            {
+              "start": 1.68,
+              "end": 2.44,
+              "word": " 알려졌습니다.",
+              "probability": 0.9967447916666666
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 11,
+      "stt_seconds": 0.16210982203483582,
+      "raw": "이번 사태 파급력이 큰 건",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.86,
+          "text": " 이번 사태 파급력이 큰 건",
+          "tokens": [
+            50365,
+            16299,
+            4744,
+            20141,
+            15390,
+            21347,
+            21946,
+            1129,
+            21307,
+            13507,
+            50510
+          ],
+          "avg_logprob": -0.20979817335804304,
+          "compression_ratio": 0.7555555555555555,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 1.48,
+              "word": " 이번",
+              "probability": 0.984375
+            },
+            {
+              "start": 1.48,
+              "end": 1.86,
+              "word": " 사태",
+              "probability": 0.998291015625
+            },
+            {
+              "start": 1.86,
+              "end": 2.44,
+              "word": " 파급력이",
+              "probability": 0.9376220703125
+            },
+            {
+              "start": 2.44,
+              "end": 2.62,
+              "word": " 큰",
+              "probability": 0.99951171875
+            },
+            {
+              "start": 2.62,
+              "end": 2.86,
+              "word": " 건",
+              "probability": 0.97998046875
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 12,
+      "stt_seconds": 0.1992830130038783,
+      "raw": "파급력이 큰 건 php가 인터넷 전문",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 파급력이 큰 건 php가 인터넷 전문",
+          "tokens": [
+            50365,
+            15390,
+            21347,
+            21946,
+            1129,
+            21307,
+            13507,
+            903,
+            79,
+            1453,
+            47491,
+            226,
+            115,
+            19617,
+            8357,
+            50519
+          ],
+          "avg_logprob": -0.4294577205882353,
+          "compression_ratio": 0.8,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.44,
+              "word": " 파급력이",
+              "probability": 0.81195068359375
+            },
+            {
+              "start": 0.44,
+              "end": 0.62,
+              "word": " 큰",
+              "probability": 0.9970703125
+            },
+            {
+              "start": 0.62,
+              "end": 0.9,
+              "word": " 건",
+              "probability": 0.72509765625
+            },
+            {
+              "start": 0.9,
+              "end": 2.0,
+              "word": " php가",
+              "probability": 0.8126627604166666
+            },
+            {
+              "start": 2.0,
+              "end": 2.82,
+              "word": " 인터넷",
+              "probability": 0.9801432291666666
+            },
+            {
+              "start": 2.82,
+              "end": 2.98,
+              "word": " 전문",
+              "probability": 0.54083251953125
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 13,
+      "stt_seconds": 0.16671895107720047,
+      "raw": "인터넷 전반에 광범위하게 쓰이는 핵심",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 인터넷 전반에 광범위하게 쓰이는 핵심",
+          "tokens": [
+            50365,
+            47491,
+            226,
+            115,
+            19617,
+            22196,
+            1517,
+            26517,
+            15810,
+            242,
+            14098,
+            8601,
+            17373,
+            20813,
+            1362,
+            113,
+            12766,
+            50515
+          ],
+          "avg_logprob": -0.05694901472643802,
+          "compression_ratio": 0.8253968253968254,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.84,
+              "word": " 인터넷",
+              "probability": 0.99853515625
+            },
+            {
+              "start": 0.84,
+              "end": 1.3,
+              "word": " 전반에",
+              "probability": 0.9866536458333334
+            },
+            {
+              "start": 1.3,
+              "end": 2.06,
+              "word": " 광범위하게",
+              "probability": 0.9935546875
+            },
+            {
+              "start": 2.06,
+              "end": 2.44,
+              "word": " 쓰이는",
+              "probability": 0.99951171875
+            },
+            {
+              "start": 2.44,
+              "end": 2.98,
+              "word": " 핵심",
+              "probability": 0.9993489583333334
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 14,
+      "stt_seconds": 0.19936271395999938,
+      "raw": "쓰이는 핵심 기술이기 때문입니다.",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.06,
+          "text": " 쓰이는 핵심 기술이기 때문입니다.",
+          "tokens": [
+            50365,
+            17373,
+            20813,
+            1362,
+            113,
+            12766,
+            7047,
+            21619,
+            1129,
+            2401,
+            11406,
+            7416,
+            13,
+            50565
+          ],
+          "avg_logprob": -0.28697917064030964,
+          "compression_ratio": 0.8363636363636363,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.4,
+              "word": " 쓰이는",
+              "probability": 0.838134765625
+            },
+            {
+              "start": 0.4,
+              "end": 1.04,
+              "word": " 핵심",
+              "probability": 0.9970703125
+            },
+            {
+              "start": 1.04,
+              "end": 1.56,
+              "word": " 기술이기",
+              "probability": 0.9637451171875
+            },
+            {
+              "start": 1.56,
+              "end": 2.06,
+              "word": " 때문입니다.",
+              "probability": 0.987060546875
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 15,
+      "stt_seconds": 0.16324665897991508,
+      "raw": "사용된 프로그래밍 언어를 식별하며",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.98,
+          "text": " 사용된 프로그래밍 언어를 식별하며",
+          "tokens": [
+            50365,
+            14422,
+            27930,
+            27758,
+            10557,
+            14387,
+            108,
+            235,
+            16738,
+            47487,
+            19675,
+            37604,
+            8037,
+            18095,
+            50515
+          ],
+          "avg_logprob": -0.2103271521627903,
+          "compression_ratio": 0.8135593220338984,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 1.62,
+              "word": " 사용된",
+              "probability": 0.97021484375
+            },
+            {
+              "start": 1.62,
+              "end": 2.28,
+              "word": " 프로그래밍",
+              "probability": 0.99794921875
+            },
+            {
+              "start": 2.28,
+              "end": 2.62,
+              "word": " 언어를",
+              "probability": 0.998779296875
+            },
+            {
+              "start": 2.62,
+              "end": 2.98,
+              "word": " 식별하며",
+              "probability": 0.7020263671875
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 16,
+      "stt_seconds": 0.1727963350713253,
+      "raw": "프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.84,
+          "text": " 프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+          "tokens": [
+            50365,
+            32051,
+            29494,
+            108,
+            235,
+            16738,
+            47487,
+            19675,
+            37604,
+            7999,
+            4446,
+            7153,
+            6891,
+            117,
+            5727,
+            40547,
+            2785,
+            9562,
+            4,
+            50515
+          ],
+          "avg_logprob": -0.2416294529324486,
+          "compression_ratio": 0.8450704225352113,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.28,
+              "word": " 프레밍",
+              "probability": 0.6408767700195312
+            },
+            {
+              "start": 0.28,
+              "end": 0.62,
+              "word": " 언어를",
+              "probability": 0.99560546875
+            },
+            {
+              "start": 0.62,
+              "end": 1.08,
+              "word": " 식별할",
+              "probability": 0.9967447916666666
+            },
+            {
+              "start": 1.08,
+              "end": 1.16,
+              "word": " 수",
+              "probability": 0.99853515625
+            },
+            {
+              "start": 1.16,
+              "end": 1.4,
+              "word": " 있는",
+              "probability": 0.99658203125
+            },
+            {
+              "start": 1.4,
+              "end": 2.22,
+              "word": " 웹사이트의",
+              "probability": 0.98935546875
+            },
+            {
+              "start": 2.22,
+              "end": 2.68,
+              "word": " 75",
+              "probability": 0.9970703125
+            },
+            {
+              "start": 2.68,
+              "end": 2.84,
+              "word": "%",
+              "probability": 0.9541015625
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 17,
+      "stt_seconds": 0.1892600730061531,
+      "raw": "75%가 php를 쓰고",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.42,
+          "text": " 75%가 php를 쓰고",
+          "tokens": [
+            50365,
+            9562,
+            4,
+            1453,
+            903,
+            79,
+            11297,
+            43303,
+            50515
+          ],
+          "avg_logprob": -0.5464843690395356,
+          "compression_ratio": 0.6896551724137931,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.72,
+              "word": " 75",
+              "probability": 0.1065673828125
+            },
+            {
+              "start": 0.72,
+              "end": 1.4,
+              "word": "%가",
+              "probability": 0.9951171875
+            },
+            {
+              "start": 1.4,
+              "end": 2.16,
+              "word": " php를",
+              "probability": 0.86376953125
+            },
+            {
+              "start": 2.16,
+              "end": 2.42,
+              "word": " 쓰고",
+              "probability": 0.994140625
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": true,
+      "window": 18,
+      "stt_seconds": 0.14168850099667907,
+      "raw": "를 쓰고",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 0.44,
+          "text": " 를 쓰고",
+          "tokens": [
+            50365,
+            531,
+            2429,
+            43303,
+            50465
+          ],
+          "avg_logprob": -0.5983073016007742,
+          "compression_ratio": 0.5263157894736842,
+          "no_speech_prob": 0.0,
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.2,
+              "word": " 를",
+              "probability": 0.619384765625
+            },
+            {
+              "start": 0.2,
+              "end": 0.44,
+              "word": " 쓰고",
+              "probability": 0.986328125
+            }
+          ],
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 4,
+      "stt_seconds": 0.19045984698459506,
+      "raw": "웹사이트 개발의 논리성은",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.46,
+          "text": " 웹사이트 개발의 논리성은",
+          "tokens": [
+            50365,
+            6891,
+            117,
+            5727,
+            40547,
+            30185,
+            17248,
+            2785,
+            8727,
+            1870,
+            2250,
+            8631,
+            2124,
+            50538
+          ],
+          "avg_logprob": -0.49062499205271404,
+          "compression_ratio": 0.7608695652173914,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 5,
+      "stt_seconds": 0.16389570501632988,
+      "raw": "사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.96,
+          "text": " 사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP",
+          "tokens": [
+            50365,
+            4744,
+            40547,
+            30185,
+            17248,
+            1517,
+            3214,
+            2998,
+            2250,
+            17373,
+            20813,
+            27758,
+            10557,
+            14387,
+            108,
+            235,
+            16738,
+            3103,
+            47298,
+            50513
+          ],
+          "avg_logprob": -0.0939825177192688,
+          "compression_ratio": 0.8513513513513513,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 6,
+      "stt_seconds": 0.16684627090580761,
+      "raw": "언어 PHP에서 발견된 취약점은",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 언어 PHP에서 발견된 취약점은",
+          "tokens": [
+            50365,
+            16738,
+            3103,
+            47298,
+            4885,
+            13825,
+            1368,
+            1698,
+            14987,
+            28880,
+            19970,
+            15046,
+            2124,
+            50515
+          ],
+          "avg_logprob": -0.2994791785875956,
+          "compression_ratio": 0.78,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 7,
+      "stt_seconds": 0.17013466102071106,
+      "raw": "최악점은 해커가 로그인이나 인증 없이",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.94,
+          "text": " 최악점은 해커가 로그인이나 인증 없이",
+          "tokens": [
+            50365,
+            14571,
+            22886,
+            15046,
+            2124,
+            7960,
+            119,
+            97,
+            1453,
+            26142,
+            22069,
+            4215,
+            21672,
+            9385,
+            28970,
+            33353,
+            50512
+          ],
+          "avg_logprob": -0.12152778108914693,
+          "compression_ratio": 0.8813559322033898,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 8,
+      "stt_seconds": 0.20291374798398465,
+      "raw": "인증 없이 외부에서 임의로 코드를 실행",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 인증 없이 외부에서 임의로 코드를 실행",
+          "tokens": [
+            50365,
+            9385,
+            28970,
+            33353,
+            4186,
+            1397,
+            6301,
+            4885,
+            43216,
+            673,
+            1894,
+            1955,
+            31512,
+            43871,
+            37403,
+            244,
+            231,
+            50515
+          ],
+          "avg_logprob": -0.30139802004161637,
+          "compression_ratio": 0.828125,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 9,
+      "stt_seconds": 0.17579067195765674,
+      "raw": "임의로 코드를 실행하거나 시스템을 장악할 수 있는",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 임의로 코드를 실행하거나 시스템을 장악할 수 있는",
+          "tokens": [
+            50365,
+            43216,
+            673,
+            1894,
+            1955,
+            31512,
+            43871,
+            37403,
+            244,
+            231,
+            2240,
+            26287,
+            5710,
+            9605,
+            227,
+            250,
+            1638,
+            12280,
+            22886,
+            7999,
+            4446,
+            7153,
+            50515
+          ],
+          "avg_logprob": -0.2451171986758709,
+          "compression_ratio": 0.9078947368421053,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 10,
+      "stt_seconds": 0.20439691399224102,
+      "raw": "시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.48,
+          "text": " 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+          "tokens": [
+            50365,
+            5710,
+            9605,
+            227,
+            250,
+            1638,
+            12280,
+            22886,
+            7999,
+            4446,
+            7153,
+            15561,
+            25249,
+            4130,
+            38654,
+            25001,
+            3115,
+            13,
+            50489
+          ],
+          "avg_logprob": -0.11035155914723874,
+          "compression_ratio": 0.8571428571428571,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 11,
+      "stt_seconds": 0.16636937705334276,
+      "raw": "이번 사태 파급력이 큰 건",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.9,
+          "text": " 이번 사태 파급력이 큰 건",
+          "tokens": [
+            50365,
+            16299,
+            4744,
+            20141,
+            15390,
+            21347,
+            21946,
+            1129,
+            21307,
+            13507,
+            50510
+          ],
+          "avg_logprob": -0.20979817335804304,
+          "compression_ratio": 0.7555555555555555,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 12,
+      "stt_seconds": 0.19929860311094671,
+      "raw": "파급력이 큰 건 php가 인터넷 전문",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.08,
+          "text": " 파급력이 큰 건 php가 인터넷 전문",
+          "tokens": [
+            50365,
+            15390,
+            21347,
+            21946,
+            1129,
+            21307,
+            13507,
+            903,
+            79,
+            1453,
+            47491,
+            226,
+            115,
+            19617,
+            8357,
+            50519
+          ],
+          "avg_logprob": -0.4294577205882353,
+          "compression_ratio": 0.8,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 13,
+      "stt_seconds": 0.16998669889289886,
+      "raw": "인터넷 전반에 광범위하게 쓰이는 핵심",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 인터넷 전반에 광범위하게 쓰이는 핵심",
+          "tokens": [
+            50365,
+            47491,
+            226,
+            115,
+            19617,
+            22196,
+            1517,
+            26517,
+            15810,
+            242,
+            14098,
+            8601,
+            17373,
+            20813,
+            1362,
+            113,
+            12766,
+            50515
+          ],
+          "avg_logprob": -0.05694901472643802,
+          "compression_ratio": 0.8253968253968254,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 14,
+      "stt_seconds": 0.16256072302348912,
+      "raw": "쓰이는 핵심 기술이기 때문입니다.",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 4.0,
+          "text": " 쓰이는 핵심 기술이기 때문입니다.",
+          "tokens": [
+            50365,
+            17373,
+            20813,
+            1362,
+            113,
+            12766,
+            7047,
+            21619,
+            1129,
+            2401,
+            11406,
+            7416,
+            13,
+            50565
+          ],
+          "avg_logprob": -0.28697917064030964,
+          "compression_ratio": 0.8363636363636363,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 15,
+      "stt_seconds": 0.2015514960512519,
+      "raw": "사용된 프로그래밍 언어를 식별하며",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 사용된 프로그래밍 언어를 식별하며",
+          "tokens": [
+            50365,
+            14422,
+            27930,
+            27758,
+            10557,
+            14387,
+            108,
+            235,
+            16738,
+            47487,
+            19675,
+            37604,
+            8037,
+            18095,
+            50515
+          ],
+          "avg_logprob": -0.2103271521627903,
+          "compression_ratio": 0.8135593220338984,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 16,
+      "stt_seconds": 0.17230095795821398,
+      "raw": "프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 프레밍 언어를 식별할 수 있는 웹사이트의 75%",
+          "tokens": [
+            50365,
+            32051,
+            29494,
+            108,
+            235,
+            16738,
+            47487,
+            19675,
+            37604,
+            7999,
+            4446,
+            7153,
+            6891,
+            117,
+            5727,
+            40547,
+            2785,
+            9562,
+            4,
+            50515
+          ],
+          "avg_logprob": -0.2416294529324486,
+          "compression_ratio": 0.8450704225352113,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 17,
+      "stt_seconds": 0.1884754759958014,
+      "raw": "75%가 php를 쓰고",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 3.0,
+          "text": " 75%가 php를 쓰고",
+          "tokens": [
+            50365,
+            9562,
+            4,
+            1453,
+            903,
+            79,
+            11297,
+            43303,
+            50515
+          ],
+          "avg_logprob": -0.5464843690395356,
+          "compression_ratio": 0.6896551724137931,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "word_timestamps": false,
+      "window": 18,
+      "stt_seconds": 0.14237043098546565,
+      "raw": "를 쓰고",
+      "segments": [
+        {
+          "id": 1,
+          "seek": 0,
+          "start": 0.0,
+          "end": 2.0,
+          "text": " 를 쓰고",
+          "tokens": [
+            50365,
+            531,
+            2429,
+            43303,
+            50465
+          ],
+          "avg_logprob": -0.5983073016007742,
+          "compression_ratio": 0.5263157894736842,
+          "no_speech_prob": 0.0,
+          "words": null,
+          "temperature": 0.0
+        }
+      ]
+    }
+  ],
+  "current_full_wav_vad": {
+    "speech_detected": true,
+    "speech_duration_ms": 25192.0,
+    "speech_ratio": 0.6298,
+    "rms": 0.07910910248756409,
+    "peak": 0.8096173405647278,
+    "processing_seconds": 0.9276078160619363,
+    "timestamps": [
+      {
+        "start": 143392,
+        "end": 150496
+      },
+      {
+        "start": 160800,
+        "end": 235488
+      },
+      {
+        "start": 240672,
+        "end": 316896
+      },
+      {
+        "start": 319520,
+        "end": 362976
+      },
+      {
+        "start": 373280,
+        "end": 486368
+      },
+      {
+        "start": 499232,
+        "end": 587744
+      }
+    ],
+    "audio_duration_ms": 40000.0
+  },
+  "current_window_vads": [
+    {
+      "speech_detected": false,
+      "speech_duration_ms": 0.0,
+      "speech_ratio": 0.0,
+      "rms": 0.0,
+      "peak": 0.0,
+      "processing_seconds": 0.2814549870090559,
+      "timestamps": [],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": false,
+      "speech_duration_ms": 0.0,
+      "speech_ratio": 0.0,
+      "rms": 0.0,
+      "peak": 0.0,
+      "processing_seconds": 0.05125818809028715,
+      "timestamps": [],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": false,
+      "speech_duration_ms": 0.0,
+      "speech_ratio": 0.0,
+      "rms": 0.0,
+      "peak": 0.0,
+      "processing_seconds": 0.034065246931277215,
+      "timestamps": [],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": false,
+      "speech_duration_ms": 0.0,
+      "speech_ratio": 0.0,
+      "rms": 0.0010436662705615163,
+      "peak": 0.023965075612068176,
+      "processing_seconds": 0.12248114100657403,
+      "timestamps": [],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 1394.0,
+      "speech_ratio": 0.4646666666666667,
+      "rms": 0.07711358368396759,
+      "peak": 0.5428699254989624,
+      "processing_seconds": 0.3199732699431479,
+      "timestamps": [
+        {
+          "start": 15392,
+          "end": 22496
+        },
+        {
+          "start": 32800,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2966.0,
+      "speech_ratio": 0.9886666666666667,
+      "rms": 0.10128374397754669,
+      "peak": 0.5428699254989624,
+      "processing_seconds": 0.04791332804597914,
+      "timestamps": [
+        {
+          "start": 544,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2750.0,
+      "speech_ratio": 0.9166666666666666,
+      "rms": 0.08962428569793701,
+      "peak": 0.5703287720680237,
+      "processing_seconds": 0.03332012193277478,
+      "timestamps": [
+        {
+          "start": 0,
+          "end": 44000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2740.0,
+      "speech_ratio": 0.9133333333333333,
+      "rms": 0.09751347452402115,
+      "peak": 0.8096173405647278,
+      "processing_seconds": 0.03328397695440799,
+      "timestamps": [
+        {
+          "start": 0,
+          "end": 12256
+        },
+        {
+          "start": 16416,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 3000.0,
+      "speech_ratio": 1.0,
+      "rms": 0.10204397141933441,
+      "peak": 0.5551171898841858,
+      "processing_seconds": 0.03266680904198438,
+      "timestamps": [
+        {
+          "start": 0,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2868.0,
+      "speech_ratio": 0.956,
+      "rms": 0.09706255048513412,
+      "peak": 0.7033205628395081,
+      "processing_seconds": 0.03270134190097451,
+      "timestamps": [
+        {
+          "start": 0,
+          "end": 29152
+        },
+        {
+          "start": 31264,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2684.0,
+      "speech_ratio": 0.8946666666666667,
+      "rms": 0.08639095723628998,
+      "peak": 0.7033205628395081,
+      "processing_seconds": 0.29992152901832014,
+      "timestamps": [
+        {
+          "start": 544,
+          "end": 43488
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2388.0,
+      "speech_ratio": 0.796,
+      "rms": 0.07255304604768753,
+      "peak": 0.8034295439720154,
+      "processing_seconds": 0.2025312000187114,
+      "timestamps": [
+        {
+          "start": 0,
+          "end": 11232
+        },
+        {
+          "start": 21024,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2734.0,
+      "speech_ratio": 0.9113333333333333,
+      "rms": 0.08471004664897919,
+      "peak": 0.6728341579437256,
+      "processing_seconds": 0.052684661000967026,
+      "timestamps": [
+        {
+          "start": 32,
+          "end": 17888
+        },
+        {
+          "start": 20000,
+          "end": 35296
+        },
+        {
+          "start": 37408,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2646.0,
+      "speech_ratio": 0.882,
+      "rms": 0.08811774849891663,
+      "peak": 0.6878306865692139,
+      "processing_seconds": 0.0346889270003885,
+      "timestamps": [
+        {
+          "start": 5664,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2428.0,
+      "speech_ratio": 0.8093333333333333,
+      "rms": 0.06831739097833633,
+      "peak": 0.47386103868484497,
+      "processing_seconds": 0.20478675095364451,
+      "timestamps": [
+        {
+          "start": 32,
+          "end": 38880
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2194.0,
+      "speech_ratio": 0.7313333333333333,
+      "rms": 0.1064368262887001,
+      "peak": 0.7145484685897827,
+      "processing_seconds": 0.14583108492661268,
+      "timestamps": [
+        {
+          "start": 1056,
+          "end": 7136
+        },
+        {
+          "start": 18976,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2998.0,
+      "speech_ratio": 0.9993333333333333,
+      "rms": 0.10384608805179596,
+      "peak": 0.6498499512672424,
+      "processing_seconds": 0.03979336505290121,
+      "timestamps": [
+        {
+          "start": 32,
+          "end": 48000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 2748.0,
+      "speech_ratio": 0.916,
+      "rms": 0.08505838364362717,
+      "peak": 0.6898061633110046,
+      "processing_seconds": 0.12771946110296994,
+      "timestamps": [
+        {
+          "start": 32,
+          "end": 44000
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    },
+    {
+      "speech_detected": true,
+      "speech_duration_ms": 764.0,
+      "speech_ratio": 0.25466666666666665,
+      "rms": 0.04142829775810242,
+      "peak": 0.3790156841278076,
+      "processing_seconds": 0.21402384096290916,
+      "timestamps": [
+        {
+          "start": 32,
+          "end": 12256
+        }
+      ],
+      "audio_duration_ms": 3000.0
+    }
+  ],
+  "full_context_diagnostic": {
+    "seconds": 0.66712462506257,
+    "segments": [
+      {
+        "id": 1,
+        "seek": 0,
+        "start": 8.459999999999996,
+        "end": 14.58,
+        "text": " 웹사이트 개발에 널리 쓰이는 프로그래밍 언어 PHP에서 발견된 취약점은",
+        "tokens": [
+          50365,
+          6891,
+          117,
+          5727,
+          40547,
+          30185,
+          17248,
+          1517,
+          3214,
+          2998,
+          2250,
+          17373,
+          20813,
+          27758,
+          10557,
+          14387,
+          108,
+          235,
+          16738,
+          3103,
+          47298,
+          4885,
+          13825,
+          1368,
+          1698,
+          14987,
+          28880,
+          19970,
+          15046,
+          2124,
+          51098
+        ],
+        "avg_logprob": -0.09625589510179916,
+        "compression_ratio": 1.32421875,
+        "no_speech_prob": 0.0,
+        "words": [
+          {
+            "start": 8.459999999999996,
+            "end": 9.539999999999997,
+            "word": " 웹사이트",
+            "probability": 0.802032470703125
+          },
+          {
+            "start": 9.539999999999997,
+            "end": 10.62,
+            "word": " 개발에",
+            "probability": 0.9827473958333334
+          },
+          {
+            "start": 10.62,
+            "end": 10.92,
+            "word": " 널리",
+            "probability": 0.99609375
+          },
+          {
+            "start": 10.92,
+            "end": 11.26,
+            "word": " 쓰이는",
+            "probability": 0.99951171875
+          },
+          {
+            "start": 11.26,
+            "end": 12.04,
+            "word": " 프로그래밍",
+            "probability": 0.9974609375
+          },
+          {
+            "start": 12.04,
+            "end": 12.36,
+            "word": " 언어",
+            "probability": 0.998046875
+          },
+          {
+            "start": 12.36,
+            "end": 13.24,
+            "word": " PHP에서",
+            "probability": 0.947998046875
+          },
+          {
+            "start": 13.24,
+            "end": 13.84,
+            "word": " 발견된",
+            "probability": 0.9993896484375
+          },
+          {
+            "start": 13.84,
+            "end": 14.58,
+            "word": " 취약점은",
+            "probability": 0.9781494140625
+          }
+        ],
+        "temperature": 0.0
+      },
+      {
+        "id": 2,
+        "seek": 0,
+        "start": 14.58,
+        "end": 19.5,
+        "text": " 해커가 로그인이나 인증 없이 외부에서 임의로 코드를 실행하거나",
+        "tokens": [
+          51098,
+          7960,
+          119,
+          97,
+          1453,
+          26142,
+          22069,
+          4215,
+          21672,
+          9385,
+          28970,
+          33353,
+          4186,
+          1397,
+          6301,
+          4885,
+          43216,
+          673,
+          1894,
+          1955,
+          31512,
+          43871,
+          37403,
+          244,
+          231,
+          2240,
+          26287,
+          51342
+        ],
+        "avg_logprob": -0.09625589510179916,
+        "compression_ratio": 1.32421875,
+        "no_speech_prob": 0.0,
+        "words": [
+          {
+            "start": 14.58,
+            "end": 15.48,
+            "word": " 해커가",
+            "probability": 0.988037109375
+          },
+          {
+            "start": 15.48,
+            "end": 16.26,
+            "word": " 로그인이나",
+            "probability": 0.99951171875
+          },
+          {
+            "start": 16.26,
+            "end": 16.62,
+            "word": " 인증",
+            "probability": 0.999755859375
+          },
+          {
+            "start": 16.62,
+            "end": 16.92,
+            "word": " 없이",
+            "probability": 0.9951171875
+          },
+          {
+            "start": 16.92,
+            "end": 17.82,
+            "word": " 외부에서",
+            "probability": 0.9989013671875
+          },
+          {
+            "start": 17.82,
+            "end": 18.32,
+            "word": " 임의로",
+            "probability": 0.9979248046875
+          },
+          {
+            "start": 18.32,
+            "end": 18.76,
+            "word": " 코드를",
+            "probability": 0.99951171875
+          },
+          {
+            "start": 18.76,
+            "end": 19.5,
+            "word": " 실행하거나",
+            "probability": 0.999609375
+          }
+        ],
+        "temperature": 0.0
+      },
+      {
+        "id": 3,
+        "seek": 0,
+        "start": 19.5,
+        "end": 22.48,
+        "text": " 시스템을 장악할 수 있는 결함으로 알려졌습니다.",
+        "tokens": [
+          51342,
+          5710,
+          9605,
+          227,
+          250,
+          1638,
+          12280,
+          22886,
+          7999,
+          4446,
+          7153,
+          15561,
+          25249,
+          4130,
+          38654,
+          25001,
+          3115,
+          13,
+          51491
+        ],
+        "avg_logprob": -0.09625589510179916,
+        "compression_ratio": 1.32421875,
+        "no_speech_prob": 0.0,
+        "words": [
+          {
+            "start": 19.5,
+            "end": 20.48,
+            "word": " 시스템을",
+            "probability": 0.99970703125
+          },
+          {
+            "start": 20.48,
+            "end": 20.92,
+            "word": " 장악할",
+            "probability": 0.9973958333333334
+          },
+          {
+            "start": 20.92,
+            "end": 21.04,
+            "word": " 수",
+            "probability": 1.0
+          },
+          {
+            "start": 21.04,
+            "end": 21.22,
+            "word": " 있는",
+            "probability": 1.0
+          },
+          {
+            "start": 21.22,
+            "end": 21.68,
+            "word": " 결함으로",
+            "probability": 0.9991861979166666
+          },
+          {
+            "start": 21.68,
+            "end": 22.48,
+            "word": " 알려졌습니다.",
+            "probability": 1.0
+          }
+        ],
+        "temperature": 0.0
+      },
+      {
+        "id": 4,
+        "seek": 0,
+        "start": 23.08,
+        "end": 28.42,
+        "text": " 이번 사태 파급력이 큰 건 PHP가 인터넷 전반에 광범위하게 쓰이는",
+        "tokens": [
+          51534,
+          16299,
+          4744,
+          20141,
+          15390,
+          21347,
+          21946,
+          1129,
+          21307,
+          13507,
+          47298,
+          1453,
+          47491,
+          226,
+          115,
+          19617,
+          22196,
+          1517,
+          26517,
+          15810,
+          242,
+          14098,
+          8601,
+          17373,
+          20813,
+          51788
+        ],
+        "avg_logprob": -0.09625589510179916,
+        "compression_ratio": 1.32421875,
+        "no_speech_prob": 0.0,
+        "words": [
+          {
+            "start": 23.08,
+            "end": 23.54,
+            "word": " 이번",
+            "probability": 0.99951171875
+          },
+          {
+            "start": 23.54,
+            "end": 23.86,
+            "word": " 사태",
+            "probability": 0.9990234375
+          },
+          {
+            "start": 23.86,
+            "end": 24.44,
+            "word": " 파급력이",
+            "probability": 0.982666015625
+          },
+          {
+            "start": 24.44,
+            "end": 24.62,
+            "word": " 큰",
+            "probability": 1.0
+          },
+          {
+            "start": 24.62,
+            "end": 24.88,
+            "word": " 건",
+            "probability": 0.98974609375
+          },
+          {
+            "start": 24.88,
+            "end": 26.04,
+            "word": " PHP가",
+            "probability": 0.997802734375
+          },
+          {
+            "start": 26.04,
+            "end": 26.8,
+            "word": " 인터넷",
+            "probability": 0.9998372395833334
+          },
+          {
+            "start": 26.8,
+            "end": 27.3,
+            "word": " 전반에",
+            "probability": 0.9171549479166666
+          },
+          {
+            "start": 27.3,
+            "end": 28.02,
+            "word": " 광범위하게",
+            "probability": 0.99658203125
+          },
+          {
+            "start": 28.02,
+            "end": 28.42,
+            "word": " 쓰이는",
+            "probability": 0.999755859375
+          }
+        ],
+        "temperature": 0.0
+      },
+      {
+        "id": 5,
+        "seek": 2842,
+        "start": 28.42,
+        "end": 30.1,
+        "text": " 핵심 기술이기 때문입니다.",
+        "tokens": [
+          50365,
+          1362,
+          113,
+          12766,
+          7047,
+          21619,
+          1129,
+          2401,
+          11406,
+          7416,
+          13,
+          50450
+        ],
+        "avg_logprob": -0.11796875204890966,
+        "compression_ratio": 0.9923664122137404,
+        "no_speech_prob": 0.0,
+        "words": [
+          {
+            "start": 28.42,
+            "end": 29.04,
+            "word": " 핵심",
+            "probability": 0.93505859375
+          },
+          {
+            "start": 29.04,
+            "end": 29.54,
+            "word": " 기술이기",
+            "probability": 0.9903564453125
+          },
+          {
+            "start": 29.54,
+            "end": 30.1,
+            "word": " 때문입니다.",
+            "probability": 0.9990234375
+          }
+        ],
+        "temperature": 0.0
+      },
+      {
+        "id": 6,
+        "seek": 2842,
+        "start": 31.220000000000002,
+        "end": 36.44,
+        "text": " 사용된 프로그래밍 언어를 식별할 수 있는 웹사이트의 75%가 PHP를 쓰고",
+        "tokens": [
+          50505,
+          14422,
+          27930,
+          27758,
+          10557,
+          14387,
+          108,
+          235,
+          16738,
+          47487,
+          19675,
+          37604,
+          7999,
+          4446,
+          7153,
+          6891,
+          117,
+          5727,
+          40547,
+          2785,
+          9562,
+          4,
+          1453,
+          47298,
+          11297,
+          43303,
+          50767
+        ],
+        "avg_logprob": -0.11796875204890966,
+        "compression_ratio": 0.9923664122137404,
+        "no_speech_prob": 0.0,
+        "words": [
+          {
+            "start": 31.12,
+            "end": 31.62,
+            "word": " 사용된",
+            "probability": 0.99755859375
+          },
+          {
+            "start": 31.62,
+            "end": 32.28,
+            "word": " 프로그래밍",
+            "probability": 0.99775390625
+          },
+          {
+            "start": 32.28,
+            "end": 32.62,
+            "word": " 언어를",
+            "probability": 0.999267578125
+          },
+          {
+            "start": 32.62,
+            "end": 33.08,
+            "word": " 식별할",
+            "probability": 0.99658203125
+          },
+          {
+            "start": 33.08,
+            "end": 33.16,
+            "word": " 수",
+            "probability": 0.9990234375
+          },
+          {
+            "start": 33.16,
+            "end": 33.4,
+            "word": " 있는",
+            "probability": 0.99951171875
+          },
+          {
+            "start": 33.4,
+            "end": 34.2,
+            "word": " 웹사이트의",
+            "probability": 0.9935546875
+          },
+          {
+            "start": 34.2,
+            "end": 34.64,
+            "word": " 75",
+            "probability": 0.99853515625
+          },
+          {
+            "start": 34.64,
+            "end": 35.4,
+            "word": "%가",
+            "probability": 0.998779296875
+          },
+          {
+            "start": 35.4,
+            "end": 36.16,
+            "word": " PHP를",
+            "probability": 0.9189453125
+          },
+          {
+            "start": 36.16,
+            "end": 36.44,
+            "word": " 쓰고",
+            "probability": 0.99951171875
+          }
+        ],
+        "temperature": 0.0
+      }
+    ],
+    "note": "Different context; not GT, not production latency"
+  },
+  "summary": {
+    "False": {
+      "n": 30,
+      "mean": 0.19588825433747842,
+      "p50": 0.17326269758632407,
+      "p95": 0.34993732573930175
+    },
+    "True": {
+      "n": 30,
+      "mean": 0.18173053864932928,
+      "p50": 0.17593262757873163,
+      "p95": 0.21670595239847898
+    }
+  }
+}
