@@ -17,6 +17,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "phase3"))
 sys.path.insert(0, str(ROOT / "phase4"))
+from caption_diagnostics import LOGGER as TRACE_LOGGER
 from remote_gpu_client import (RemoteGPUMonitor, RemoteTimeoutError, RemoteConnectionError,
                                RemoteHTTPError, RemoteProtocolError, parse_result)
 from separation_recovery import SeparationRecoveryResult, finite_audio_stats
@@ -95,7 +96,12 @@ class PipelineTests(TestCase):
                 if websocket:
                     argv += ["--websocket", "--ws-port", "0"]
             if latency_diagnostics: argv += ["--latency-diagnostics"]
-            if evidence: argv += ["--evidence-dir", str(evidence_dir)]
+            if evidence:
+                argv += ["--evidence-dir", str(evidence_dir)]
+                # Model a standalone CLI: pytest may attach capture handlers even
+                # to non-propagating loggers. Restore handlers and level on exit.
+                stack.enter_context(patch.object(TRACE_LOGGER, "handlers", []))
+                stack.callback(TRACE_LOGGER.setLevel, TRACE_LOGGER.level)
             stack.enter_context(patch.object(pipeline.sys, "argv", argv))
             stdout_buffer = io.StringIO()
             stdout = Mock(wraps=stdout_buffer); stdout.reconfigure = Mock()
@@ -118,7 +124,7 @@ class PipelineTests(TestCase):
             self.last_loopback_calls = list(pipeline.sc.get_microphone.call_args_list)
             if remote:
                 client.close.assert_called_once()
-            result = json.loads(output.read_text())
+            result = json.loads(output.read_text(encoding="utf-8"))
             if evidence:
                 self.last_trace_records = [json.loads(line) for line in
                     (evidence_dir / "diagnostic.jsonl").read_text(encoding="utf-8").splitlines()]
