@@ -699,6 +699,7 @@ def main(
     assembler_events: list[dict[str, Any]] = []
     subtitle_state_events: list[dict[str, Any]] = []
     subtitle_events: list[dict[str, Any]] = []
+    initial_subtitle_seconds: float | None = None
     published_subtitle_utterances: set[tuple[int, int]] = set()
     websocket_server: Any | None = None
     websocket_stats: dict[str, Any] = {"enabled": False}
@@ -760,6 +761,7 @@ def main(
         event: SubtitleStateEvent,
         stt_inference_ended: float | None = None,
     ) -> dict[str, Any]:
+        nonlocal initial_subtitle_seconds
         if runtime_hooks is not None and runtime_hooks.stop_event.is_set():
             return {}
         state_event = event.to_dict()
@@ -825,6 +827,11 @@ def main(
             display_text = append_preserving_text(display_text, segment)
         if event.status == "partial":
             display_text = append_preserving_text(display_text, event.publication_text)
+        # Measure creation of the first public caption on the capture clock.
+        # Empty/withheld hypotheses and retractions are not a first subtitle;
+        # window completion and UI/WebSocket delivery happen at different times.
+        if initial_subtitle_seconds is None and event.publication_text:
+            initial_subtitle_seconds = time.perf_counter() - capture_state["stream_started"]
         subtitle_event: dict[str, Any] = {
             "type": "subtitle",
             "session_id": session_id,
@@ -2509,7 +2516,7 @@ def main(
         performance: dict[str, Any] = {}
         quality: dict[str, Any] = {}
         separation_quality: dict[str, Any] = {}
-        latency: dict[str, Any] = {}
+        latency: dict[str, Any] = {"initial_subtitle_seconds": initial_subtitle_seconds}
         duplicates: dict[str, Any] = {}
         assembler_summary: dict[str, Any] = {}
         subtitle_stabilization_summary: dict[str, Any] = {}
@@ -2586,7 +2593,7 @@ def main(
                 ),
             }
             latency = {
-                "initial_subtitle_seconds": completion_times[0],
+                "initial_subtitle_seconds": initial_subtitle_seconds,
                 "steady_state_result_interval": (
                     base.distribution(update_intervals) if update_intervals else {}
                 ),
@@ -3105,7 +3112,11 @@ def main(
             if args.vad and "vad" in performance:
                 print(f"Mean VAD: {performance['vad']['mean'] * 1000:.3f}ms")
             print(f"Mean post-capture: {performance['post_capture_latency']['mean']:.3f}s")
-            print(f"Initial subtitle: {latency['initial_subtitle_seconds']:.3f}s")
+            print(
+                f"Initial subtitle: {initial_subtitle_seconds:.3f}s"
+                if initial_subtitle_seconds is not None
+                else "Initial subtitle: N/A (no subtitle event)"
+            )
             print(
                 f"Steady result interval mean/p95/max: "
                 f"{latency['steady_state_result_interval'].get('mean', 0.0):.3f}/"

@@ -1116,6 +1116,7 @@ class PipelineTests(TestCase):
         self.assertEqual(result["subtitle_events"], [])
         self.assertEqual(delivered, [])
         self.assertEqual(result["websocket"]["published"], 0)
+        self.assertIsNone(result["latency"]["initial_subtitle_seconds"])
 
     def test_strong_316ms_transient_is_tentative_and_emits_no_websocket_subtitle(self):
         start, end = 16000, 16000 + 5056
@@ -1205,6 +1206,7 @@ class PipelineTests(TestCase):
         self.assertEqual(result["subtitle_events"], [])
         self.assertEqual(delivered, [])
         self.assertEqual(result["websocket"]["published"], 0)
+        self.assertIsNone(result["latency"]["initial_subtitle_seconds"])
 
     def test_overlap_artifact_and_next_raw_permutation_keep_one_stream_in_workers(self):
         def response(audio, index):
@@ -1443,6 +1445,107 @@ class PipelineTests(TestCase):
         self.assertGreaterEqual(
             timing["client_pipeline"]["separated_queue_wait_seconds"], 0
         )
+
+    def check_initial_subtitle_latency(self, first_speech_window, *, stop_window=None,
+                                      latency_diagnostics=True):
+        """Exercise real publication with supplied audio/STT, without GPU or WASAPI."""
+        delivered_at = []
+        state_ready_at = []
+        metrics_ready = [threading.Event() for _ in range(4)]
+        hooks = pipeline.LivePipelineHooks(
+            on_subtitle=lambda event: delivered_at.append(time.perf_counter()),
+            on_metric=lambda metric: metrics_ready[metric["window"]].set(),
+        )
+        original_process = pipeline.SpeakerSubtitleState.process
+
+        def observe_state(state, *args, **kwargs):
+            events = original_process(state, *args, **kwargs)
+            if any(event.publication_text for event in events):
+                state_ready_at.append(time.perf_counter())
+            return events
+
+        def response(audio, index):
+            # Keep the completed silent prefix deterministic even on slow hosts.
+            if index:
+                if not metrics_ready[index - 1].wait(5):
+                    raise RuntimeError("previous window did not complete")
+            result = payload("r", index, len(audio))
+            for slot in result["speakers"]:
+                active = slot["raw_slot"] == 0 and index == first_speech_window
+                wave = audio if active else np.zeros_like(audio)
+                slot["waveform"]["data"] = base64.b64encode(
+                    wave.astype("<f4").tobytes()
+                ).decode()
+                slot["raw_transcript"] = "실제 첫 자막입니다" if active else ""
+                slot["vad"].update(
+                    speech_detected=active,
+                    speech_duration_ms=len(audio) / 16 if active else 0.,
+                    speech_ratio=1. if active else 0.,
+                    timestamps=[{"start": 0, "end": len(audio)}] if active else [],
+                )
+            if index == stop_window:
+                hooks.stop_event.set()
+            return result
+
+        with patch.object(pipeline.SpeakerSubtitleState, "process", new=observe_state):
+            _, result = self.run_pipeline(
+                True, duration=9, speaker_mode="single", response_factory=response,
+                runtime_hooks=hooks, latency_diagnostics=latency_diagnostics,
+            )
+        self.assertEqual(result["errors"], [])
+        self.assertIn("initial_subtitle_seconds", result["latency"])
+        initial = result["latency"]["initial_subtitle_seconds"]
+        if first_speech_window is None or stop_window is not None:
+            self.assertEqual(result["subtitle_events"], [])
+            self.assertEqual(delivered_at, [])
+            self.assertIsNone(initial)
+            if result["windows"]:
+                self.assertIn("Initial subtitle: N/A", self.last_stdout)
+        else:
+            first = result["subtitle_events"][0]
+            self.assertEqual(first["window_index"], first_speech_window)
+            self.assertEqual(first["status"], "partial")
+            metric = next(w for w in result["windows"] if w["window"] == first_speech_window)
+            self.assertGreater(initial, 0.)
+            self.assertLess(initial, metric["result_completed_after_stream_start"])
+            if first_speech_window:
+                self.assertGreater(initial, result["windows"][first_speech_window - 1]
+                                   ["result_completed_after_stream_start"])
+            if latency_diagnostics:
+                # The first public event must lie between state creation and
+                # dispatch to the UI hook, not at RAW STT or result completion.
+                timing = metric["latency_diagnostics"]["client_pipeline"]
+                origin = (timing["result_created_perf_counter"]
+                          - metric["result_completed_after_stream_start"])
+                self.assertGreaterEqual(initial, state_ready_at[0] - origin)
+                self.assertLessEqual(initial, delivered_at[0] - origin)
+        if result["windows"]:
+            self.assertEqual(
+                result["latency"]["estimated_user_perceived_seconds"]["first_result"],
+                result["windows"][0]["result_completed_after_stream_start"],
+            )
+
+    def test_initial_subtitle_after_first_silent_window(self):
+        self.check_initial_subtitle_latency(1)
+
+    def test_initial_subtitle_in_first_window(self):
+        self.check_initial_subtitle_latency(0)
+
+    def test_initial_subtitle_absent_for_all_silence(self):
+        self.check_initial_subtitle_latency(None)
+
+    def test_initial_subtitle_after_several_completed_windows(self):
+        self.check_initial_subtitle_latency(3)
+
+    def test_initial_subtitle_absent_on_stop_before_publication(self):
+        # Cover both no completed results and a completed silent prefix.
+        for stop_window in (0, 1):
+            with self.subTest(stop_window=stop_window):
+                self.check_initial_subtitle_latency(stop_window, stop_window=stop_window,
+                                                   latency_diagnostics=False)
+
+    def test_initial_subtitle_without_optional_diagnostics(self):
+        self.check_initial_subtitle_latency(0, latency_diagnostics=False)
 
     def test_failed_remote_window_continues(self):
         code, result = self.run_pipeline(True, True)

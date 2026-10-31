@@ -1,0 +1,596 @@
+{
+  "provenance": {
+    "source": "gui_last_run.json",
+    "sha256": "8171c3dc28e1f9983214d03d83bf27d9dac45ce4a2deddbf1f206ebd3d1df7f2",
+    "session_id": "afd06626575f4737b4cba4b67f3b7538",
+    "target_windows": [
+      12,
+      18
+    ],
+    "warmup_windows": [
+      7,
+      11
+    ],
+    "note": "Recorded text and diagnostics replay only; not audio inference or a correctness reference. Warmup preserves original utterance IDs and sequences."
+  },
+  "windows": [
+    {
+      "window": 7,
+      "raw": "오늘 서울도",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": null,
+        "supported_tail_revision": false
+      },
+      "expected_assembly": {
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "오늘 서울도",
+        "utterance_hypothesis": "오늘 서울도",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null
+      },
+      "expected_events": [
+        {
+          "sequence": 1,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "start",
+          "text": "오늘 서울도",
+          "finalize_reason": null
+        }
+      ]
+    },
+    {
+      "window": 8,
+      "raw": "오늘 서울도심에서는 아침부터 많은 시간을 보도록 하겠습니다.",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": true,
+        "tail_covered_by_current_prefix": true,
+        "previous_tail_overlap_interval": [
+          5408,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          5152,
+          16000
+        ],
+        "shared_tail_interval": [
+          5408,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": "tail_started_in_overlap"
+      },
+      "expected_assembly": {
+        "previous": "오늘 서울도",
+        "match_type": "boundary_exact",
+        "overlap": "오늘 서울도",
+        "new": "심에서는 아침부터 많은 시간을 보도록 하겠습니다.",
+        "utterance_hypothesis": "오늘 서울도심에서는 아침부터 많은 시간을 보도록 하겠습니다.",
+        "confirmed_prefix_length": 5,
+        "rollover_text": "",
+        "rollover_reason": null
+      },
+      "expected_events": [
+        {
+          "sequence": 2,
+          "utterance_id": 1,
+          "status": "partial",
+          "action": "extend",
+          "text": "오늘 서울도심에서는 아침부터 많은 시간을 보도록 하겠습니다.",
+          "finalize_reason": null
+        }
+      ]
+    },
+    {
+      "window": 9,
+      "raw": "많은 시민들이 출근길에 나섰습니다.",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          1056,
+          16000
+        ],
+        "shared_tail_interval": [
+          1056,
+          16000
+        ],
+        "continuous_tail_coverage": 0.934,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "expected_assembly": {
+        "previous": "오늘 서울도심에서는 아침부터 많은 시간을 보도록 하겠습니다.",
+        "match_type": "none",
+        "overlap": "",
+        "new": "많은 시민들이 출근길에 나섰습니다.",
+        "utterance_hypothesis": "많은 시민들이 출근길에 나섰습니다.",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "오늘 서울도심에서는 아침부터 많은 시간을 보도록 하겠습니다.",
+        "rollover_reason": "sentence_boundary_confirmed"
+      },
+      "expected_events": [
+        {
+          "sequence": 3,
+          "utterance_id": 1,
+          "status": "final",
+          "action": "finalize",
+          "text": "오늘 서울도심에서는 아침부터 많은 시간을 보도록 하겠습니다.",
+          "finalize_reason": "sentence_boundary_confirmed"
+        },
+        {
+          "sequence": 4,
+          "utterance_id": 2,
+          "status": "partial",
+          "action": "start",
+          "text": "많은 시민들이 출근길에 나섰습니다.",
+          "finalize_reason": null
+        }
+      ]
+    },
+    {
+      "window": 10,
+      "raw": "길에 나섰습니다. 어제 게임 업데이트",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "expected_assembly": {
+        "previous": "많은 시민들이 출근길에 나섰습니다.",
+        "match_type": "boundary_exact",
+        "overlap": "길에 나섰습니다.",
+        "new": "어제 게임 업데이트",
+        "utterance_hypothesis": "어제 게임 업데이트",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "많은 시민들이 출근길에 나섰습니다.",
+        "rollover_reason": "sentence_boundary_confirmed"
+      },
+      "expected_events": [
+        {
+          "sequence": 5,
+          "utterance_id": 2,
+          "status": "final",
+          "action": "finalize",
+          "text": "많은 시민들이 출근길에 나섰습니다.",
+          "finalize_reason": "sentence_boundary_confirmed"
+        },
+        {
+          "sequence": 6,
+          "utterance_id": 3,
+          "status": "partial",
+          "action": "start",
+          "text": "어제 게임 업데이트",
+          "finalize_reason": null
+        }
+      ]
+    },
+    {
+      "window": 11,
+      "raw": "어제 게임 업데이트 확인했어?",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "expected_assembly": {
+        "previous": "어제 게임 업데이트",
+        "match_type": "token_exact",
+        "overlap": "어제 게임 업데이트",
+        "new": "확인했어?",
+        "utterance_hypothesis": "어제 게임 업데이트 확인했어?",
+        "confirmed_prefix_length": 8,
+        "rollover_text": "",
+        "rollover_reason": null
+      },
+      "expected_events": [
+        {
+          "sequence": 7,
+          "utterance_id": 3,
+          "status": "partial",
+          "action": "extend",
+          "text": "어제 게임 업데이트 확인했어?",
+          "finalize_reason": null
+        }
+      ]
+    },
+    {
+      "window": 12,
+      "raw": "아직 못 봤는데 뭐가 봤지요?",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": false,
+        "supported_tail_revision": false
+      },
+      "expected_assembly": {
+        "previous": "",
+        "match_type": "none",
+        "overlap": "",
+        "new": "아직 못 봤는데 뭐가 봤지요?",
+        "utterance_hypothesis": "아직 못 봤는데 뭐가 봤지요?",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "어제 게임 업데이트 확인했어?",
+        "rollover_reason": "sentence_boundary_confirmed"
+      },
+      "expected_events": [
+        {
+          "sequence": 8,
+          "utterance_id": 3,
+          "status": "final",
+          "action": "finalize",
+          "text": "어제 게임 업데이트 확인했어?",
+          "finalize_reason": "sentence_boundary_confirmed"
+        },
+        {
+          "sequence": 9,
+          "utterance_id": 4,
+          "status": "partial",
+          "action": "start",
+          "text": "아직 못 봤는데 뭐가 봤지요?",
+          "finalize_reason": null
+        }
+      ]
+    },
+    {
+      "window": 13,
+      "raw": "뭐가 바퀴었어? 인공지능은",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "expected_assembly": {
+        "previous": "아직 못 봤는데 뭐가 봤지요?",
+        "match_type": "none",
+        "overlap": "",
+        "new": "뭐가 바퀴었어? 인공지능은",
+        "utterance_hypothesis": "뭐가 바퀴었어? 인공지능은",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "아직 못 봤는데 뭐가 봤지요?",
+        "rollover_reason": "sentence_boundary_confirmed"
+      },
+      "expected_events": [
+        {
+          "sequence": 10,
+          "utterance_id": 4,
+          "status": "final",
+          "action": "finalize",
+          "text": "아직 못 봤는데 뭐가 봤지요?",
+          "finalize_reason": "sentence_boundary_confirmed"
+        },
+        {
+          "sequence": 11,
+          "utterance_id": 5,
+          "status": "partial",
+          "action": "start",
+          "text": "뭐가 바퀴었어? 인공지능은",
+          "finalize_reason": null
+        }
+      ]
+    },
+    {
+      "window": 14,
+      "raw": "인공지능 음성 인식 시스템은 오디오 대신",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": true,
+        "tail_covered_by_current_prefix": true,
+        "previous_tail_overlap_interval": [
+          4384,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          4128,
+          16000
+        ],
+        "shared_tail_interval": [
+          4384,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": "tail_started_in_overlap"
+      },
+      "expected_assembly": {
+        "previous": "뭐가 바퀴었어? 인공지능은",
+        "match_type": "fuzzy_replace",
+        "overlap": "인공지능",
+        "new": "음성 인식 시스템은 오디오 대신",
+        "utterance_hypothesis": "뭐가 바퀴었어? 인공지능 음성 인식 시스템은 오디오 대신",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null
+      },
+      "expected_events": [
+        {
+          "sequence": 12,
+          "utterance_id": 5,
+          "status": "partial",
+          "action": "replace",
+          "text": "뭐가 바퀴었어? 인공지능 음성 인식 시스템은 오디오 대신",
+          "finalize_reason": null
+        }
+      ]
+    },
+    {
+      "window": 15,
+      "raw": "오디오 데이터를 분석해 텍스트로 변화합니다.",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "expected_assembly": {
+        "previous": "인공지능 음성 인식 시스템은 오디오 대신",
+        "match_type": "none",
+        "overlap": "",
+        "new": "오디오 데이터를 분석해 텍스트로 변화합니다.",
+        "utterance_hypothesis": "뭐가 바퀴었어? 인공지능 음성 인식 시스템은 오디오 대신 오디오 데이터를 분석해 텍스트로 변화합니다.",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null
+      },
+      "expected_events": [
+        {
+          "sequence": 13,
+          "utterance_id": 5,
+          "status": "partial",
+          "action": "extend",
+          "text": "뭐가 바퀴었어? 인공지능 음성 인식 시스템은 오디오 대신 오디오 데이터를 분석해 텍스트로 변화합니다.",
+          "finalize_reason": null
+        }
+      ]
+    },
+    {
+      "window": 16,
+      "raw": "텍스트로 변환합니다.",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          0,
+          16000
+        ],
+        "shared_tail_interval": [
+          0,
+          16000
+        ],
+        "continuous_tail_coverage": 1.0,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "expected_assembly": {
+        "previous": "오디오 데이터를 분석해 텍스트로 변화합니다.",
+        "match_type": "fuzzy_replace",
+        "overlap": "텍스트로 변환합니다",
+        "new": "",
+        "utterance_hypothesis": "뭐가 바퀴었어? 인공지능 음성 인식 시스템은 오디오 대신 오디오 데이터를 분석해 텍스트로 변환합니다.",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null
+      },
+      "expected_events": [
+        {
+          "sequence": 14,
+          "utterance_id": 5,
+          "status": "partial",
+          "action": "replace",
+          "text": "뭐가 바퀴었어? 인공지능 음성 인식 시스템은 오디오 대신 오디오 데이터를 분석해 텍스트로 변환합니다.",
+          "finalize_reason": null
+        }
+      ]
+    },
+    {
+      "window": 17,
+      "raw": "비상청은 오늘 오후 새로운 안내를",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": true,
+        "supported_tail_revision": false,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": true,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          9504,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          10272,
+          16000
+        ],
+        "shared_tail_interval": [
+          10272,
+          16000
+        ],
+        "continuous_tail_coverage": 0.8817733990147784,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": false,
+        "tail_revision_geometry": null
+      },
+      "expected_assembly": {
+        "previous": "텍스트로 변환합니다.",
+        "match_type": "none",
+        "overlap": "",
+        "new": "비상청은 오늘 오후 새로운 안내를",
+        "utterance_hypothesis": "비상청은 오늘 오후 새로운 안내를",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "뭐가 바퀴었어? 인공지능 음성 인식 시스템은 오디오 대신 오디오 데이터를 분석해 텍스트로 변환합니다.",
+        "rollover_reason": "sentence_boundary_confirmed"
+      },
+      "expected_events": [
+        {
+          "sequence": 15,
+          "utterance_id": 5,
+          "status": "final",
+          "action": "finalize",
+          "text": "뭐가 바퀴었어? 인공지능 음성 인식 시스템은 오디오 대신 오디오 데이터를 분석해 텍스트로 변환합니다.",
+          "finalize_reason": "sentence_boundary_confirmed"
+        },
+        {
+          "sequence": 16,
+          "utterance_id": 6,
+          "status": "partial",
+          "action": "start",
+          "text": "비상청은 오늘 오후 새로운 안내를",
+          "finalize_reason": null
+        }
+      ]
+    },
+    {
+      "window": 18,
+      "raw": "곧 새로운 안내를 발표했습니다.",
+      "source_supported": true,
+      "audio_overlap_evidence": {
+        "shared_speech": true,
+        "supported_tail_revision": true,
+        "overlap_correlation": 1.0,
+        "previous_tail_in_overlap": false,
+        "tail_covered_by_current_prefix": false,
+        "previous_tail_overlap_interval": [
+          0,
+          16000
+        ],
+        "current_prefix_overlap_interval": [
+          32,
+          16000
+        ],
+        "shared_tail_interval": [
+          32,
+          16000
+        ],
+        "continuous_tail_coverage": 0.998,
+        "continuous_tail_min_overlap_coverage": 0.95,
+        "continuous_tail_geometry_supported": true,
+        "tail_revision_geometry": "continuous_tail_across_overlap"
+      },
+      "expected_assembly": {
+        "previous": "비상청은 오늘 오후 새로운 안내를",
+        "match_type": "fuzzy",
+        "overlap": "곧 새로운 안내를",
+        "new": "발표했습니다.",
+        "utterance_hypothesis": "비상청은 오늘 오후 새로운 안내를 발표했습니다.",
+        "confirmed_prefix_length": 0,
+        "rollover_text": "",
+        "rollover_reason": null
+      },
+      "expected_events": [
+        {
+          "sequence": 17,
+          "utterance_id": 6,
+          "status": "partial",
+          "action": "extend",
+          "text": "비상청은 오늘 오후 새로운 안내를 발표했습니다.",
+          "finalize_reason": null
+        }
+      ]
+    }
+  ]
+}
