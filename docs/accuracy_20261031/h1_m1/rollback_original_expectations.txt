@@ -1,0 +1,109 @@
+test_1_normal_sliding_overlap_stays_one_natural_utterance (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_1_normal_sliding_overlap_stays_one_natural_utterance) ... ok
+test_2_premature_ending_is_revised_instead_of_finalized (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_2_premature_ending_is_revised_instead_of_finalized) ... ok
+test_3_confirmed_ending_finalizes_before_new_utterance (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_3_confirmed_ending_finalizes_before_new_utterance) ... ok
+test_4_unsupported_ghost_is_still_discarded (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_4_unsupported_ghost_is_still_discarded) ... ok
+test_5_source_supported_subtitle_is_published_and_finalized (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_5_source_supported_subtitle_is_published_and_finalized) ... ok
+test_6_current_hypothesis_is_bounded_to_latest_utterance (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_6_current_hypothesis_is_bounded_to_latest_utterance) ... ok
+test_7_window_6_to_7_revises_ending_before_final (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_7_window_6_to_7_revises_ending_before_final) ... ok
+test_8_window_13_to_14_repairs_clipped_head_before_final (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_8_window_13_to_14_repairs_clipped_head_before_final) ... ok
+test_9_related_new_sentence_is_not_mistaken_for_revision (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_9_related_new_sentence_is_not_mistaken_for_revision) ... ok
+test_actual_new_sentence_is_not_sentence_head_revision (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_actual_new_sentence_is_not_sentence_head_revision) ... ok
+test_changed_sentence_ending_is_not_treated_as_replayed_tail (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_changed_sentence_ending_is_not_treated_as_replayed_tail) ... ok
+test_completed_sentence_tail_without_punctuation_is_not_replayed (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_completed_sentence_tail_without_punctuation_is_not_replayed) ... ok
+test_overlap_mode_keeps_existing_assembler_behavior (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_overlap_mode_keeps_existing_assembler_behavior) ... ok
+test_sentence_head_revision_accepts_zero_confirmed_prefix (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_sentence_head_revision_accepts_zero_confirmed_prefix) ... ok
+test_sentence_head_revision_preserves_active_text_before_previous_window (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_sentence_head_revision_preserves_active_text_before_previous_window) ... ok
+test_sentence_head_revision_preserves_independent_leading_speech (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_sentence_head_revision_preserves_independent_leading_speech) ... ok
+test_sentence_head_revision_respects_confirmed_prefix_around_seam (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_sentence_head_revision_respects_confirmed_prefix_around_seam) ... ok
+test_sentence_tail_words_are_preserved_without_shared_audio (test_general_subtitle_lifecycle.GeneralSubtitleLifecycleTests.test_sentence_tail_words_are_preserved_without_shared_audio) ... ok
+test_ambiguous_anchors_and_distinct_sentences_keep_normal_final (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_ambiguous_anchors_and_distinct_sentences_keep_normal_final) ... ok
+test_confirmed_prefix_is_never_rewritten (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_confirmed_prefix_is_never_rewritten) ... ok
+test_h1_same_topic_must_preserve_both_sentences (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_h1_same_topic_must_preserve_both_sentences) ... ok
+test_m1_preserves_confirmed_prefix_but_remains_unresolved (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_m1_preserves_confirmed_prefix_but_remains_unresolved) ... ok
+test_missing_acoustic_support_or_window_gap_keeps_sentence_boundary (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_missing_acoustic_support_or_window_gap_keeps_sentence_boundary) ... ok
+test_repeated_utterance_after_silence_and_short_speech_survive (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_repeated_utterance_after_silence_and_short_speech_survive) ... ok
+test_reported_early_final_is_revised_only_with_supported_overlap (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_reported_early_final_is_revised_only_with_supported_overlap) ... FAIL
+test_revision_cannot_publish_unsupported_source (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_revision_cannot_publish_unsupported_source) ... ok
+test_revision_does_not_rewrite_finalized_history (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_revision_does_not_rewrite_finalized_history) ... ok
+test_revision_generalizes_to_other_predicates (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_revision_generalizes_to_other_predicates) ... 
+  test_revision_generalizes_to_other_predicates (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_revision_generalizes_to_other_predicates) (old='지금 중앙 도서관에서는 닫혔습니다.') ... FAIL
+  test_revision_generalizes_to_other_predicates (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_revision_generalizes_to_other_predicates) (old='먼저 안내드립니다. 오늘 연구 모임에서는 끝났습니다.') ... FAIL
+test_supplied_clipped_head_and_fuzzy_particle_stay_intact (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_supplied_clipped_head_and_fuzzy_particle_stay_intact) ... ok
+test_supported_revision_does_not_launder_unobserved_prefix (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_supported_revision_does_not_launder_unobserved_prefix) ... FAIL
+test_a_c_d_routed_fragment_swap_correction_and_silence_final (test_live_caption_continuity.CaptionContinuityTests.test_a_c_d_routed_fragment_swap_correction_and_silence_final) ... ok
+test_b_c_two_independent_speakers_keep_both_streams_through_swap (test_live_caption_continuity.CaptionContinuityTests.test_b_c_two_independent_speakers_keep_both_streams_through_swap) ... ok
+test_b_established_secondary_and_overlapping_different_text_retained (test_live_caption_continuity.CaptionContinuityTests.test_b_established_secondary_and_overlapping_different_text_retained) ... ok
+test_b_independent_secondary_even_quiet_or_same_words_is_retained (test_live_caption_continuity.CaptionContinuityTests.test_b_independent_secondary_even_quiet_or_same_words_is_retained) ... ok
+test_d_revision_requires_timing_adjacency_and_new_content (test_live_caption_continuity.CaptionContinuityTests.test_d_revision_requires_timing_adjacency_and_new_content) ... ok
+test_duplicate_fragment_and_symmetric_owner_do_not_mutate_raw (test_live_caption_continuity.CaptionContinuityTests.test_duplicate_fragment_and_symmetric_owner_do_not_mutate_raw) ... ok
+test_e_intentional_repetition_outside_shared_speech_is_preserved (test_live_caption_continuity.CaptionContinuityTests.test_e_intentional_repetition_outside_shared_speech_is_preserved) ... ok
+test_no_timing_no_continuity_or_long_fragment_is_not_routed (test_live_caption_continuity.CaptionContinuityTests.test_no_timing_no_continuity_or_long_fragment_is_not_routed) ... ok
+test_overlap_revision_gate_requires_timing_and_waveform_evidence (test_live_caption_continuity.CaptionContinuityTests.test_overlap_revision_gate_requires_timing_and_waveform_evidence) ... ok
+test_predicate_revision_uses_waveform_and_vad_gate (test_live_caption_continuity.CaptionContinuityTests.test_predicate_revision_uses_waveform_and_vad_gate) ... 
+  test_predicate_revision_uses_waveform_and_vad_gate (test_live_caption_continuity.CaptionContinuityTests.test_predicate_revision_uses_waveform_and_vad_gate) (expected=True, new_vad={'speech_detected': True, 'speech_ratio': 1.0, 'speech_duration_ms': 3000, 'timestamps': [{'start': 0, 'end': 48000}]}) ... FAIL
+test_supported_overlap_preserves_a_genuine_new_repetition (test_live_caption_continuity.CaptionContinuityTests.test_supported_overlap_preserves_a_genuine_new_repetition) ... ok
+test_timing_evidence_rejects_unrelated_audio_and_invalid_intervals (test_live_caption_continuity.CaptionContinuityTests.test_timing_evidence_rejects_unrelated_audio_and_invalid_intervals) ... ok
+test_window_10_to_11_continuous_overlap_supports_bounded_revision (test_live_caption_continuity.CaptionContinuityTests.test_window_10_to_11_continuous_overlap_supports_bounded_revision) ... ok
+
+======================================================================
+FAIL: test_reported_early_final_is_revised_only_with_supported_overlap (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_reported_early_final_is_revised_only_with_supported_overlap)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase3/test_general_subtitle_lifecycle.py", line 117, in test_reported_early_final_is_revised_only_with_supported_overlap
+    self.assertEqual(assembly.utterance_hypothesis, self.expected)
+AssertionError: '서울 도심에서는 아침부터 많은 시민들이 출근길에' != '오늘 서울 도심에서는 아침부터 많은 시민들이 출근길에'
+- 서울 도심에서는 아침부터 많은 시민들이 출근길에
++ 오늘 서울 도심에서는 아침부터 많은 시민들이 출근길에
+? +++
+
+
+======================================================================
+FAIL: test_revision_generalizes_to_other_predicates (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_revision_generalizes_to_other_predicates) (old='지금 중앙 도서관에서는 닫혔습니다.')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase3/test_general_subtitle_lifecycle.py", line 144, in test_revision_generalizes_to_other_predicates
+    self.assertEqual(assembly.utterance_hypothesis, expected)
+AssertionError: '중앙 도서관에서는 학생들이 함께 자료를 찾고 있습니다.' != '지금 중앙 도서관에서는 학생들이 함께 자료를 찾고 있습니다.'
+- 중앙 도서관에서는 학생들이 함께 자료를 찾고 있습니다.
++ 지금 중앙 도서관에서는 학생들이 함께 자료를 찾고 있습니다.
+? +++
+
+
+======================================================================
+FAIL: test_revision_generalizes_to_other_predicates (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_revision_generalizes_to_other_predicates) (old='먼저 안내드립니다. 오늘 연구 모임에서는 끝났습니다.')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase3/test_general_subtitle_lifecycle.py", line 144, in test_revision_generalizes_to_other_predicates
+    self.assertEqual(assembly.utterance_hypothesis, expected)
+AssertionError: '연구 모임에서는 새로운 실험 방법을 논의하고 있습니다.' != '먼저 안내드립니다. 오늘 연구 모임에서는 새로운 실험 방법을 논의하고 있습니다.'
+- 연구 모임에서는 새로운 실험 방법을 논의하고 있습니다.
++ 먼저 안내드립니다. 오늘 연구 모임에서는 새로운 실험 방법을 논의하고 있습니다.
+? ++++++++++++++
+
+
+======================================================================
+FAIL: test_supported_revision_does_not_launder_unobserved_prefix (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_supported_revision_does_not_launder_unobserved_prefix)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase3/test_general_subtitle_lifecycle.py", line 221, in test_supported_revision_does_not_launder_unobserved_prefix
+    self.assertEqual(assembly.utterance_hypothesis, self.expected)
+AssertionError: '서울 도심에서는 아침부터 많은 시민들이 출근길에' != '오늘 서울 도심에서는 아침부터 많은 시민들이 출근길에'
+- 서울 도심에서는 아침부터 많은 시민들이 출근길에
++ 오늘 서울 도심에서는 아침부터 많은 시민들이 출근길에
+? +++
+
+
+======================================================================
+FAIL: test_predicate_revision_uses_waveform_and_vad_gate (test_live_caption_continuity.CaptionContinuityTests.test_predicate_revision_uses_waveform_and_vad_gate) (expected=True, new_vad={'speech_detected': True, 'speech_ratio': 1.0, 'speech_duration_ms': 3000, 'timestamps': [{'start': 0, 'end': 48000}]})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase3/test_live_caption_continuity.py", line 300, in test_predicate_revision_uses_waveform_and_vad_gate
+    self.assertEqual(assembly.rollover_text, "")
+AssertionError: '지금 중앙 도서관에서는 닫혔습니다.' != ''
+- 지금 중앙 도서관에서는 닫혔습니다.
+
+
+----------------------------------------------------------------------
+Ran 43 tests in 1.355s
+
+FAILED (failures=5)

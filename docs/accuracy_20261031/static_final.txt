@@ -1,0 +1,8 @@
+All checks passed!
+All checks passed!
+3.10 grammar / compile PASS: phase3/subtitle_assembler.py
+3.10 grammar / compile PASS: phase3/test_general_subtitle_lifecycle.py
+3.10 grammar / compile PASS: phase3/test_live_caption_continuity.py
+3.10 grammar / compile PASS: docs/accuracy_20261031/gpu_probe.py
+3.10 grammar / compile PASS: docs/accuracy_20261031/compare.py
+production import PASS

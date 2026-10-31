@@ -68,6 +68,196 @@ class GeneralSubtitleHarness:
         return assembly, events
 
 
+class SupportedPredicateRevisionTests(unittest.TestCase):
+    """Supplied RAW text plus explicit synthetic evidence, not an audio replay."""
+
+    old = "오늘 서울 도심에서는 날씨였습니다."
+    raw = "서울 도심에서는 아침부터 많은 시민들이 출근길에"
+    expected = "오늘 서울 도심에서는 아침부터 많은 시민들이 출근길에"
+
+    def test_h1_same_topic_must_preserve_both_sentences(self):
+        for old, raw in (
+            ("오늘 중앙 도서관에서는 휴관했습니다.",
+             "중앙 도서관에서는 다음 주부터 정상 운영을 시작합니다."),
+            ("어제 지역 박물관에서는 폐관했습니다.",
+             "지역 박물관에서는 다음 달부터 새로운 전시를 시작합니다."),
+        ):
+            with self.subTest(old=old):
+                harness = GeneralSubtitleHarness()
+                harness.speech(0, old)
+                assembly, events = harness.speech(
+                    1, raw, shared_speech=True, supported_tail_revision=True,
+                )
+                self.assertEqual(assembly.rollover_text, old)
+                self.assertEqual([e.publication_text for e in events], [old, raw])
+                harness.silence(2)
+                self.assertEqual(harness.state.final_segments, [old, raw])
+
+    def test_m1_preserves_confirmed_prefix_but_remains_unresolved(self):
+        harness = GeneralSubtitleHarness()
+        prefix = "오늘 서울 도심에서는"
+        harness.speech(2, prefix)
+        first, _ = harness.speech(3, self.old, shared_speech=True)
+        self.assertEqual(first.confirmed_prefix_length, 9)
+        assembly, events = harness.speech(
+            4, self.raw, shared_speech=True, supported_tail_revision=True,
+        )
+        # This asserts the conservative contract, NOT successful STT repair.
+        self.assertEqual(assembly.rollover_text, self.old)
+        self.assertEqual([e.status for e in events], ["final", "partial"])
+        self.assertEqual([e.publication_text for e in events], [self.old, self.raw])
+        self.assertTrue(events[0].publication_text.startswith(prefix))
+
+    def test_reported_early_final_remains_unresolved_without_identity_evidence(self):
+        harness = GeneralSubtitleHarness()
+        harness.speech(3, self.old)
+        assembly, events = harness.speech(
+            4, self.raw, shared_speech=True, supported_tail_revision=True,
+        )
+        self.assertEqual(assembly.utterance_hypothesis, self.raw)
+        self.assertEqual(assembly.rollover_text, self.old)
+        self.assertEqual([e.status for e in events], ["final", "partial"])
+        self.assertEqual([e.utterance_id for e in events], [1, 2])
+        self.assertEqual([e.publication_text for e in events], [self.old, self.raw])
+        _, events = harness.speech(5, "출근길에 나섰습니다.", shared_speech=True)
+        expected = self.raw + " 나섰습니다."
+        self.assertEqual(events[-1].publication_text, expected)
+        _, events = harness.silence(6)
+        self.assertEqual(events[0].publication_text, expected)
+        self.assertEqual(harness.state.final_segments, [self.old, expected])
+
+    def test_ambiguous_predicates_preserve_both_observations(self):
+        for old, raw in (
+            ("지금 중앙 도서관에서는 닫혔습니다.",
+             "중앙 도서관에서는 학생들이 함께 자료를 찾고 있습니다."),
+            ("먼저 안내드립니다. 오늘 연구 모임에서는 끝났습니다.",
+             "연구 모임에서는 새로운 실험 방법을 논의하고 있습니다."),
+        ):
+            with self.subTest(old=old):
+                harness = GeneralSubtitleHarness()
+                harness.speech(0, old)
+                assembly, events = harness.speech(
+                    1, raw, shared_speech=True, supported_tail_revision=True,
+                )
+                self.assertEqual(assembly.utterance_hypothesis, raw)
+                self.assertEqual([e.status for e in events], ["final", "partial"])
+                self.assertEqual([e.publication_text for e in events], [old, raw])
+                harness.silence(2)
+                self.assertEqual(harness.state.final_segments, [old, raw])
+
+    def test_missing_acoustic_support_or_window_gap_keeps_sentence_boundary(self):
+        for window, shared, supported in (
+            (4, True, False), (4, False, True), (4, None, True), (5, True, True),
+        ):
+            with self.subTest(window=window, shared=shared, supported=supported):
+                harness = GeneralSubtitleHarness()
+                harness.speech(3, self.old)
+                _, events = harness.speech(
+                    window, self.raw, shared_speech=shared,
+                    supported_tail_revision=supported,
+                )
+                self.assertEqual([e.status for e in events], ["final", "partial"])
+                self.assertEqual(events[0].publication_text, self.old)
+                self.assertEqual(events[1].publication_text, self.raw)
+
+    def test_confirmed_prefix_is_never_rewritten(self):
+        assembler = SubtitleAssembler(0, enable_sentence_lifecycle=True)
+        assembler.process(3, self.old)
+        assembler.confirmed_prefix_length = len(normalize_for_matching(self.old))
+        event = assembler.process(4, self.raw, shared_speech=True, supported_tail_revision=True)
+        self.assertEqual(event.rollover_text, self.old)
+
+    def test_ambiguous_anchors_and_distinct_sentences_keep_normal_final(self):
+        for old, raw in (
+            ("오늘 예산안을 검토했다.", "예산안을 다시 설명합니다."),
+            ("오늘 서울도심에서는 날씨였습니다.", "서울도심에서는 아침부터 많은 시민들이 출근길에"),
+            (self.old, "서울 도심에서는 출발"),
+            ("오늘 서울 도심에서는 비가 왔습니다.", self.raw),
+            ("오늘 서울 도심에서는 마쳤습니다. 안내입니다.", self.raw),
+            ("오늘 서울. 도심에서는 날씨였습니다.", self.raw),
+            (self.old, "서울. 도심에서는 아침부터 많은 시민들이 출근길에"),
+            ("오늘 서울 도심에서는 서울 도심에서는 날씨였습니다.", self.raw),
+            (self.old, "서울 도심에서는 아침부터 서울 도심에서는 사람들이 이동합니다."),
+            ("오늘 날씨는 맑았습니다.", "다음 소식을 전해 드립니다."),
+        ):
+            with self.subTest(old=old, raw=raw):
+                harness = GeneralSubtitleHarness()
+                harness.speech(0, old)
+                assembly, events = harness.speech(
+                    1, raw, shared_speech=True, supported_tail_revision=True,
+                )
+                self.assertEqual(assembly.rollover_text, old)
+                self.assertEqual([e.status for e in events], ["final", "partial"])
+                self.assertEqual(events[0].publication_text, old)
+                self.assertEqual(events[1].publication_text, raw)
+
+    def test_repeated_utterance_after_silence_and_short_speech_survive(self):
+        harness = GeneralSubtitleHarness()
+        for window, text in ((0, self.old), (2, self.old), (4, "네.")):
+            _, events = harness.speech(window, text)
+            self.assertEqual(events[0].publication_text, text)
+            _, events = harness.silence(window + 1)
+            self.assertEqual(events[0].publication_text, text)
+        self.assertEqual(harness.state.final_segments, [self.old, self.old, "네."])
+
+    def test_revision_cannot_publish_unsupported_source(self):
+        harness = GeneralSubtitleHarness()
+        harness.speech(3, self.old, source_supported=False)
+        _, events = harness.speech(
+            4, self.raw, shared_speech=True, supported_tail_revision=True,
+            source_supported=False,
+        )
+        self.assertEqual(events[-1].publication_text, "")
+        _, events = harness.silence(5)
+        self.assertEqual(events[0].publication_text, "")
+        self.assertEqual(harness.state.final_segments, [])
+
+    def test_supported_revision_does_not_launder_unobserved_prefix(self):
+        harness = GeneralSubtitleHarness()
+        harness.speech(3, self.old, source_supported=False)
+        # Test State coverage for a hypothetical revision independently of the
+        # withdrawn whole-predicate assembler rule. Copied "오늘" has no support.
+        events = harness.state.process(
+            4, self.expected, True, 11, confirmed_prefix_length=0,
+            source_supported=True, source_text=self.raw,
+        )
+        self.assertEqual(events[-1].publication_text, "")
+        self.assertEqual(events[-1].support_update["reason"], "unsupported_prefix_gap")
+
+    def test_revision_does_not_rewrite_finalized_history(self):
+        harness = GeneralSubtitleHarness()
+        harness.speech(0, self.old)
+        harness.silence(1)
+        assembly, events = harness.speech(
+            2, self.raw, shared_speech=True, supported_tail_revision=True,
+        )
+        self.assertEqual(harness.state.final_segments, [self.old])
+        self.assertEqual(assembly.utterance_hypothesis, self.raw)
+        self.assertEqual(events[-1].utterance_id, 2)
+        self.assertEqual(events[-1].publication_text, self.raw)
+
+    def test_supplied_clipped_head_and_fuzzy_particle_stay_intact(self):
+        for old, raw, expected in (
+            ("시민들은 대중교통을 이용하거나",
+             "공교통을 이용하거나 도로 상황을 확인하며 이동하고 있습니다.",
+             "시민들은 대중교통을 이용하거나 도로 상황을 확인하며 이동하고 있습니다."),
+            ("이어졌지만 오후부터는 일부 지역의 구름",
+             "일부 지역에 구름이 많아질 것으로 예상됩니다.",
+             "이어졌지만 오후부터는 일부 지역에 구름이 많아질 것으로 예상됩니다."),
+            # D's exact W012/W013 RAW was not supplied; this is synthetic.
+            ("네, 현재까지 큰 교통 혼잡은 발생하지",
+             "큰 교통 혼잡은 발생하지 않았습니다.",
+             "네, 현재까지 큰 교통 혼잡은 발생하지 않았습니다."),
+        ):
+            with self.subTest(old=old):
+                harness = GeneralSubtitleHarness()
+                harness.speech(0, old)
+                _, events = harness.speech(1, raw, shared_speech=True, supported_tail_revision=True)
+                self.assertEqual(events[-1].publication_text, expected)
+                _, events = harness.silence(2)
+                self.assertEqual(events[0].publication_text, expected)
+
+
 class GeneralSubtitleLifecycleTests(unittest.TestCase):
     def test_1_normal_sliding_overlap_stays_one_natural_utterance(self) -> None:
         harness = GeneralSubtitleHarness()

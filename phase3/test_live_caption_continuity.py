@@ -273,6 +273,34 @@ class CaptionContinuityTests(unittest.TestCase):
                 )
                 self.assertEqual(evidence["supported_tail_revision"], expected)
 
+    def test_shared_waveform_and_vad_do_not_prove_predicate_identity(self):
+        # Synthetic samples establish geometry only, not speech recognition.
+        from test_general_subtitle_lifecycle import GeneralSubtitleHarness
+
+        previous = self.audio()
+        current = np.concatenate((previous[-SR:], self.audio()[:2 * SR]))
+        old = "오늘 중앙 도서관에서는 휴관했습니다."
+        raw = "중앙 도서관에서는 다음 주부터 정상 운영을 시작합니다."
+        for audio, old_vad, new_vad, expected in (
+            (current, vad((0, 3)), vad((0, 3)), True),
+            (self.audio(), vad((0, 3)), vad((0, 3)), False),
+            (current, vad((0, 1)), vad((1, 3)), False),
+            (current, vad((0, 3)), vad((.2, 3)), False),
+        ):
+            with self.subTest(expected=expected, new_vad=new_vad):
+                evidence = subtitle_overlap_evidence(previous, audio, old_vad, new_vad, SR)
+                self.assertEqual(evidence["supported_tail_revision"], expected)
+                harness = GeneralSubtitleHarness()
+                harness.speech(0, old)
+                assembly, events = harness.speech(
+                    1, raw, shared_speech=evidence["shared_speech"],
+                    supported_tail_revision=evidence["supported_tail_revision"],
+                )
+                self.assertEqual(assembly.rollover_text, old)
+                self.assertEqual([e.publication_text for e in events], [old, raw])
+                harness.silence(2)
+                self.assertEqual(harness.state.final_segments, [old, raw])
+
     def test_supported_overlap_preserves_a_genuine_new_repetition(self):
         previous = self.audio()
         current = np.concatenate((previous[-SR:], self.audio()[:2 * SR]))

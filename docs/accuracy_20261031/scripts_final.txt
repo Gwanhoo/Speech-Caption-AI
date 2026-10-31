@@ -1,0 +1,18 @@
+phase3/test_stt_context.py PASS
+STT context regression: PASS
+phase3/test_subtitle_state.py PASS
+subtitle state regression: PASS
+phase3/test_subtitle_contract_p1.py PASS
+P1 subtitle contract regression: PASS
+phase3/test_subtitle_consensus.py PASS
+subtitle consensus regression: PASS
+phase3/test_subtitle_assembler.py PASS
+subtitle assembler regression: PASS
+phase3/test_subtitle_assembler_state_integration.py PASS
+subtitle assembler-state integration regression: PASS
+phase3/test_overlap_diagnostic_schema.py PASS
+overlap diagnostic schema regression: PASS
+phase3/test_pre_separation_silence_gate.py PASS
+pre-separation silence gate regression: PASS
+phase3/test_secondary_leakage_diagnostics.py PASS
+PASS: secondary leakage diagnostic tests

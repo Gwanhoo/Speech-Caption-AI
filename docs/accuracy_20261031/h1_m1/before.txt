@@ -1,0 +1,29 @@
+test_h1_same_topic_must_preserve_both_sentences (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_h1_same_topic_must_preserve_both_sentences) ... 
+  test_h1_same_topic_must_preserve_both_sentences (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_h1_same_topic_must_preserve_both_sentences) (old='오늘 중앙 도서관에서는 휴관했습니다.') ... FAIL
+  test_h1_same_topic_must_preserve_both_sentences (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_h1_same_topic_must_preserve_both_sentences) (old='어제 지역 박물관에서는 폐관했습니다.') ... FAIL
+test_m1_preserves_confirmed_prefix_but_remains_unresolved (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_m1_preserves_confirmed_prefix_but_remains_unresolved) ... ok
+
+======================================================================
+FAIL: test_h1_same_topic_must_preserve_both_sentences (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_h1_same_topic_must_preserve_both_sentences) (old='오늘 중앙 도서관에서는 휴관했습니다.')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase3/test_general_subtitle_lifecycle.py", line 91, in test_h1_same_topic_must_preserve_both_sentences
+    self.assertEqual(assembly.rollover_text, old)
+AssertionError: '' != '오늘 중앙 도서관에서는 휴관했습니다.'
++ 오늘 중앙 도서관에서는 휴관했습니다.
+
+
+======================================================================
+FAIL: test_h1_same_topic_must_preserve_both_sentences (test_general_subtitle_lifecycle.SupportedPredicateRevisionTests.test_h1_same_topic_must_preserve_both_sentences) (old='어제 지역 박물관에서는 폐관했습니다.')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Speech-Caption-AI/phase3/test_general_subtitle_lifecycle.py", line 91, in test_h1_same_topic_must_preserve_both_sentences
+    self.assertEqual(assembly.rollover_text, old)
+AssertionError: '' != '어제 지역 박물관에서는 폐관했습니다.'
++ 어제 지역 박물관에서는 폐관했습니다.
+
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.006s
+
+FAILED (failures=2)

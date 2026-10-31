@@ -1,0 +1,114 @@
+test_direct_wav_is_a_supported_benchmark_source (test_benchmark_stt_models.FixedAudioTests.test_direct_wav_is_a_supported_benchmark_source) ... ok
+test_direct_windows_match_complete_production_3s_2s_schedule (test_benchmark_stt_models.FixedAudioTests.test_direct_windows_match_complete_production_3s_2s_schedule) ... ok
+test_load_fixed_inputs_validates_and_reuses_saved_wav (test_benchmark_stt_models.FixedAudioTests.test_load_fixed_inputs_validates_and_reuses_saved_wav) ... ok
+test_prepare_only_requires_mixed_audio (test_benchmark_stt_models.FixedAudioTests.test_prepare_only_requires_mixed_audio) ... usage: run_regressions.py [-h]
+                          (--direct-wav DIRECT_WAV | --audio AUDIO | --separated-wav SEPARATED_WAV [SEPARATED_WAV ...])
+                          [--models MODELS [MODELS ...]] [--output OUTPUT]
+                          [--separated-dir SEPARATED_DIR] [--prepare-only]
+                          [--no-warmup]
+run_regressions.py: error: --prepare-only requires --audio
+ok
+test_prepare_only_writes_manifest_without_loading_whisper (test_benchmark_stt_models.FixedAudioTests.test_prepare_only_writes_manifest_without_loading_whisper) ... Prepared fixed WAVs: /tmp/tmp3x1wk8q_/fixed.wav
+JSON: /tmp/tmp3x1wk8q_/report.json
+ok
+test_score_transcript_normalizes_hangul_punctuation_and_space (test_benchmark_stt_models.FixedAudioTests.test_score_transcript_normalizes_hangul_punctuation_and_space) ... ok
+test_detects_general_adjacent_phrase_repetition_without_editing_text (test_benchmark_stt_models.RepetitionMetricTests.test_detects_general_adjacent_phrase_repetition_without_editing_text) ... ok
+test_empty_transcript_is_supported (test_benchmark_stt_models.RepetitionMetricTests.test_empty_transcript_is_supported) ... ok
+test_records_raw_segments_metadata_and_production_options (test_benchmark_stt_models.TranscriptionRecordTests.test_records_raw_segments_metadata_and_production_options) ... ok
+test_side_by_side_preserves_each_model_transcript_and_segments (test_benchmark_stt_models.TranscriptionRecordTests.test_side_by_side_preserves_each_model_transcript_and_segments) ... ok
+test_disabled_by_default (test_caption_diagnostics.CaptionDiagnosticTests.test_disabled_by_default) ... ok
+test_disk_failure_does_not_break_caption_delivery (test_caption_diagnostics.CaptionDiagnosticTests.test_disk_failure_does_not_break_caption_delivery) ... ok
+test_presentation_accept_replay_and_expiry_are_correlated (test_caption_diagnostics.CaptionDiagnosticTests.test_presentation_accept_replay_and_expiry_are_correlated) ... ok
+test_timeout_trace_omits_url_headers_and_exception_message (test_caption_diagnostics.CaptionDiagnosticTests.test_timeout_trace_omits_url_headers_and_exception_message) ... ok
+test_inconsistent_response_is_dropped_before_assembler_and_next_speech_survives (test_ghost_caption_path.GhostCaptionPathTests.test_inconsistent_response_is_dropped_before_assembler_and_next_speech_survives) ... ok
+test_server_vad_gate_and_stt_diagnostics_roundtrip (test_ghost_caption_path.GhostCaptionPathTests.test_server_vad_gate_and_stt_diagnostics_roundtrip) ... ok
+test_single_repeated_short_speech_silence_and_expiry (test_ghost_caption_path.GhostCaptionPathTests.test_single_repeated_short_speech_silence_and_expiry) ... ok
+test_transcribe_empty_and_nonfinite_diagnostics_do_not_create_text (test_ghost_caption_path.GhostCaptionPathTests.test_transcribe_empty_and_nonfinite_diagnostics_do_not_create_text) ... ok
+test_invalid_model_is_rejected_before_loading_gpu (test_gpu_processing_server.FasterWhisperModelSourceTests.test_invalid_model_is_rejected_before_loading_gpu) ... ok
+test_overlap_profile_cli_override_is_preserved (test_gpu_processing_server.FasterWhisperModelSourceTests.test_overlap_profile_cli_override_is_preserved) ... ok
+test_overlap_profile_still_loads_mossformer2 (test_gpu_processing_server.FasterWhisperModelSourceTests.test_overlap_profile_still_loads_mossformer2) ... ok
+test_production_default_is_large_v3_turbo (test_gpu_processing_server.FasterWhisperModelSourceTests.test_production_default_is_large_v3_turbo) ... ok
+test_selected_model_does_not_reuse_legacy_base_snapshot (test_gpu_processing_server.FasterWhisperModelSourceTests.test_selected_model_does_not_reuse_legacy_base_snapshot) ... ok
+test_selected_model_is_reported_by_health (test_gpu_processing_server.FasterWhisperModelSourceTests.test_selected_model_is_reported_by_health) ... ok
+test_single_profile_does_not_load_mossformer2 (test_gpu_processing_server.FasterWhisperModelSourceTests.test_single_profile_does_not_load_mossformer2) ... ok
+test_single_warmup_skips_separator (test_gpu_processing_server.FasterWhisperModelSourceTests.test_single_warmup_skips_separator) ... ok
+test_uses_base_model_name_when_project_checkpoint_is_missing (test_gpu_processing_server.FasterWhisperModelSourceTests.test_uses_base_model_name_when_project_checkpoint_is_missing) ... ok
+test_uses_valid_local_snapshot_without_assuming_snapshot_hash (test_gpu_processing_server.FasterWhisperModelSourceTests.test_uses_valid_local_snapshot_without_assuming_snapshot_hash) ... ok
+test_warmup_finishes_on_inference_worker_before_ready (test_gpu_processing_server.FasterWhisperModelSourceTests.test_warmup_finishes_on_inference_worker_before_ready) ... ok
+test_whisper_model_cli_override_is_preserved (test_gpu_processing_server.FasterWhisperModelSourceTests.test_whisper_model_cli_override_is_preserved) ... ok
+test_busy_http_response_preserves_error_contract (test_gpu_processing_server.ServerBackpressureTests.test_busy_http_response_preserves_error_contract) ... http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 503 -
+ok
+test_delayed_gpu_is_serialized_bounded_and_queue_wait_is_measured (test_gpu_processing_server.ServerBackpressureTests.test_delayed_gpu_is_serialized_bounded_and_queue_wait_is_measured) ... ok
+test_http_handler_returns_server_diagnostics_without_loading_models (test_gpu_processing_server.ServerLatencyDiagnosticsTests.test_http_handler_returns_server_diagnostics_without_loading_models) ... [LATENCY SERVER PROCESS] {"request_id": "window-0-1793434073941663558", "window": 0, "timing": {"queue_wait_seconds": 0.0, "separation_seconds": 0.0, "vad_seconds": 0.0, "stt_seconds": 0.0, "processing_seconds": 0.0, "amp_seconds": 0.0, "fp32_seconds": 0.0, "server_request_received_perf_counter": 987874.190107907, "server_request_thread_id": 123794462394048, "server_request_thread_name": "Thread-4 (process_request_thread)", "request_body_read_started_perf_counter": 987874.190128647, "request_body_read_ended_perf_counter": 987874.190133861, "request_body_read_seconds": 5.2140094339847565e-06, "request_body_bytes": 6480, "request_decode_started_perf_counter": 987874.190134281, "request_decode_ended_perf_counter": 987874.190395686, "request_decode_seconds": 0.00026140501722693443, "connection_client_port": 59634}}
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+[LATENCY SERVER] window=000 request_id=window-0-1793434073941663558 response_serialize=0.000078s response_write=0.000015s response_bytes=14704 format=binary-f32le
+[LATENCY SERVER PROCESS] {"request_id": "window-1-1793434073948341768", "window": 1, "timing": {"queue_wait_seconds": 0.0, "separation_seconds": 0.0, "vad_seconds": 0.0, "stt_seconds": 0.0, "processing_seconds": 0.0, "amp_seconds": 0.0, "fp32_seconds": 0.0, "server_request_received_perf_counter": 987874.194990648, "server_request_thread_id": 123794462394048, "server_request_thread_name": "Thread-4 (process_request_thread)", "request_body_read_started_perf_counter": 987874.19501843, "request_body_read_ended_perf_counter": 987874.195020248, "request_body_read_seconds": 1.817941665649414e-06, "request_body_bytes": 6480, "request_decode_started_perf_counter": 987874.19502035, "request_decode_ended_perf_counter": 987874.195235081, "request_decode_seconds": 0.00021473097149282694, "connection_client_port": 59634}}
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+[LATENCY SERVER] window=001 request_id=window-1-1793434073948341768 response_serialize=0.000058s response_write=0.000006s response_bytes=14704 format=binary-f32le
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+http_client=127.0.0.1; "POST /v1/process HTTP/1.1" 200 -
+ok
+test_input_residual_evidence_is_computed_and_survives_binary_raw_slot_mapping (test_gpu_processing_server.ServerLatencyDiagnosticsTests.test_input_residual_evidence_is_computed_and_survives_binary_raw_slot_mapping) ... ok
+test_process_uses_cached_gpu_memory_without_nvidia_smi (test_gpu_processing_server.ServerLatencyDiagnosticsTests.test_process_uses_cached_gpu_memory_without_nvidia_smi) ... ok
+test_single_process_uses_original_audio_and_preserves_two_slot_contract (test_gpu_processing_server.ServerLatencyDiagnosticsTests.test_single_process_uses_original_audio_and_preserves_two_slot_contract) ... ok
+test_active_vad_preserves_short_text_and_inactive_empty_is_valid (test_remote_gpu_client.ClientTests.test_active_vad_preserves_short_text_and_inactive_empty_is_valid) ... ok
+test_binary_response_roundtrip_preserves_float32_waveforms (test_remote_gpu_client.ClientTests.test_binary_response_roundtrip_preserves_float32_waveforms) ... ok
+test_client_recovers_after_server_closes_a_successful_response (test_remote_gpu_client.ClientTests.test_client_recovers_after_server_closes_a_successful_response) ... ok
+test_delayed_http_roundtrip_timeout_no_retry_and_recovery (test_remote_gpu_client.ClientTests.test_delayed_http_roundtrip_timeout_no_retry_and_recovery) ... ok
+test_diagnostic_header_is_absent_by_default (test_remote_gpu_client.ClientTests.test_diagnostic_header_is_absent_by_default) ... ok
+test_fixed_wav_http_and_subtitle_continuity (test_remote_gpu_client.ClientTests.test_fixed_wav_http_and_subtitle_continuity) ... ok
+test_inactive_vad_rejects_any_nonempty_raw_transcript (test_remote_gpu_client.ClientTests.test_inactive_vad_rejects_any_nonempty_raw_transcript) ... ok
+test_injected_connection_failure_is_classified_as_connection_error (test_remote_gpu_client.ClientTests.test_injected_connection_failure_is_classified_as_connection_error)
+A closed listener is OS/firewall dependent; inject its contract instead. ... ok
+test_malformed_contracts (test_remote_gpu_client.ClientTests.test_malformed_contracts) ... ok
+test_monotonic_timing_and_queue_wait_calculation (test_remote_gpu_client.ClientTests.test_monotonic_timing_and_queue_wait_calculation) ... ok
+test_remote_client_records_transport_timing (test_remote_gpu_client.ClientTests.test_remote_client_records_transport_timing) ... ok
+test_transport_errors (test_remote_gpu_client.ClientTests.test_transport_errors) ... ok
+test_waveform_preserves_peak_above_one (test_remote_gpu_client.ClientTests.test_waveform_preserves_peak_above_one) ... ok
+test_waveform_roundtrip_and_mapping (test_remote_gpu_client.ClientTests.test_waveform_roundtrip_and_mapping) ... ok
+test_all_remote_windows_fail_without_summary_crash (test_remote_overlap_pipeline.PipelineTests.test_all_remote_windows_fail_without_summary_crash) ... ok
+test_ambiguous_tentative_is_withheld_and_discarded_internally (test_remote_overlap_pipeline.PipelineTests.test_ambiguous_tentative_is_withheld_and_discarded_internally) ... ok
+test_default_reference_is_not_resampled_twice (test_remote_overlap_pipeline.PipelineTests.test_default_reference_is_not_resampled_twice) ... ok
+test_diagnostics_survive_consumer_running_before_enqueue_returns (test_remote_overlap_pipeline.PipelineTests.test_diagnostics_survive_consumer_running_before_enqueue_returns) ... ok
+test_expired_queued_window_is_not_sent (test_remote_overlap_pipeline.PipelineTests.test_expired_queued_window_is_not_sent) ... ok
+test_explicit_evidence_dir_links_original_raw_stt_and_final_subtitles (test_remote_overlap_pipeline.PipelineTests.test_explicit_evidence_dir_links_original_raw_stt_and_final_subtitles) ... ok
+test_explicit_output_device_id_reaches_loopback_capture (test_remote_overlap_pipeline.PipelineTests.test_explicit_output_device_id_reaches_loopback_capture) ... ok
+test_failed_remote_window_continues (test_remote_overlap_pipeline.PipelineTests.test_failed_remote_window_continues) ... ok
+test_fragment_routing_permutation_and_revision_in_real_workers (test_remote_overlap_pipeline.PipelineTests.test_fragment_routing_permutation_and_revision_in_real_workers)
+Exercise actual worker wiring/remote parsing with synthetic VAD/STT. ... ok
+test_full_queue_shutdown_waits_for_consumer_without_losing_stop (test_remote_overlap_pipeline.PipelineTests.test_full_queue_shutdown_waits_for_consumer_without_losing_stop) ... ok
+test_http_protocol_and_connection_failure_continue (test_remote_overlap_pipeline.PipelineTests.test_http_protocol_and_connection_failure_continue) ... ok
+test_intentional_stop_is_cancelled_and_retains_drop_accounting (test_remote_overlap_pipeline.PipelineTests.test_intentional_stop_is_cancelled_and_retains_drop_accounting) ... ok
+test_late_response_is_dropped_before_subtitle_state_updates (test_remote_overlap_pipeline.PipelineTests.test_late_response_is_dropped_before_subtitle_state_updates) ... ok
+test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap (test_remote_overlap_pipeline.PipelineTests.test_latest_secondary_lifecycle_reaches_real_publishers_with_raw_swap)
+Synthetic remote results exercise the full state and publication path. ... ok
+test_local_default_path (test_remote_overlap_pipeline.PipelineTests.test_local_default_path) ... ok
+test_low_energy_540ms_false_vad_emits_no_websocket_subtitle (test_remote_overlap_pipeline.PipelineTests.test_low_energy_540ms_false_vad_emits_no_websocket_subtitle) ... ok
+test_new_stream_admission_in_real_workers_with_permutation (test_remote_overlap_pipeline.PipelineTests.test_new_stream_admission_in_real_workers_with_permutation) ... ok
+test_overlap_artifact_and_next_raw_permutation_keep_one_stream_in_workers (test_remote_overlap_pipeline.PipelineTests.test_overlap_artifact_and_next_raw_permutation_keep_one_stream_in_workers) ... ok
+test_playback_resampler_preserves_sample_count_duration (test_remote_overlap_pipeline.PipelineTests.test_playback_resampler_preserves_sample_count_duration) ... ok
+test_previously_published_utterance_still_retracts_after_support_is_lost (test_remote_overlap_pipeline.PipelineTests.test_previously_published_utterance_still_retracts_after_support_is_lost) ... ok
+test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers (test_remote_overlap_pipeline.PipelineTests.test_recorded_mossformer_artifact_is_rejected_before_assembly_and_publishers) ... ok
+test_reference_override_preserves_playback_duration_and_pitch (test_remote_overlap_pipeline.PipelineTests.test_reference_override_preserves_playback_duration_and_pitch) ... ok
+test_remote_audio_queue_absorbs_one_bounded_startup_burst (test_remote_overlap_pipeline.PipelineTests.test_remote_audio_queue_absorbs_one_bounded_startup_burst) ... [DROP] audio_queue full; dropped chunk 003
+ok
+test_remote_latency_diagnostics (test_remote_overlap_pipeline.PipelineTests.test_remote_latency_diagnostics) ... ok
+test_remote_workers (test_remote_overlap_pipeline.PipelineTests.test_remote_workers) ... ok
+test_repeated_unsupported_tentative_never_reaches_external_publishers (test_remote_overlap_pipeline.PipelineTests.test_repeated_unsupported_tentative_never_reaches_external_publishers) ... ok
+test_result_worker_failure_stops_capture_and_cleans_queues (test_remote_overlap_pipeline.PipelineTests.test_result_worker_failure_stops_capture_and_cleans_queues) ... ok
+test_single_mode_routes_only_mapped_primary_with_raw_hallucinations (test_remote_overlap_pipeline.PipelineTests.test_single_mode_routes_only_mapped_primary_with_raw_hallucinations) ... ok
+test_slow_response_saturates_bounded_queue_and_records_every_drop (test_remote_overlap_pipeline.PipelineTests.test_slow_response_saturates_bounded_queue_and_records_every_drop) ... ok
+test_source_artifact_admission_reaches_real_publishers_without_ghosts (test_remote_overlap_pipeline.PipelineTests.test_source_artifact_admission_reaches_real_publishers_without_ghosts) ... ok
+test_stop_does_not_send_queued_windows_and_restart_is_clean (test_remote_overlap_pipeline.PipelineTests.test_stop_does_not_send_queued_windows_and_restart_is_clean) ... ok
+test_stop_during_remote_response_prevents_late_publication (test_remote_overlap_pipeline.PipelineTests.test_stop_during_remote_response_prevents_late_publication) ... ok
+test_strong_316ms_transient_is_tentative_and_emits_no_websocket_subtitle (test_remote_overlap_pipeline.PipelineTests.test_strong_316ms_transient_is_tentative_and_emits_no_websocket_subtitle) ... ok
+test_structured_runtime_hooks_receive_subtitles_and_metrics (test_remote_overlap_pipeline.PipelineTests.test_structured_runtime_hooks_receive_subtitles_and_metrics) ... ok
+test_supported_overlap_revises_wrong_primary_partial_in_real_workers (test_remote_overlap_pipeline.PipelineTests.test_supported_overlap_revises_wrong_primary_partial_in_real_workers) ... ok
+test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes (test_remote_overlap_pipeline.PipelineTests.test_vad_positive_artifact_bootstrap_never_publishes_or_finalizes) ... ok
+test_weak_noise_and_genuine_short_speech_finalization_in_workers (test_remote_overlap_pipeline.PipelineTests.test_weak_noise_and_genuine_short_speech_finalization_in_workers) ... ok
+test_withheld_tentative_is_published_after_genuine_source_support (test_remote_overlap_pipeline.PipelineTests.test_withheld_tentative_is_published_after_genuine_source_support) ... ok
+
+----------------------------------------------------------------------
+Ran 88 tests in 35.125s
+
+OK
