@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "tests": [
+    {
+      "command": "python -B -m unittest evidence/accuracy_a4_ground_truth_20261101/test_a4_dataset.py phase4.test_benchmark_stt_models -v",
+      "executed": 14,
+      "passed": 14,
+      "failed": 0
+    },
+    {
+      "command": "Python 3.10 AST parse and current interpreter compile for A4 Python files",
+      "executed": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "command": "ruff check --select E9,F63,F7,F82,F401,F841 evidence/accuracy_a4_ground_truth_20261101",
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "dataset_checks": {
+    "rows": 24,
+    "clips": 24,
+    "source_A": 12,
+    "source_B": 12,
+    "a2_exact_output_differences": 16,
+    "pending_reviews": 24,
+    "nonempty_references": 0,
+    "cer": null,
+    "wer": null,
+    "clip_audio_matches_a1_a3_float32_hashes": true,
+    "source_a1_a3_artifact_hashes_match": true,
+    "unreviewed_evaluation_refused": true
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "status": "PASS_WITH_ENVIRONMENT_LIMITATION",
+  "python_compatibility": {
+    "python_3_10_ast_parse": "PASS",
+    "files_checked": 7,
+    "runtime_used": "Python 3.12.3 on Linux"
+  },
+  "pyside": {
+    "version": "6.8.3",
+    "installation_scope": "/tmp/voxlux-a4-gui-deps",
+    "offscreen_startup": "PASS",
+    "loaded_clips": 24
+  },
+  "tests": {
+    "a4_dataset_store_gui": {
+      "executed": 14,
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    "phase4_benchmark_stt_models": {
+      "executed": 10,
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    "ruff_E9_F63_F7_F82_F401_F841": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "audio_probe": {
+    "file": "clips/A4-A-010000-013000.wav",
+    "format": "pcm_f32le",
+    "sample_rate": 16000,
+    "channels": 1,
+    "duration_ms": 3000,
+    "qt_media_status": "BufferedMedia",
+    "qt_media_error": "NoError",
+    "position_after_probe_ms": 1344,
+    "audible_output": "SKIP: RunPod Linux container has no audio device; verify sound on Windows 11"
+  },
+  "original_hashes": {
+    "review_template.csv": "d4ae63069f9d2d9bf869e46f3e70a1b1963c6a6b849110fc66c6901a362d8aa3",
+    "review_dataset.json": "8d9620866c3169a56079c52448090a9fae32a2b887220d7cc003457fa97b576f",
+    "evaluate_reviewed.py": "fddd9350370d5e405c289472f5ba9ed770c2bfcc9f0745b40c48ee4445ece771",
+    "preserved": true
+  },
+  "review_completed_exists": false,
+  "windows_filesystem_verified": false,
+  "windows_filesystem_note": "The Windows host path is not accessible from this RunPod workspace. Transfer the complete A4 folder if it is absent on Windows."
+}

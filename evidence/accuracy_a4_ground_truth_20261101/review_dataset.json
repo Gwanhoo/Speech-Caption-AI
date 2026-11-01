@@ -1,0 +1,1195 @@
+{
+  "schema_version": 1,
+  "dataset_id": "voxlux-a4-accuracy-review-20261101",
+  "source_experiment": "evidence/accuracy_a1_a3_20261101",
+  "source_experiment_git_head": "f0f2b8234b47952ffa116b510f32a00b6abb6563",
+  "selection_count": 24,
+  "a2_output_difference_count": 16,
+  "reference_status": "unreviewed",
+  "cer": null,
+  "wer": null,
+  "selection_method": "All 16 exact A2 turbo/large-v3 disagreements, then highest A3 3-second option variability and decoder/repeat anomaly scores; no transcript is treated as truth.",
+  "audio_method": "Whole source resampled 24kHz->16kHz with scipy resample_poly(2,3), then exact A2 3-second slice; FLOAT WAV.",
+  "source_artifacts_sha256": {
+    "evidence/accuracy_a1_a3_20261101/experiment_manifest.json": "6cd78617548756856b3f121b28ffbf6dfdba4e0f85fb8af2e2e5ed1cdcd15537",
+    "evidence/accuracy_a1_a3_20261101/A2_large-v3-turbo.json": "9aa57bb695db82c8424b66d91bb40a6c226f2c770c29891a5c6dfd928e2d6ddf",
+    "evidence/accuracy_a1_a3_20261101/A2_large-v3.json": "6c5fbdca84b3213dc29af9ca67116e5bb4af5f8959ca3f571691b3c79b0e6613",
+    "evidence/accuracy_a1_a3_20261101/A3_large-v3-turbo.json": "2853dd7de6321a43948b1c9294580b5b079ea0fa943b94770f46f1db8a351674",
+    "evidence/accuracy_a1_a3_20261101/A3_large-v3.json": "a7a0ed8d62b960b14fd955ef8d7812f7b6f9f84d927786d7719713c1395aabf5",
+    "evidence/accuracy_a1_a3_20261101/decoder_diagnostics.json": "de01527cf2b27fb6fd7da94ae03849953d58a2bb4b7df97178a7e0d130a1748c"
+  },
+  "rows": [
+    {
+      "sample_id": "A4-A-010000-013000",
+      "selection_rank": 1,
+      "selection_score": 1109.34615385,
+      "selection_reasons": [
+        "a2_model_output_difference",
+        "high_a3_option_variability",
+        "decoder_timing_or_timestamp_anomaly"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 10,
+      "end_seconds": 13,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-010000-013000.wav",
+      "review_clip_sha256": "a51ea158e6deedbd6bd57cb46d6bda6c69ccb312ff1370de47261a6ec22c44de",
+      "experiment_float32_sha256": "471001d9f0c52e8fd4c749345a8b1c154ff7130bbf6d522c72bfef009f8310d8",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 13
+      },
+      "turbo_transcript": "맛있게 완성되었습니다 요리를 할때는",
+      "large_v3_transcript": "맛있게 완성되었습니다.",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 6,
+        "word_edit_distance": 2,
+        "normalized_character_disagreement": 0.375,
+        "normalized_word_disagreement": 0.5
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 5,
+        "max_pairwise_character_disagreement": 0.9230769230769231
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-006000-009000",
+      "selection_rank": 2,
+      "selection_score": 1094.5021645,
+      "selection_reasons": [
+        "a2_model_output_difference",
+        "high_a3_option_variability",
+        "decoder_timing_or_timestamp_anomaly"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 6,
+      "end_seconds": 9,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-006000-009000.wav",
+      "review_clip_sha256": "d3bd91bbad946340fd127d54d32fc87b2f5755f08edb07c03dbf4c7d26490dfd",
+      "experiment_float32_sha256": "9033aeda7bf54b868315ff44b360efdcee8fdbf090594d020c42b56e07986929",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 9
+      },
+      "turbo_transcript": "평소보다 날씨가 선선해서 천천히 거울 수 있습니다.",
+      "large_v3_transcript": "평소보다 날씨가 선선해서 천천히",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 7,
+        "word_edit_distance": 3,
+        "normalized_character_disagreement": 0.3333333333333333,
+        "normalized_word_disagreement": 0.42857142857142855
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 6,
+        "max_pairwise_character_disagreement": 0.36363636363636365
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-A-028000-031000",
+      "selection_rank": 3,
+      "selection_score": 1094.25,
+      "selection_reasons": [
+        "a2_model_output_difference",
+        "high_a3_option_variability",
+        "decoder_timing_or_timestamp_anomaly"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 28,
+      "end_seconds": 31,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-028000-031000.wav",
+      "review_clip_sha256": "91a01aca22444f5e99cb1fc1dae04f1d56421aa2ac5e023d5d9ac4ec17928af5",
+      "experiment_float32_sha256": "b76a0c0b28a887199530ed6fc0941a2259a4345fa5a6b4680d0652fa3ecc054c",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 31
+      },
+      "turbo_transcript": "다음 편하게 쉬려고 합니다.",
+      "large_v3_transcript": "다음 편하게 쉬려고 합니다 저녁에는 음",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 5,
+        "word_edit_distance": 2,
+        "normalized_character_disagreement": 0.3125,
+        "normalized_word_disagreement": 0.3333333333333333
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 5,
+        "max_pairwise_character_disagreement": 1.0
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-A-024000-027000",
+      "selection_rank": 4,
+      "selection_score": 1077.33333333,
+      "selection_reasons": [
+        "a2_model_output_difference",
+        "decoder_timing_or_timestamp_anomaly"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 24,
+      "end_seconds": 27,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-024000-027000.wav",
+      "review_clip_sha256": "1d38be133b41d11f4e3f973eb1ca36299e6ad774a62aea11ffcd91f262e05835",
+      "experiment_float32_sha256": "fae756cca9c1ec9eb2d8a6a4c544ef304593638eac07bbcb1aa67446b804d8f5",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 27
+      },
+      "turbo_transcript": "요리가 끝나면 설거지를",
+      "large_v3_transcript": "요리가 끝나면 설거지를 하겠습니다.",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 5,
+        "word_edit_distance": 1,
+        "normalized_character_disagreement": 0.3333333333333333,
+        "normalized_word_disagreement": 0.25
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 3,
+        "max_pairwise_character_disagreement": 0.3333333333333333
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-008000-011000",
+      "selection_rank": 5,
+      "selection_score": 1073.51552795,
+      "selection_reasons": [
+        "a2_model_output_difference",
+        "high_a3_option_variability",
+        "decoder_timing_or_timestamp_anomaly"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 8,
+      "end_seconds": 11,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-008000-011000.wav",
+      "review_clip_sha256": "b418d34d6a87ed127e6666ba3e421bbdd40998d0f0f2b2f1aee6c17b68da4925",
+      "experiment_float32_sha256": "1286a73e01c83d107efad8aa6f070e4ee5b959a94d01fee62a19cf43657f8b6c",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 11
+      },
+      "turbo_transcript": "천천히 걷기 좋았고 공원에는 운동을 하거든요.",
+      "large_v3_transcript": "공원에서 천천히 걷기 좋았고 공원에는 운동을 하거였다.",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 6,
+        "word_edit_distance": 2,
+        "normalized_character_disagreement": 0.2608695652173913,
+        "normalized_word_disagreement": 0.2857142857142857
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 4,
+        "max_pairwise_character_disagreement": 0.2857142857142857
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-A-030000-033000",
+      "selection_rank": 6,
+      "selection_score": 1063.04761905,
+      "selection_reasons": [
+        "a2_model_output_difference",
+        "decoder_timing_or_timestamp_anomaly"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 30,
+      "end_seconds": 33,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-030000-033000.wav",
+      "review_clip_sha256": "3c245cbb064416ab12d3c5ce21bbab942cc218e6a4e6ed13915cab58d0e79d65",
+      "experiment_float32_sha256": "be00f1e8e9e663f799f500f3ce55801bc6f69357b5028c4aa0aef1f219f36c30",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 33
+      },
+      "turbo_transcript": "저녁에는 음악을 듣거나 영화를 보고 시간",
+      "large_v3_transcript": "저녁에는 음악을 듣거나 영화를 보고 시간을 보내고,",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 4,
+        "word_edit_distance": 2,
+        "normalized_character_disagreement": 0.19047619047619047,
+        "normalized_word_disagreement": 0.2857142857142857
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 3,
+        "max_pairwise_character_disagreement": 0.19047619047619047
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-A-004000-007000",
+      "selection_rank": 7,
+      "selection_score": 1061.0,
+      "selection_reasons": [
+        "a2_model_output_difference",
+        "high_a3_option_variability",
+        "decoder_timing_or_timestamp_anomaly"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 4,
+      "end_seconds": 7,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-004000-007000.wav",
+      "review_clip_sha256": "c4d3d90429728ce0d93bea48b996f7977febbfceab1a61cc7104aff0cc1152ab",
+      "experiment_float32_sha256": "28fdcb28dec8d21c2095fc27237368d997caec2dd0964a461e7715ff242ad2a5",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 7
+      },
+      "turbo_transcript": "지난주에는 집에서 토마토 파스타를 만들어",
+      "large_v3_transcript": "지난주에는 집에서 토마토 파스타를 만들어 보았습니다.",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 5,
+        "word_edit_distance": 1,
+        "normalized_character_disagreement": 0.21739130434782608,
+        "normalized_word_disagreement": 0.16666666666666666
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 4,
+        "max_pairwise_character_disagreement": 0.21739130434782608
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-A-018000-021000",
+      "selection_rank": 8,
+      "selection_score": 1049.05882353,
+      "selection_reasons": [
+        "a2_model_output_difference"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 18,
+      "end_seconds": 21,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-018000-021000.wav",
+      "review_clip_sha256": "35076c47c3c6c0577054a150d57dd9e272c079795cdc4a694163dab18dc9147c",
+      "experiment_float32_sha256": "a96fd0949925bede0369e197c682c4d67d3f56624ed1e4a0a6e4a25a4ce8d2eb",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 21
+      },
+      "turbo_transcript": "마음대로 만들어 보기도 합니다.",
+      "large_v3_transcript": "마음대로 만들어 보기도 합니다. 이번 주에",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 4,
+        "word_edit_distance": 2,
+        "normalized_character_disagreement": 0.23529411764705882,
+        "normalized_word_disagreement": 0.3333333333333333
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 2,
+        "max_pairwise_character_disagreement": 0.23529411764705882
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-A-002000-005000",
+      "selection_rank": 9,
+      "selection_score": 1036.58823529,
+      "selection_reasons": [
+        "a2_model_output_difference"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 2,
+      "end_seconds": 5,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-002000-005000.wav",
+      "review_clip_sha256": "4d220a9fcd12261ed5b58a271da0fcc304dba78964e862ae41588bd3b49801a1",
+      "experiment_float32_sha256": "00033c82fb0bfb87958f4c2edac6f1a4b802f3f56856ca0e2f92a0563e15e429",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 5
+      },
+      "turbo_transcript": "만들어 보는 것을 좋아합니다. 지난주에는",
+      "large_v3_transcript": "만들어보는 것을 좋아합니다. 지난주에는",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 2,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.4
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 2,
+        "max_pairwise_character_disagreement": 0.7058823529411765
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-A-032000-035000",
+      "selection_rank": 10,
+      "selection_score": 1030.42857143,
+      "selection_reasons": [
+        "a2_model_output_difference"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 32,
+      "end_seconds": 35,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-032000-035000.wav",
+      "review_clip_sha256": "a08e171d80ff1217006abd52edb2865ffe1f7c3d414a0da69ba8af767105d219",
+      "experiment_float32_sha256": "7d1232f2264b6ab67a9bab1b5294938ab0b8baf2314d5898e33fd429d45dda54",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 35
+      },
+      "turbo_transcript": "시간이 남으면 책을 읽으면서",
+      "large_v3_transcript": "보고 시간이 남으면 책을 읽으면서",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 2,
+        "word_edit_distance": 1,
+        "normalized_character_disagreement": 0.14285714285714285,
+        "normalized_word_disagreement": 0.2
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 2,
+        "max_pairwise_character_disagreement": 0.14285714285714285
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-010000-013000",
+      "selection_rank": 11,
+      "selection_score": 1030.26373626,
+      "selection_reasons": [
+        "a2_model_output_difference"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 10,
+      "end_seconds": 13,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-010000-013000.wav",
+      "review_clip_sha256": "1e49d3f1d6ed66f07cd0d05ae2b5a093207cb1ebf8e40d89f86e6f92314cbd6b",
+      "experiment_float32_sha256": "1750c8961cc0a21e8e27bd3297eacf21cf08e443198ca30b89e3ba2c8d6bfcde",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 13
+      },
+      "turbo_transcript": "공원에는 운동을 하거나 강아지와 산책하는 사람들이 이만",
+      "large_v3_transcript": "공원에는 운동을 하거나 강아지와 산책하는 사람들이 많습니다.",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 4,
+        "word_edit_distance": 1,
+        "normalized_character_disagreement": 0.15384615384615385,
+        "normalized_word_disagreement": 0.14285714285714285
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 3,
+        "max_pairwise_character_disagreement": 0.15384615384615385
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-014000-017000",
+      "selection_rank": 12,
+      "selection_score": 1027.63970588,
+      "selection_reasons": [
+        "a2_model_output_difference"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 14,
+      "end_seconds": 17,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-014000-017000.wav",
+      "review_clip_sha256": "a87d55b6a832728fc65bfb27ec1ff22ac9a54ecf755226219c17dcaf7f2decc0",
+      "experiment_float32_sha256": "c1b2a70786aa0efb625bdcc18fb08dd8909e531c207f798ac18fb94d88e48911",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 17
+      },
+      "turbo_transcript": "산책을 마친 뒤에는 근처 카페에 들러",
+      "large_v3_transcript": "산책을 마친 뒤에는 근처 카페에 들러왔다.",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 2,
+        "word_edit_distance": 1,
+        "normalized_character_disagreement": 0.11764705882352941,
+        "normalized_word_disagreement": 0.16666666666666666
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 3,
+        "max_pairwise_character_disagreement": 0.125
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-028000-031000",
+      "selection_rank": 13,
+      "selection_score": 1026.41176471,
+      "selection_reasons": [
+        "a2_model_output_difference",
+        "decoder_timing_or_timestamp_anomaly"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 28,
+      "end_seconds": 31,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-028000-031000.wav",
+      "review_clip_sha256": "3af5edab0fff015e39b9ff0f5fc499c96535abc48d90735fa6fd98427188ed4c",
+      "experiment_float32_sha256": "b1fb7f23b0e1a534d31dfe7040826748d3dad8cc81421280f5cfd478ac33613e",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 31
+      },
+      "turbo_transcript": "생각입니다. 집에 돌아오면 컴퓨터로 간다.",
+      "large_v3_transcript": "생각입니다 집에 돌아오면 컴퓨터로 간다",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 0,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.0
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 2,
+        "max_pairwise_character_disagreement": 0.29411764705882354
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-A-006000-009000",
+      "selection_rank": 14,
+      "selection_score": 1023.5,
+      "selection_reasons": [
+        "a2_model_output_difference"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 6,
+      "end_seconds": 9,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-006000-009000.wav",
+      "review_clip_sha256": "6fabe01c80000ada20c6af8bf8ca03b1d3c6ee9c6e173f441a06ea29b9c0bba9",
+      "experiment_float32_sha256": "b2799677ae7057005fe981cc76a6cb5a90c1254a6174c167ce5f1d4ba5fc7d74",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 9
+      },
+      "turbo_transcript": "토파스타를 만들어 봤는데 처음 시도한 것이고",
+      "large_v3_transcript": "토파스타를 만들어봤는데 처음 시도한 것이고",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 2,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.3333333333333333
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 2,
+        "max_pairwise_character_disagreement": 0.1
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-032000-035000",
+      "selection_rank": 15,
+      "selection_score": 1022.41269841,
+      "selection_reasons": [
+        "a2_model_output_difference"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 32,
+      "end_seconds": 35,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-032000-035000.wav",
+      "review_clip_sha256": "f9f5eec3763662144e976bef1fb934632ea539cc13211e18de0554a1865db1ee",
+      "experiment_float32_sha256": "b82acfdd4e05f2e87ec15eeca3356ed326d4a3db00fdd33546822b73c7b9bbdc",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 35
+      },
+      "turbo_transcript": "저녁에는 좋아하는 영어를 보면서 하루를 마",
+      "large_v3_transcript": "저녁에는 좋아하는 영화를 보면서 하루를 마...",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": true,
+        "character_edit_distance": 1,
+        "word_edit_distance": 1,
+        "normalized_character_disagreement": 0.05555555555555555,
+        "normalized_word_disagreement": 0.16666666666666666
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 3,
+        "max_pairwise_character_disagreement": 0.19047619047619047
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-A-026000-029000",
+      "selection_rank": 16,
+      "selection_score": 1005.95652174,
+      "selection_reasons": [
+        "a2_model_output_difference"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 26,
+      "end_seconds": 29,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-026000-029000.wav",
+      "review_clip_sha256": "c5face4267a6757261aa70e986c7122577201c4e6f141a551a06da27221ce032",
+      "experiment_float32_sha256": "b7d5c56ad67c93a58a472986667803170797aaa2757890a3780f511410957df0",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 29
+      },
+      "turbo_transcript": "끝나면 설거지를 하고 방을 정리한 다음 편하게 쉴",
+      "large_v3_transcript": "끝나면 설거지를 하고 방을 정리한 다음 편하게 쉴.",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": true,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 0,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.0
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 3,
+        "max_pairwise_character_disagreement": 0.13043478260869565
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-A-014000-017000",
+      "selection_rank": 17,
+      "selection_score": 41.0,
+      "selection_reasons": [
+        "high_a3_option_variability",
+        "decoder_timing_or_timestamp_anomaly",
+        "a3_option_variability_priority"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 14,
+      "end_seconds": 17,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-014000-017000.wav",
+      "review_clip_sha256": "d2a92361d6559e6f79a23707b926d31b7682769d7be0a7120d8c5014d0ac2918",
+      "experiment_float32_sha256": "0976f9e6ff701c443a7a48ed35638baba15dbe0b8c8402ca3754b080972cc58c",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 17
+      },
+      "turbo_transcript": "를 찾아보기도 하지만 가끔은 냉장고에 있는",
+      "large_v3_transcript": "를 찾아보기도 하지만 가끔은 냉장고에 있는",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": false,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 0,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.0
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 4,
+        "max_pairwise_character_disagreement": 1.0
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-A-016000-019000",
+      "selection_rank": 18,
+      "selection_score": 27.6,
+      "selection_reasons": [
+        "decoder_timing_or_timestamp_anomaly",
+        "a3_option_variability_priority"
+      ],
+      "source_label": "A",
+      "source_audio_path": "phase3/test_audio/A.wav",
+      "source_audio_sha256": "f7369eadbd948dd7aa58fbe47a4c625f4193e01b72a24e2f1bac1fa47a1e9384",
+      "start_seconds": 16,
+      "end_seconds": 19,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-A-016000-019000.wav",
+      "review_clip_sha256": "bcfc7ca023fce2d32cd8a53c4359954e8860fc62b80128c096bd671cbf6ef811",
+      "experiment_float32_sha256": "06a40fca9c1c47b2b62f5e36c4bf64a71c68d0255aa13c7a13ec1d913f65758e",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "A",
+        "end_seconds": 19
+      },
+      "turbo_transcript": "냉장고에 있는 재료를 이용해서 마음대로 만들어",
+      "large_v3_transcript": "냉장고에 있는 재료를 이용해서 마음대로 만들어",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": false,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 0,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.0
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 3,
+        "max_pairwise_character_disagreement": 0.24
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-016000-019000",
+      "selection_rank": 19,
+      "selection_score": 27.5,
+      "selection_reasons": [
+        "high_a3_option_variability",
+        "decoder_timing_or_timestamp_anomaly",
+        "a3_option_variability_priority"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 16,
+      "end_seconds": 19,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-016000-019000.wav",
+      "review_clip_sha256": "fd2707131c033a25bb4b433b50a3fba6c3c5f971b92b2d242afbd9106fc8adf7",
+      "experiment_float32_sha256": "25158ac437e29037101c44eb97445fb213660328ba130f8bf0fc97a87646b1c3",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 19
+      },
+      "turbo_transcript": "저 카페에 들러 따뜻한 커피를 한 잔 마셨습니다.",
+      "large_v3_transcript": "저 카페에 들러 따뜻한 커피를 한 잔 마셨습니다.",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": false,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 0,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.0
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 4,
+        "max_pairwise_character_disagreement": 0.1
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-018000-021000",
+      "selection_rank": 20,
+      "selection_score": 27.0,
+      "selection_reasons": [
+        "decoder_timing_or_timestamp_anomaly",
+        "a3_option_variability_priority"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 18,
+      "end_seconds": 21,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-018000-021000.wav",
+      "review_clip_sha256": "808d1b2d9e1984baaea11797cfc06ff43aa7b48b2fb941b14930e519b508c1e3",
+      "experiment_float32_sha256": "8256da9f1ad9fa65c194a89d8cc86cc17336ad24d5bd541acb677635b6fd52e0",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 21
+      },
+      "turbo_transcript": "마셨습니다. 오후에는 친구를 만나서",
+      "large_v3_transcript": "마셨습니다. 오후에는 친구를 만나서",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": false,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 0,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.0
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 2,
+        "max_pairwise_character_disagreement": 0.3333333333333333
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-004000-007000",
+      "selection_rank": 21,
+      "selection_score": 26.5,
+      "selection_reasons": [
+        "decoder_timing_or_timestamp_anomaly",
+        "a3_option_variability_priority"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 4,
+      "end_seconds": 7,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-004000-007000.wav",
+      "review_clip_sha256": "f004082ea15702ac0565779de26170f7009c77eca0e190f6aa0c77700c514a28",
+      "experiment_float32_sha256": "a88ea1ed93805f18ca3cfcfe983f955715f77fdaf6064863bcf676643d42e4b5",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 7
+      },
+      "turbo_transcript": "집 근처 공원으로 산책을 나갔습니다.",
+      "large_v3_transcript": "집 근처 공원으로 산책을 나갔습니다.",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": false,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 0,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.0
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 3,
+        "max_pairwise_character_disagreement": 0.16666666666666666
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-022000-025000",
+      "selection_rank": 22,
+      "selection_score": 17.33333333,
+      "selection_reasons": [
+        "a3_option_variability_priority"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 22,
+      "end_seconds": 25,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-022000-025000.wav",
+      "review_clip_sha256": "fccfc672813cd8c41ae8cdee9ca19f7cb66a7f8620aa17eb2401a6fa607f23b8",
+      "experiment_float32_sha256": "b283e656bf50b78846e40e974f834b8767bc522dc8b67f0e00f1ecf2e00bdf87",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 25
+      },
+      "turbo_transcript": "서점에 갈 예정입니다. 요즘에는 새로운",
+      "large_v3_transcript": "서점에 갈 예정입니다. 요즘에는 새로운",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": false,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 0,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.0
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 3,
+        "max_pairwise_character_disagreement": 0.8888888888888888
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-030000-033000",
+      "selection_rank": 23,
+      "selection_score": 13.66666667,
+      "selection_reasons": [
+        "a3_option_variability_priority"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 30,
+      "end_seconds": 33,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-030000-033000.wav",
+      "review_clip_sha256": "64d7ae703214d282a1b3a3361334cdee24139bc956fb87feee279e2f9ef00c0a",
+      "experiment_float32_sha256": "2a14d9d06db1fbdd52bb8895a792f3f6ad14861ff4edce600acd22c83d5de0af",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 33
+      },
+      "turbo_transcript": "컴퓨터로 간단한 개발 공부를 하고 저녁에는",
+      "large_v3_transcript": "컴퓨터로 간단한 개발 공부를 하고 저녁에는",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": false,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 0,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.0
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 2,
+        "max_pairwise_character_disagreement": 0.7777777777777778
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    },
+    {
+      "sample_id": "A4-B-026000-029000",
+      "selection_rank": 24,
+      "selection_score": 6.36842105,
+      "selection_reasons": [
+        "a3_option_variability_priority"
+      ],
+      "source_label": "B",
+      "source_audio_path": "phase3/test_audio/B.wav",
+      "source_audio_sha256": "5e77967e2bcd5353d20b876315ea4119de0a2307250a64a8b33203c4b647b2e0",
+      "start_seconds": 26,
+      "end_seconds": 29,
+      "duration_seconds": 3,
+      "review_clip_path": "evidence/accuracy_a4_ground_truth_20261101/clips/A4-B-026000-029000.wav",
+      "review_clip_sha256": "8b64ca5176433192b876fab2f27caecef9b8ec0c58a7757964a76090437222c0",
+      "experiment_float32_sha256": "d0e1a8a7989d83bc4614f89df5c6bf6dd7f7e399e3efb3d6c671e844b23cc1f8",
+      "a13_link": {
+        "stage": "A2",
+        "window_seconds": 3,
+        "stride_seconds": 2,
+        "beam_size": 5,
+        "initial_prompt": null,
+        "repeat": 0,
+        "source": "B",
+        "end_seconds": 29
+      },
+      "turbo_transcript": "운동이나 독서를 시작해 볼 생각입니다.",
+      "large_v3_transcript": "운동이나 독서를 시작해 볼 생각입니다.",
+      "turbo_repeat_reproducible": true,
+      "large_v3_repeat_reproducible": true,
+      "model_disagreement": {
+        "exact_output_differs": false,
+        "normalized_output_differs": false,
+        "character_edit_distance": 0,
+        "word_edit_distance": 0,
+        "normalized_character_disagreement": 0.0,
+        "normalized_word_disagreement": 0.0
+      },
+      "a3_option_variability": {
+        "unique_normalized_outputs": 3,
+        "max_pairwise_character_disagreement": 0.15789473684210525
+      },
+      "reference_text": null,
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_at": null,
+      "review_notes": null
+    }
+  ]
+}
