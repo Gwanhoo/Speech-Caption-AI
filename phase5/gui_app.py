@@ -231,6 +231,7 @@ class MainWindow(QMainWindow):
         self.controller = controller or LiveCaptionController()
         self._launch_config = config or LiveCaptionConfig()
         self._close_when_finished = False
+        self._stop_requested = False
         self.overlay: SubtitleOverlay | None = None
         self.setWindowTitle("AI 실시간 자막")
         self.resize(1080, 820)
@@ -535,6 +536,8 @@ class MainWindow(QMainWindow):
     def set_status_message(self, message: str) -> None:
         self.status_label.setToolTip("")
         self.status_label.setText(message)
+        color = "#1d4ed8" if self.controller.state == "starting" else "#334155"
+        self.status_label.setStyleSheet(f"color: {color};")
 
     @Slot(str)
     def apply_controller_state(self, state: str) -> None:
@@ -546,9 +549,15 @@ class MainWindow(QMainWindow):
         self.output_device_combo.setEnabled(not active and self._has_available_output_devices)
         self.refresh_device_button.setEnabled(not active)
         if state == "starting":
+            self._stop_requested = False
+            self.server_state_label.setText("● 확인 중")
+            self._set_indicator(self.server_state_label, "#94a3b8")
             self.status_label.setStyleSheet("color: #1d4ed8;")
             self.set_status_message("서버와 오디오 장치 확인 중…")
         elif state == "stopping":
+            self._stop_requested = True
+            self.server_state_label.setText("● 확인 전")
+            self._set_indicator(self.server_state_label, "#94a3b8")
             self.stop_button.setEnabled(False)
             self.subtitle_model.clear()
             self._hide_and_clear_overlay()
@@ -620,7 +629,9 @@ class MainWindow(QMainWindow):
     def _run_finished(self, success: bool, message: str) -> None:
         self.subtitle_model.clear()
         self._hide_and_clear_overlay()
-        if success:
+        # Manual STOP clears live warnings; the pipeline's failure history is
+        # still preserved in its result JSON and controller.run_finished.
+        if success or self._stop_requested:
             self.status_label.setStyleSheet("color: #334155;")
             self.status_label.setText("대기 중")
         elif not self.status_label.text().startswith("오류:"):

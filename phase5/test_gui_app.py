@@ -4,6 +4,7 @@ from __future__ import annotations
 import gc
 import os
 import logging
+import queue
 import sys
 import tempfile
 import threading
@@ -118,6 +119,33 @@ class RemovedDeviceRecoveryBackend(BlockingBackend):
                 "선택한 Windows 출력 장치를 찾을 수 없습니다. 장치 연결을 확인한 뒤 다시 시작하세요."
             )
         return super().preflight(config)
+
+
+class RemoteStateBackend(BlockingBackend):
+    """Drive real worker hooks in order without audio or a remote server."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.commands = queue.Queue()
+        self.exit_code = 0
+
+    def submit(self, kind: str, event: dict) -> threading.Event:
+        delivered = threading.Event()
+        self.commands.put((kind, event, delivered))
+        return delivered
+
+    def run(self, config: LiveCaptionConfig, hooks) -> int:
+        self.started.set()
+        while not hooks.stop_event.is_set():
+            try:
+                kind, event, delivered = self.commands.get(timeout=0.01)
+            except queue.Empty:
+                continue
+            try:
+                getattr(hooks, "on_" + kind)(event)
+            finally:
+                delivered.set()
+        return self.exit_code
 
 
 class GuiTests(unittest.TestCase):
@@ -1155,6 +1183,121 @@ class GuiTests(unittest.TestCase):
             "응답 시간이 초과",
             user_error_message(RemoteTimeoutError("read timed out")),
         )
+
+    def test_remote_failure_and_recovery_update_gui_without_losing_subtitles(self) -> None:
+        backend = RemoteStateBackend()
+        controller = LiveCaptionController(backend=backend)
+        window = MainWindow(controller)
+        errors = []
+        controller.error.connect(errors.append)
+        try:
+            window.start_captioning()
+            self.pump_until(backend.started.is_set)
+            for kind, event in (
+                ("subtitle", self.event("speaker_0", 1, 1, "정상 자막")),
+                ("remote_state", {"connected": False, "error_type": "RemoteTimeoutError"}),
+                ("remote_state", {"connected": False, "error_type": "RemoteTimeoutError"}),
+                ("subtitle", self.event("speaker_0", 1, 2, "보존할 자막")),
+            ):
+                self.pump_until(backend.submit(kind, event).is_set)
+            self.assertEqual(controller.state, "running")
+            self.assertEqual(len(errors), 1)
+            self.assertIn("응답 시간이 초과", window.status_label.text())
+            self.assertIn("연결 안 됨", window.server_state_label.text())
+            self.assertIn("#dc2626", window.server_state_label.styleSheet())
+            self.assertEqual(self.feed_texts(window), ["보존할 자막"])
+
+            self.pump_until(backend.submit("remote_state", {"connected": True}).is_set)
+            self.assertIn("연결됨", window.server_state_label.text())
+            self.assertIn("#16a34a", window.server_state_label.styleSheet())
+            self.assertEqual(window.status_label.text(), "오디오 캡처 및 원격 자막 처리 중…")
+            self.assertNotIn("#b91c1c", window.status_label.styleSheet())
+            self.assertEqual(window.status_label.toolTip(), "")
+            self.pump_until(backend.submit("metric", {"post_capture_latency_seconds": .25}).is_set)
+            self.assertEqual(window.latency_label.text(), "최근 latency: 250 ms")
+            self.assertEqual(self.feed_texts(window), ["보존할 자막"])
+        finally:
+            if controller.state != "idle":
+                window.stop_captioning()
+                self.pump_until(lambda: controller.state == "idle")
+            window.close()
+
+    def test_stop_and_restart_clear_remote_error_and_reject_stale_worker_state(self) -> None:
+        from PySide6.QtCore import QMetaObject, Q_ARG
+
+        backend = RemoteStateBackend()
+        # Real pipeline runs retain a nonzero result after historical failures.
+        backend.exit_code = 1
+        controller = LiveCaptionController(backend=backend)
+        window = MainWindow(controller)
+        outcomes = []
+        controller.run_finished.connect(lambda ok, message: outcomes.append(ok))
+        try:
+            for _ in range(2):
+                backend.started.clear()
+                window.start_captioning()
+                self.pump_until(backend.started.is_set)
+                self.assertIn("연결됨", window.server_state_label.text())
+                self.assertFalse(window.status_label.text().startswith("오류:"))
+                self.pump_until(backend.submit("remote_state", {
+                    "connected": False, "error_type": "RemoteConnectionError",
+                }).is_set)
+                self.assertIn("연결할 수 없습니다", window.status_label.text())
+
+                # Queue a state update before STOP, deliver it after clearing.
+                worker = controller._worker
+                QMetaObject.invokeMethod(worker, "error", Qt.ConnectionType.QueuedConnection,
+                                         Q_ARG(str, "늦은 오류"))
+                QMetaObject.invokeMethod(worker, "server_state", Qt.ConnectionType.QueuedConnection,
+                                         Q_ARG(bool, True), Q_ARG(str, "늦은 복구"))
+                window.stop_captioning()
+                self.assertEqual(window.server_state_label.text(), "● 확인 전")
+                self.pump_until(lambda: controller.state == "idle")
+                self.assertEqual(window.status_label.text(), "대기 중")
+                self.assertEqual(window.server_state_label.text(), "● 확인 전")
+                self.assertEqual(window.subtitle_model.entries, ())
+                self.assertEqual(window.overlay.entries, ())
+
+            # A different worker must not change the next session's UI.
+            backend.started.clear()
+            window.start_captioning()
+            self.pump_until(backend.started.is_set)
+            obsolete = LiveCaptionWorker(LiveCaptionConfig(), backend=backend)
+            for signal, slot, args in (
+                (obsolete.server_state, controller._forward_server_state, (False, "이전 연결")),
+                (obsolete.error, controller._forward_error, ("이전 오류",)),
+                (obsolete.status, controller._forward_status, ("이전 상태",)),
+                (obsolete.device_state, controller._forward_device_state, ("이전 장치",)),
+                (obsolete.latency_updated, controller._forward_latency, (999.,)),
+            ):
+                signal.connect(slot, Qt.ConnectionType.QueuedConnection)
+                signal.emit(*args)
+            self.app.processEvents()
+            self.assertIn("연결됨", window.server_state_label.text())
+            self.assertEqual(window.status_label.text(), "오디오 캡처 및 원격 자막 처리 중…")
+            self.assertNotEqual(window.device_label.text(), "이전 장치")
+            self.assertEqual(window.latency_label.text(), "최근 latency: —")
+            self.assertEqual(outcomes, [False, False])  # Failure history is retained.
+        finally:
+            if controller.state != "idle":
+                window.stop_captioning()
+                self.pump_until(lambda: controller.state == "idle")
+            window.close()
+
+    def test_stopped_worker_does_not_publish_remote_state_or_latency(self) -> None:
+        worker = LiveCaptionWorker(LiveCaptionConfig(), backend=BlockingBackend())
+        server, errors, status, latency = [], [], [], []
+        worker.server_state.connect(lambda *args: server.append(args))
+        worker.error.connect(errors.append)
+        worker.status.connect(status.append)
+        worker.latency_updated.connect(latency.append)
+        worker._publish_remote_state({"connected": False, "error_type": "RemoteTimeoutError"})
+        worker.request_stop()
+        before = (list(server), list(errors), list(status), list(latency))
+        worker._publish_remote_state({"connected": True})
+        worker._publish_remote_state({"connected": False, "error_type": "RemoteHTTPError"})
+        worker._publish_metric({"post_capture_latency_seconds": 9})
+        self.assertEqual((server, errors, status, latency), before)
 
     def test_backend_reuses_phase4_pipeline_with_fixed_live_settings(self) -> None:
         backend = Phase4PipelineBackend()

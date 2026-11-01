@@ -154,6 +154,7 @@ class RuntimeHooks:
     stop_event: threading.Event = field(default_factory=threading.Event)
     on_subtitle: Callable[[dict[str, Any]], None] | None = None
     on_metric: Callable[[dict[str, Any]], None] | None = None
+    on_remote_state: Callable[[dict[str, Any]], None] | None = None
 
 
 class PipelineBackend(Protocol):
@@ -298,6 +299,7 @@ class LiveCaptionWorker(QObject):
         self.config = config
         self.backend = backend or Phase4PipelineBackend()
         self.stop_event = threading.Event()
+        self._remote_connected = True
 
     def request_stop(self) -> None:
         """Thread-safe; capture observes this event between recorder reads."""
@@ -328,6 +330,7 @@ class LiveCaptionWorker(QObject):
                 stop_event=self.stop_event,
                 on_subtitle=self._publish_subtitle,
                 on_metric=self._publish_metric,
+                on_remote_state=self._publish_remote_state,
             )
             exit_code = self.backend.run(self.config, hooks)
             if exit_code != 0:
@@ -353,9 +356,29 @@ class LiveCaptionWorker(QObject):
             self.subtitle_event.emit(dict(event))
 
     def _publish_metric(self, metric: dict[str, Any]) -> None:
+        if self.stop_event.is_set():
+            return
         latency = metric.get("post_capture_latency_seconds")
         if isinstance(latency, (int, float)):
             self.latency_updated.emit(float(latency) * 1000)
+
+    def _publish_remote_state(self, event: dict[str, Any]) -> None:
+        connected = event.get("connected")
+        if (self.stop_event.is_set() or type(connected) is not bool
+                or connected == self._remote_connected):
+            return
+        self._remote_connected = connected
+        self.server_state.emit(connected, "연결됨" if connected else "연결 안 됨")
+        if connected:
+            self.status.emit("오디오 캡처 및 원격 자막 처리 중…")
+        else:
+            message = {
+                "RemoteTimeoutError": "RunPod 서버 응답 시간이 초과되었습니다.",
+                "RemoteConnectionError": "RunPod 서버에 연결할 수 없습니다.",
+                "RemoteHTTPError": "RunPod 서버가 오류를 반환했습니다.",
+                "RemoteProtocolError": "RunPod 서버 응답 형식이 올바르지 않습니다.",
+            }.get(event.get("error_type"), "RunPod 원격 처리 요청이 실패했습니다.")
+            self.error.emit(message)
 
 
 class LiveCaptionController(QObject):
@@ -391,16 +414,15 @@ class LiveCaptionController(QObject):
         worker.moveToThread(thread)
 
         thread.started.connect(worker.run)
-        worker.server_state.connect(self.server_state)
-        worker.device_state.connect(self.device_state)
-        worker.status.connect(self.status)
+        worker.server_state.connect(self._forward_server_state)
+        worker.device_state.connect(self._forward_device_state)
+        worker.status.connect(self._forward_status)
         worker.subtitle_event.connect(self._forward_subtitle)
-        worker.latency_updated.connect(self.latency_updated)
-        worker.error.connect(self.error)
+        worker.latency_updated.connect(self._forward_latency)
+        worker.error.connect(self._forward_error)
         worker.device_state.connect(self._mark_running)
         worker.finished.connect(self._remember_result)
         worker.finished.connect(thread.quit)
-        worker.finished.connect(worker.deleteLater)
         thread.finished.connect(self._thread_finished)
 
         self._thread = thread
@@ -420,17 +442,49 @@ class LiveCaptionController(QObject):
     def _forward_subtitle(self, event: dict[str, Any]) -> None:
         # This slot runs on the GUI thread. A worker-side stop check alone
         # cannot invalidate Qt signals already queued before STOP/restart.
-        if self._state in {"starting", "running"} and self.sender() is self._worker:
+        if self._accept_worker_event():
             self.subtitle_event.emit(event)
+
+    def _accept_worker_event(self) -> bool:
+        return self._state in {"starting", "running"} and self.sender() is self._worker
+
+    @Slot(bool, str)
+    def _forward_server_state(self, connected: bool, text: str) -> None:
+        if self._accept_worker_event():
+            self.server_state.emit(connected, text)
+
+    @Slot(str)
+    def _forward_device_state(self, text: str) -> None:
+        if self._accept_worker_event():
+            self.device_state.emit(text)
+
+    @Slot(str)
+    def _forward_status(self, text: str) -> None:
+        if self._accept_worker_event():
+            self.status.emit(text)
+
+    @Slot(str)
+    def _forward_error(self, text: str) -> None:
+        if self._accept_worker_event():
+            self.error.emit(text)
+
+    @Slot(float)
+    def _forward_latency(self, milliseconds: float) -> None:
+        if self._accept_worker_event():
+            self.latency_updated.emit(milliseconds)
 
     @Slot(str)
     def _mark_running(self, _device_name: str) -> None:
-        if self._state == "starting":
+        if self._state == "starting" and self.sender() is self._worker:
             self._set_state("running")
 
     @Slot(bool, str)
     def _remember_result(self, success: bool, message: str) -> None:
         self._pending_result = (success, message)
+        # Keep sender identity valid until the GUI has consumed this worker's
+        # preceding state/error signals, including a fast preflight failure.
+        if self._worker is not None:
+            self._worker.deleteLater()
 
     @Slot()
     def _thread_finished(self) -> None:

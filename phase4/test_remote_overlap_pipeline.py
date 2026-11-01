@@ -1284,6 +1284,47 @@ class PipelineTests(TestCase):
         self.assertTrue(all("sequence" in event and "timestamp" in event for event in subtitle_events))
         self.assertTrue(all("post_capture_latency_seconds" in metric for metric in metrics))
 
+    def test_remote_state_hook_reports_failure_then_recovery_without_changing_metrics(self):
+        for failure in (RemoteTimeoutError("timeout"), RemoteConnectionError("offline"),
+                        RemoteHTTPError(503, "unavailable"), RemoteProtocolError("invalid")):
+            with self.subTest(error=type(failure).__name__):
+                states, metrics, subtitles = [], [], []
+                hooks = pipeline.LivePipelineHooks(
+                    on_remote_state=states.append, on_metric=metrics.append,
+                    on_subtitle=subtitles.append,
+                )
+                code, result = self.run_pipeline(True, fail_first=True, failure=failure,
+                                                 runtime_hooks=hooks)
+                self.assertEqual(code, 1)  # Historical failure remains in the result.
+                self.assertEqual(states, [
+                    {"connected": False, "error_type": type(failure).__name__},
+                    {"connected": True},
+                ])
+                self.assertEqual(len(metrics), result["stt_window_success"])
+                self.assertTrue(all("post_capture_latency_seconds" in m for m in metrics))
+                self.assertEqual(subtitles, result["subtitle_events"])
+                self.assertTrue(subtitles)
+
+    def test_remote_state_hook_preserves_normal_subtitle_results(self):
+        _, baseline = self.run_pipeline(True)
+        states = []
+        hooks = pipeline.LivePipelineHooks(on_remote_state=states.append)
+        code, result = self.run_pipeline(True, runtime_hooks=hooks)
+        self.assertEqual(code, 0)
+        self.assertEqual(states, [{"connected": True}, {"connected": True}])
+        fields = ("speaker", "utterance_id", "sequence", "status", "action", "text")
+        def project(rows):
+            return [tuple(row[key] for key in fields) for row in rows]
+        self.assertEqual(project(result["subtitle_events"]), project(baseline["subtitle_events"]))
+
+    def test_remote_state_hook_exception_does_not_interrupt_captions(self):
+        hook = Mock(side_effect=RuntimeError("frontend failed"))
+        code, result = self.run_pipeline(
+            True, runtime_hooks=pipeline.LivePipelineHooks(on_remote_state=hook))
+        self.assertEqual(code, 0)
+        self.assertEqual(hook.call_count, 2)
+        self.assertTrue(result["subtitle_events"])
+
     def test_remote_audio_queue_absorbs_one_bounded_startup_burst(self):
         self.assertEqual(pipeline.audio_queue_maxsize("local"), 2)
         self.assertEqual(pipeline.audio_queue_maxsize("remote"), 3)

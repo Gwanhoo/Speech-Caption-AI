@@ -101,6 +101,7 @@ class LivePipelineHooks:
     stop_event: threading.Event = field(default_factory=threading.Event)
     on_subtitle: Callable[[dict[str, Any]], None] | None = None
     on_metric: Callable[[dict[str, Any]], None] | None = None
+    on_remote_state: Callable[[dict[str, Any]], None] | None = None
 
 
 def _notify_runtime_hook(
@@ -1489,7 +1490,17 @@ def main(
                                 with state_lock:
                                     errors.append((f"remote-window-{item.index:03d}", exc))
                                 print(f"[REMOTE SKIP] window={item.index:03d} {type(exc).__name__}: {exc}", flush=True)
+                                _notify_runtime_hook(
+                                    getattr(runtime_hooks, "on_remote_state", None),
+                                    {"connected": False, "error_type": type(exc).__name__},
+                                    "remote_state",
+                                )
                                 continue
+                            _notify_runtime_hook(
+                                getattr(runtime_hooks, "on_remote_state", None),
+                                {"connected": True},
+                                "remote_state",
+                            )
                             if discard_live_window(item, "remote_response", audio_queue, remote_result):
                                 continue
                             monitor.observe(remote_result.gpu_memory)
