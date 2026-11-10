@@ -1,0 +1,334 @@
+{
+  "검증일": "2026-11-10",
+  "기준_HEAD": "5da8925b2d5510d79eb62ce1375a9009f473d4e3",
+  "환경": "Linux / Python 3.11.17 / CPU PyTorch 2.15.0+cpu / PySide6 6.8.3 / Qt offscreen",
+  "unittest": {
+    "command": "PYTHONPATH=phase3:phase4:. QT_QPA_PLATFORM=offscreen XDG_CACHE_HOME=/workspace/.cache OMP_NUM_THREADS=2 .venv/bin/python -m unittest -v phase3.test_general_subtitle_lifecycle phase3.test_case_a_recorded_lifecycle phase3.test_subtitle_state phase4.test_remote_gpu_client phase4.test_gpu_processing_server phase4.test_remote_overlap_pipeline phase5.test_subtitle_presentation phase5.test_gui_app.GuiTests.test_remote_failure_and_recovery_update_gui_without_losing_subtitles phase5.test_gui_app.GuiTests.test_stop_and_restart_clear_remote_error_and_reject_stale_worker_state",
+    "executed": 131,
+    "passed": 131,
+    "failures": 0,
+    "errors": 0,
+    "expected_failures": 0,
+    "skipped": 0,
+    "elapsed_seconds": 21.426,
+    "modules": {
+      "phase3.test_general_subtitle_lifecycle": 30,
+      "phase3.test_case_a_recorded_lifecycle": 6,
+      "phase4.test_remote_gpu_client": 14,
+      "phase4.test_gpu_processing_server": 18,
+      "phase4.test_remote_overlap_pipeline": 47,
+      "phase5.test_subtitle_presentation": 14,
+      "phase5.test_gui_app": 2
+    }
+  },
+  "scripts": [
+    {
+      "command": "PYTHONPATH=phase3:phase4:. .venv/bin/python phase3/test_subtitle_assembler.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": ".venv/bin/python phase4/test_websocket_mvp.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=phase3:phase4:. .venv/bin/python phase3/test_subtitle_state.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=phase3:phase4:. .venv/bin/python phase3/test_subtitle_consensus.py",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "범위": "CPU/모의 capture·model/localhost HTTP/Qt offscreen. WASAPI·실제 GPU·RunPod·EXE·화면 합성 제외.",
+  "정확도_검수_상태": {
+    "rows": 24,
+    "pending": 24,
+    "nonempty_references": 0,
+    "CER": null,
+    "WER": null
+  },
+  "최종_문서_검토": {
+    "검증일": "2026-11-10",
+    "기준_HEAD": "5da8925b2d5510d79eb62ce1375a9009f473d4e3",
+    "재실행_범위": "문서 정적 검사 및 Mermaid parser, 서버 --help. 기존 131개/4개 앱 테스트 결과는 이전 실행 기록을 보존하며 재실행하지 않음.",
+    "문서수": 7,
+    "내부_상대링크": 76,
+    "이미지": {
+      "count": 1,
+      "status": "PASS",
+      "검사": "실제 파일 존재 및 Pillow 이미지 디코드 무결성"
+    },
+    "앵커": {
+      "count": 0,
+      "status": "해당 없음"
+    },
+    "커밋_링크": {
+      "count": 6,
+      "unique": 6,
+      "status": "PASS",
+      "검사": "로컬 Git commit object 확인; GitHub HTTP 응답은 검사하지 않음"
+    },
+    "코드_경로": {
+      "inline_count": 5,
+      "status": "PASS",
+      "연결된_파일_검사": "모든 상대 링크 대상 존재 확인"
+    },
+    "핵심_소스_일치": {
+      "phase5/live_caption_controller.py": true,
+      "phase5/gui_app.py": true,
+      "phase5/subtitle_overlay.py": true,
+      "phase5/subtitle_presentation.py": true,
+      "phase3/run_overlap_pipeline.py": true,
+      "phase3/subtitle_assembler.py": true,
+      "phase4/remote_gpu_client.py": true,
+      "phase4/gpu_processing_server.py": true,
+      "phase4/remote_gpu_protocol.py": true
+    },
+    "코드_식별자": {
+      "count": 35,
+      "status": "PASS",
+      "검사": "9개 핵심 모듈 AST의 클래스·함수 정의 대조"
+    },
+    "실행_옵션": [
+      {
+        "document": "README.md",
+        "script": "phase4/gpu_processing_server.py",
+        "options": [
+          "--host",
+          "--port",
+          "--processing-profile",
+          "--whisper-model"
+        ]
+      },
+      {
+        "document": "docs/installation.md",
+        "script": "phase4/gpu_processing_server.py",
+        "options": [
+          "--host",
+          "--port",
+          "--processing-profile",
+          "--whisper-model"
+        ]
+      },
+      {
+        "document": "docs/installation.md",
+        "script": "phase3/run_overlap_pipeline.py",
+        "options": [
+          "--assemble",
+          "--duration",
+          "--json-output",
+          "--live",
+          "--processing-mode",
+          "--remote-connect-timeout",
+          "--remote-read-timeout",
+          "--remote-server-url",
+          "--speaker-mode",
+          "--stride-seconds",
+          "--window-seconds"
+        ]
+      },
+      {
+        "document": "docs/installation.md",
+        "script": "phase4/run_websocket_demo.py",
+        "options": [
+          "--count",
+          "--interval"
+        ]
+      }
+    ],
+    "Mermaid": {
+      "version": "11.17.2",
+      "결과": [
+        {
+          "file": "README.md",
+          "block": 1,
+          "status": "PASS"
+        },
+        {
+          "file": "docs/architecture.md",
+          "block": 1,
+          "status": "PASS"
+        },
+        {
+          "file": "docs/audio-pipeline.md",
+          "block": 1,
+          "status": "PASS"
+        },
+        {
+          "file": "docs/subtitle-processing.md",
+          "block": 1,
+          "status": "PASS"
+        }
+      ],
+      "범위": "실제 Mermaid parser 문법 검사. GitHub 화면의 렌더링·레이아웃은 미실행."
+    },
+    "Markdown": {
+      "status": "PASS",
+      "범위": "상대 링크·이미지·앵커 유무·fence 균형·문서별 H1·README 왕복 탐색 정적 검사. GitHub 브라우저 렌더링 미실행."
+    },
+    "git_diff_check": "PASS",
+    "문서_파일": {
+      "README.md": {
+        "bytes": 7308,
+        "sha256": "0746981e222ad76d99283b4d7c921f5e0f527380c459dd3f93a9d083ff7b4d50"
+      },
+      "docs/architecture.md": {
+        "bytes": 7833,
+        "sha256": "b1f30b1b911440650e946f20eaef39daca4ffe7c79747bbf396f79a2b9d8ad3f"
+      },
+      "docs/audio-pipeline.md": {
+        "bytes": 8152,
+        "sha256": "7f37246b5295572e75550635e348388e7152d90e52afcfe463468eb0409bbdb3"
+      },
+      "docs/subtitle-processing.md": {
+        "bytes": 8191,
+        "sha256": "4262fc2647f349b29be2cda8e73c51c6dd9f8d47805881bcd15531fb48ef3c19"
+      },
+      "docs/troubleshooting.md": {
+        "bytes": 8310,
+        "sha256": "4168b91045b71d6e2da9306a0c5d68b20acca3fe6336c31c1919fd1bf6698e9f"
+      },
+      "docs/performance.md": {
+        "bytes": 8470,
+        "sha256": "57ca05f1a819df9a0b3ace93b700177cf9a7f9fa1201deb65b15cba6c00836be"
+      },
+      "docs/installation.md": {
+        "bytes": 9557,
+        "sha256": "185ddfb5999f4292c450f6fbadd1d67d615ca077457015b1a7e2a3936d939e0d"
+      }
+    },
+    "루트_구조": [
+      ".git/",
+      ".gitignore",
+      ".venv/",
+      "ACCURACY_AUDIT.md",
+      "AGENTS.md",
+      "PROJECT_STATUS.md",
+      "README.md",
+      "assets/",
+      "docs/",
+      "evidence/",
+      "experiments/",
+      "phase0/",
+      "phase1/",
+      "phase2/",
+      "phase3/",
+      "phase4/",
+      "phase5/",
+      "requirements.txt",
+      "runpod-pip-freeze.txt",
+      "tools/",
+      "voxlux.spec"
+    ],
+    "docs_전체_파일": [
+      "docs/accuracy_20261031/REPORT.md",
+      "docs/accuracy_20261031/acoustic_gate.txt",
+      "docs/accuracy_20261031/baseline_phase3.txt",
+      "docs/accuracy_20261031/before_revision.txt",
+      "docs/accuracy_20261031/compare.py",
+      "docs/accuracy_20261031/comparison.json",
+      "docs/accuracy_20261031/comparison.txt",
+      "docs/accuracy_20261031/dependencies.txt",
+      "docs/accuracy_20261031/gpu_probe.json",
+      "docs/accuracy_20261031/gpu_probe.py",
+      "docs/accuracy_20261031/gpu_probe.txt",
+      "docs/accuracy_20261031/gpu_replay.json",
+      "docs/accuracy_20261031/h1_m1/REPORT.md",
+      "docs/accuracy_20261031/h1_m1/before.txt",
+      "docs/accuracy_20261031/h1_m1/before_lifecycle_tests.py.txt",
+      "docs/accuracy_20261031/h1_m1/before_subtitle_assembler.py.txt",
+      "docs/accuracy_20261031/h1_m1/compare.py",
+      "docs/accuracy_20261031/h1_m1/comparison.json",
+      "docs/accuracy_20261031/h1_m1/comparison.txt",
+      "docs/accuracy_20261031/h1_m1/phase3.txt",
+      "docs/accuracy_20261031/h1_m1/phase4.txt",
+      "docs/accuracy_20261031/h1_m1/rollback_original_expectations.txt",
+      "docs/accuracy_20261031/h1_m1/scripts.txt",
+      "docs/accuracy_20261031/h1_m1/static.txt",
+      "docs/accuracy_20261031/phase3.txt",
+      "docs/accuracy_20261031/phase3_final.txt",
+      "docs/accuracy_20261031/phase4.txt",
+      "docs/accuracy_20261031/phase4_final.txt",
+      "docs/accuracy_20261031/scripts.txt",
+      "docs/accuracy_20261031/scripts_final.txt",
+      "docs/accuracy_20261031/static.txt",
+      "docs/accuracy_20261031/static_final.txt",
+      "docs/accuracy_20261031/targeted.txt",
+      "docs/architecture.md",
+      "docs/audio-pipeline.md",
+      "docs/audio_evidence_20261022_audit/audit.json",
+      "docs/audio_evidence_20261022_audit/audit.py",
+      "docs/audio_evidence_20261022_audit/audit_run.txt",
+      "docs/audio_evidence_20261022_audit/gpu.json",
+      "docs/audio_evidence_20261022_audit/phase3.txt",
+      "docs/audio_evidence_20261022_audit/phase4.txt",
+      "docs/audio_evidence_20261022_audit/scripts.txt",
+      "docs/audio_evidence_20261022_audit/summarize.py",
+      "docs/audio_evidence_20261022_audit/summary.json",
+      "docs/audio_evidence_20261022_audit/windows.md",
+      "docs/installation.md",
+      "docs/overlap_accuracy_analysis.md",
+      "docs/overlay_validation_20261024/README.md",
+      "docs/overlay_validation_20261024/qt_widget_sequence_14.png",
+      "docs/overlay_validation_20261024/qt_widget_sequence_7.png",
+      "docs/overlay_validation_20261024/replay_audit.json",
+      "docs/p0_1_realtime_stall.md",
+      "docs/p0_1_validation/compare_synthetic.py",
+      "docs/p0_1_validation/script_regressions.txt",
+      "docs/p0_1_validation/synthetic_comparison.json",
+      "docs/p0_1_validation/test_results.json",
+      "docs/p0_2_evidence/before_fix.txt",
+      "docs/p0_2_evidence/check_real_models.py",
+      "docs/p0_2_evidence/new_regressions.txt",
+      "docs/p0_2_evidence/phase3.txt",
+      "docs/p0_2_evidence/phase3_headless.txt",
+      "docs/p0_2_evidence/phase4.txt",
+      "docs/p0_2_evidence/phase4_final.txt",
+      "docs/p0_2_evidence/phase5.txt",
+      "docs/p0_2_evidence/phase5_available.txt",
+      "docs/p0_2_evidence/real_models.json",
+      "docs/p0_2_evidence/real_models_run.txt",
+      "docs/p0_2_evidence/run_regressions.py",
+      "docs/p0_2_evidence/run_script_regressions.py",
+      "docs/p0_2_evidence/script_regressions.txt",
+      "docs/p0_2_ghost_caption_report.md",
+      "docs/p0_3_analysis_report.md",
+      "docs/p0_accuracy_20261028/REPORT.md",
+      "docs/p0_accuracy_20261028/before.txt",
+      "docs/p0_accuracy_20261028/check_dependencies.txt",
+      "docs/p0_accuracy_20261028/compare.py",
+      "docs/p0_accuracy_20261028/comparison.json",
+      "docs/p0_accuracy_20261028/comparison.txt",
+      "docs/p0_accuracy_20261028/decoder_options.json",
+      "docs/p0_accuracy_20261028/final_cleanup_checks.txt",
+      "docs/p0_accuracy_20261028/final_pipeline_checks.txt",
+      "docs/p0_accuracy_20261028/final_static_checks.txt",
+      "docs/p0_accuracy_20261028/gui_dependencies.txt",
+      "docs/p0_accuracy_20261028/lint.txt",
+      "docs/p0_accuracy_20261028/lint_dependency.txt",
+      "docs/p0_accuracy_20261028/lint_verified.txt",
+      "docs/p0_accuracy_20261028/phase3.txt",
+      "docs/p0_accuracy_20261028/phase3_verified.txt",
+      "docs/p0_accuracy_20261028/phase4.txt",
+      "docs/p0_accuracy_20261028/phase4_complete.txt",
+      "docs/p0_accuracy_20261028/phase4_final.txt",
+      "docs/p0_accuracy_20261028/phase4_verified.txt",
+      "docs/p0_accuracy_20261028/phase5.txt",
+      "docs/p0_accuracy_20261028/phase5_verified.txt",
+      "docs/p0_accuracy_20261028/scripts.txt",
+      "docs/p0_accuracy_20261028/targeted.txt",
+      "docs/performance.md",
+      "docs/portfolio-validation.json",
+      "docs/r2_b34_followup.md",
+      "docs/r2_b34_followup_validation.json",
+      "docs/r2_b7_gui_ab.md",
+      "docs/stt_percentage_overlap_review.md",
+      "docs/subtitle-processing.md",
+      "docs/troubleshooting.md"
+    ]
+  }
+}
